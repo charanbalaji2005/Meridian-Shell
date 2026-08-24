@@ -1,0 +1,8 @@
+meridian-terminal (0.1.0-1) unstable; urgency=medium
+
+  * Initial release of Meridian Terminal (C++20).
+  * Includes Meridian Shell with POSIX job control.
+  * Includes local-only Meridian AI engine.
+
+ -- Charan Balaji <charan@example.com>  Tue, 25 Aug 2026 00:00:00 +0000
+

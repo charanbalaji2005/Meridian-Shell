@@ -1,0 +1,43 @@
+# Meridian Terminal .gitignore
+
+# Build outputs
+build/
+bin/
+dist/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Meridian persistent recordings and databases
+*.rec
+*.db
+*.workspace
+*.log
+test_output.txt
+
+# Distribution packages and archives
+*.tar.gz
+*.tar.xz
+*.rpm
+*.deb
+*.apk
+*.snap
+*.flatpak
+
+# Local configuration overrides & secrets
+.config/
+.cache/
+meridian_credentials.local
+
+# IDE & Editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+compile_commands.json
+.clangd/

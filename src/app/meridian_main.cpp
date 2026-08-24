@@ -1,0 +1,332 @@
+// src/app/meridian_main.cpp
+//
+// Meridian 2.0 Unified Developer Platform & AI CLI.
+// Exposes the full suite of terminal capabilities:
+//  - Local AI: intent engine, error diagnostics, autonomous agent, typo/risk analysis
+//  - Workspace & Session multiplexer management
+//  - Developer Intelligence: Git status, System/Network monitor, File explorer,
+//    Universal search, Command palette.
+
+#include "../ai/ai_agent.hpp"
+#include "../ai/ai_controller.hpp"
+#include "../ai/error_diagnostics.hpp"
+#include "../ai/intent_engine.hpp"
+#include "../dev/command_palette.hpp"
+#include "../dev/file_explorer.hpp"
+#include "../dev/git_intel.hpp"
+#include "../dev/rich_history.hpp"
+#include "../dev/system_monitor.hpp"
+#include "../dev/universal_search.hpp"
+#include "../shell/shell.hpp"
+#include "../workspace/session_recorder.hpp"
+#include "meridian_gui.hpp"
+
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <unistd.h>
+#include <vector>
+
+using namespace meridian;
+
+namespace {
+
+std::string default_config_path() {
+    if (const char* override_dir = std::getenv("MERIDIAN_CONFIG_HOME")) {
+        return std::string(override_dir) + "/ai.toml";
+    }
+    const char* home = std::getenv("HOME");
+    std::string base = home ? home : ".";
+    return base + "/.config/meridian/ai.toml";
+}
+
+void print_usage() {
+    std::cout <<
+        "Meridian 2.0 — Terminal + Developer Environment + AI Platform\n\n"
+        "Usage: meridian <subcommand> [args]\n\n"
+        "AI Commands:\n"
+        "  ask \"<intent>\"              translate natural language intent to safe shell command\n"
+        "  diag \"<error_text>\"          diagnose compiler/runtime/database errors with suggested fixes\n"
+        "  agent \"<goal>\"              launch autonomous coding & repair agent loop\n"
+        "  ai <status|on|off|...>      manage local AI engine settings, risk classification, redaction\n\n"
+        "Workspace & Session Multiplexing:\n"
+        "  workspace list              list saved persistent workspaces\n"
+        "  workspace save <name>       save current environment layout & state\n"
+        "  workspace open <name>       inspect/restore a saved development workspace\n"
+        "  workspace rm <name>         delete a saved workspace\n"
+        "  session save <file>         save recorded session trace to file\n\n"
+        "Developer Tooling:\n"
+        "  monitor                     display real-time CPU, RAM, Disk, Network & Process metrics\n"
+        "  git                         inspect Git branch divergence, staged/unstaged changes\n"
+        "  files [dir]                 view tree file explorer with git badges\n"
+        "  search \"<query>\"             search across screen buffers, command history & files\n"
+        "  palette [query]             open / fuzzy-search Command Palette actions (Ctrl+Shift+P)\n"
+        "  history                     view recent rich command history with durations & exit codes\n";
+}
+
+int join_argv(int argc, char** argv, int start, std::string* out) {
+    std::string s;
+    for (int i = start; i < argc; ++i) {
+        if (i > start) s += " ";
+        s += argv[i];
+    }
+    *out = s;
+    return 0;
+}
+
+int handle_ai_subcommand(int argc, char** argv) {
+    if (argc < 3) {
+        std::cout <<
+            "Usage: meridian ai <command> [args]\n\n"
+            "  on | off                    enable/disable Meridian AI\n"
+            "  status                      show current AI state\n"
+            "  detect on | detect off      toggle local command analysis\n"
+            "  privacy on | privacy off    toggle privacy mode\n"
+            "  providers                   list configured providers\n"
+            "  use <provider>              set the active provider name\n"
+            "  test                        test provider connectivity\n"
+            "  analyze \"<command>\"         local typo + risk analysis (no network)\n"
+            "  explain \"<command>\"         explain a command\n"
+            "  redact \"<text>\"             show text with likely secrets redacted\n";
+        return 1;
+    }
+
+    ai::AIController controller(default_config_path());
+    controller.load();
+
+    std::string cmd = argv[2];
+
+    if (cmd == "on") { controller.set_enabled(true); controller.save(); std::cout << "Meridian AI enabled.\n"; return 0; }
+    if (cmd == "off") { controller.set_enabled(false); controller.save(); std::cout << "Meridian AI disabled.\n"; return 0; }
+    if (cmd == "status") { std::cout << controller.status_report(); return 0; }
+
+    if (cmd == "detect" && argc >= 4) {
+        std::string sub = argv[3];
+        if (sub == "on") { controller.set_detection_enabled(true); controller.save(); std::cout << "Detection enabled.\n"; return 0; }
+        if (sub == "off") { controller.set_detection_enabled(false); controller.save(); std::cout << "Detection disabled.\n"; return 0; }
+    }
+
+    if (cmd == "privacy" && argc >= 4) {
+        std::string sub = argv[3];
+        if (sub == "on") { controller.set_privacy_mode(true); controller.save(); std::cout << "Privacy mode enabled.\n"; return 0; }
+        if (sub == "off") { controller.set_privacy_mode(false); controller.save(); std::cout << "Privacy mode disabled.\n"; return 0; }
+    }
+
+    if (cmd == "providers") {
+        std::cout << "Configured providers:\n  (none — local AI is active)\nActive provider setting: " << controller.provider() << "\n";
+        return 0;
+    }
+
+    if (cmd == "use" && argc >= 4) {
+        controller.set_provider(argv[3]);
+        controller.save();
+        std::cout << "Provider preference set to '" << argv[3] << "'.\n";
+        return 0;
+    }
+
+    if (cmd == "test") { std::cout << controller.test_providers(); return 0; }
+
+    if (cmd == "analyze" && argc >= 4) {
+        std::string line;
+        join_argv(argc, argv, 3, &line);
+        if (!controller.enabled()) { std::cout << "Meridian AI is off (`meridian ai on` to enable).\n"; return 0; }
+        if (!controller.detection_enabled()) { std::cout << "Detection is off (`meridian ai detect on` to enable).\n"; return 0; }
+        std::string report = controller.analyze_command(line);
+        std::cout << (report.empty() ? "No issues detected.\n" : report);
+        return 0;
+    }
+
+    if (cmd == "explain" && argc >= 4) {
+        std::string line;
+        join_argv(argc, argv, 3, &line);
+        std::cout << controller.explain_command(line);
+        return 0;
+    }
+
+    if (cmd == "redact" && argc >= 4) {
+        std::string line;
+        join_argv(argc, argv, 3, &line);
+        std::cout << controller.redact(line) << "\n";
+        return 0;
+    }
+
+    return 1;
+}
+
+} // namespace
+
+int main(int argc, char** argv) {
+    if (argc < 2 || (argc >= 2 && (std::string(argv[1]) == "shell" || std::string(argv[1]) == "run"))) {
+        // Default behavior: launch interactive terminal session
+        bool interactive = isatty(STDIN_FILENO);
+        shell::Shell shell(interactive);
+        if (interactive) shell.enable_job_control();
+        return shell.run_interactive(std::cin, std::cout, std::cerr);
+    }
+
+    std::string sub = argv[1];
+
+    if (sub == "--help" || sub == "-h" || sub == "help") {
+        print_usage();
+        return 0;
+    }
+
+    if (sub == "ai") {
+        return handle_ai_subcommand(argc, argv);
+    }
+
+    // 1. meridian ask "<intent>"
+    if (sub == "ask" && argc >= 3) {
+        std::string query;
+        join_argv(argc, argv, 2, &query);
+        ai::IntentEngine engine;
+        auto result = engine.translate(query);
+        std::cout << ai::IntentEngine::format_card(result);
+        return 0;
+    }
+
+    // 2. meridian diag "<error text>"
+    if (sub == "diag" && argc >= 3) {
+        std::string error_text;
+        join_argv(argc, argv, 2, &error_text);
+        ai::ErrorDiagnostics diagnostics;
+        auto card = diagnostics.analyze(error_text);
+        std::cout << card.format();
+        return 0;
+    }
+
+    // 3. meridian agent "<goal>"
+    if (sub == "agent") {
+        std::string goal_text = "Diagnose repository and run test suite";
+        if (argc >= 3) {
+            join_argv(argc, argv, 2, &goal_text);
+        }
+        ai::AiAgent agent;
+        ai::AgentGoal goal;
+        goal.description = goal_text;
+        agent.set_goal(goal);
+
+        std::cout << "Starting Meridian AI Agent for goal: \"" << goal_text << "\"\n\n";
+        while (agent.status() == ai::AgentStatus::Executing) {
+            agent.run_next_step();
+        }
+        std::cout << agent.format_progress();
+        return 0;
+    }
+
+    // 4. meridian workspace [list|save|open|rm]
+    if (sub == "workspace") {
+        workspace::WorkspaceManager wm;
+        if (argc < 3 || std::string(argv[2]) == "list") {
+            auto list = wm.list_workspaces();
+            std::cout << "Saved Meridian Workspaces (" << list.size() << "):\n";
+            for (const auto& name : list) {
+                std::cout << "  • " << name << "\n";
+            }
+            return 0;
+        }
+        std::string action = argv[2];
+        if (action == "save" && argc >= 4) {
+            std::string name = argv[3];
+            workspace::PaneTree tree;
+            auto ws = workspace::WorkspaceManager::capture_live_workspace(name, ".", "main", tree);
+            if (wm.save_workspace(ws)) {
+                std::cout << "Workspace '" << name << "' saved successfully to " << wm.storage_dir() << "\n";
+            } else {
+                std::cerr << "Failed to save workspace '" << name << "'.\n";
+            }
+            return 0;
+        }
+        if (action == "open" && argc >= 4) {
+            std::string name = argv[3];
+            auto ws = wm.load_workspace(name);
+            if (ws.has_value()) {
+                std::cout << "Workspace: " << ws->name << "\n"
+                          << "Root Directory: " << ws->root_dir << "\n"
+                          << "Panes: " << ws->panes.size() << "\n";
+            } else {
+                std::cerr << "Workspace '" << name << "' not found.\n";
+            }
+            return 0;
+        }
+        if (action == "rm" && argc >= 4) {
+            std::string name = argv[3];
+            if (wm.delete_workspace(name)) {
+                std::cout << "Workspace '" << name << "' removed.\n";
+            } else {
+                std::cerr << "Could not delete workspace '" << name << "'.\n";
+            }
+            return 0;
+        }
+    }
+
+    // 5. meridian monitor
+    if (sub == "monitor") {
+        dev::SystemMonitor mon;
+        auto metrics = mon.sample();
+        std::cout << metrics.format_dashboard();
+        return 0;
+    }
+
+    // 6. meridian git
+    if (sub == "git") {
+        auto status = dev::GitIntel::inspect_directory(".");
+        std::cout << status.format_panel();
+        return 0;
+    }
+
+    // 7. meridian files [dir]
+    if (sub == "files") {
+        std::string target = (argc >= 3) ? argv[2] : ".";
+        auto root = dev::FileExplorer::scan_directory(target, 2);
+        std::cout << dev::FileExplorer::format_tree(root);
+        return 0;
+    }
+
+    // 8. meridian search "<query>"
+    if (sub == "search" && argc >= 3) {
+        std::string q;
+        join_argv(argc, argv, 2, &q);
+        vt::ScreenBuffer screen;
+        dev::RichHistory history;
+        auto matches = dev::UniversalSearch::search_all(screen, history, q);
+        std::cout << "Universal Search results for \"" << q << "\" (" << matches.size() << " matches):\n";
+        for (const auto& m : matches) {
+            std::cout << "  [" << m.source_label << "] " << m.line_content << "\n";
+        }
+        return 0;
+    }
+
+    // 9. meridian palette [query]
+    if (sub == "palette") {
+        std::string q = (argc >= 3) ? argv[2] : "";
+        dev::CommandPalette palette;
+        auto results = palette.search(q);
+        std::cout << "┌─── Meridian Command Palette (Ctrl+Shift+P) ────────────\n";
+        for (const auto& a : results) {
+            std::cout << "│ [" << a.category << "] " << a.title << " (" << a.shortcut << ")\n";
+        }
+        std::cout << "└─────────────────────────────────────────────────────────\n";
+        return 0;
+    }
+
+    // 10. meridian history
+    if (sub == "history") {
+        dev::RichHistory history;
+        auto recent = history.recent(15);
+        std::cout << "Recent Rich Command History (" << recent.size() << " entries):\n";
+        for (const auto& r : recent) {
+            std::cout << "  #" << r.id << " [exit=" << r.exit_code << ", " << r.duration_ms << "ms] (" << r.working_dir << ") " << r.command << "\n";
+        }
+        return 0;
+    }
+
+    // 11. meridian gui
+    if (sub == "gui") {
+        gui::MeridianGui gui;
+        return gui.run();
+    }
+
+    print_usage();
+    return 1;
+}

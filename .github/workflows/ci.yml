@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Compile all binaries
+        run: make all
+
+      - name: Run unit & integration test suite (109 tests)
+        run: make test
+
+      - name: Run manual core test sequence (spec §78)
+        run: make manual-test
+
+      - name: Test installation and uninstallation
+        run: |
+          make install DESTDIR=/tmp/test_install PREFIX=/usr
+          test -x /tmp/test_install/usr/bin/meridian
+          test -x /tmp/test_install/usr/bin/meridian-shell
+          test -x /tmp/test_install/usr/bin/meridian_demo
+          test -f /tmp/test_install/usr/share/applications/org.meridian_terminal.MeridianTerminal.desktop
+          test -f /tmp/test_install/usr/share/icons/hicolor/scalable/apps/meridian-terminal.svg
+          test -f /tmp/test_install/usr/share/metainfo/org.meridian_terminal.MeridianTerminal.metainfo.xml
+          make uninstall DESTDIR=/tmp/test_install PREFIX=/usr
+
+      - name: Test universal installer script
+        run: |
+          ./install.sh --prefix /tmp/test_installer
+          /tmp/test_installer/bin/meridian ai status
+          /tmp/test_installer/bin/meridian-shell -c "echo 'Installer verified!'"
+          ./install.sh --prefix /tmp/test_installer --uninstall
+

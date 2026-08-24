@@ -1,0 +1,123 @@
+name: Release & Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-deb:
+    name: Build Debian/Ubuntu DEB Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Debian packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential debhelper devscripts dpkg-dev
+
+      - name: Build DEB package
+        run: |
+          mkdir -p debian
+          cp -r packaging/deb/debian/* debian/
+          dpkg-buildpackage -us -uc -b
+          mkdir -p dist
+          mv ../*.deb dist/ || true
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-packages
+          path: dist/*.deb
+
+  build-rpm:
+    name: Build Fedora/RHEL RPM Package
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Install Fedora packaging tools
+        run: |
+          dnf install -y git gcc-c++ make rpm-build rpmdevtools glibc-devel libutil-devel
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build RPM package
+        run: |
+          rpmdev-setuptree
+          VERSION="${GITHUB_REF_NAME#v}"
+          make tarball VERSION="${VERSION}"
+          cp build/meridian-terminal-${VERSION}.tar.gz ~/rpmbuild/SOURCES/
+          sed "s/Version:.*/Version:        ${VERSION}/" packaging/rpm/meridian-terminal.spec > ~/rpmbuild/SPECS/meridian-terminal.spec
+          rpmbuild -ba ~/rpmbuild/SPECS/meridian-terminal.spec
+          mkdir -p dist
+          cp ~/rpmbuild/RPMS/*/*.rpm dist/
+          cp ~/rpmbuild/SRPMS/*.src.rpm dist/
+
+      - name: Upload RPM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-packages
+          path: dist/*.rpm
+
+  build-tarball:
+    name: Build Standalone Binary Tarball
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build release binaries
+        run: |
+          make all
+          VERSION="${GITHUB_REF_NAME#v}"
+          PREFIX_DIR="meridian-terminal-${VERSION}-linux-x86_64"
+          mkdir -p "${PREFIX_DIR}/bin" "${PREFIX_DIR}/share/applications" "${PREFIX_DIR}/share/icons/hicolor/scalable/apps" "${PREFIX_DIR}/share/metainfo"
+          cp build/meridian "${PREFIX_DIR}/bin/"
+          cp build/meridian-shell "${PREFIX_DIR}/bin/"
+          cp build/meridian_demo "${PREFIX_DIR}/bin/"
+          cp packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop "${PREFIX_DIR}/share/applications/"
+          cp resources/icons/meridian-terminal.svg "${PREFIX_DIR}/share/icons/hicolor/scalable/apps/"
+          cp packaging/desktop/org.meridian_terminal.MeridianTerminal.metainfo.xml "${PREFIX_DIR}/share/metainfo/"
+          cp README.md LICENSE install.sh "${PREFIX_DIR}/"
+          tar -czf "${PREFIX_DIR}.tar.gz" "${PREFIX_DIR}"
+          mkdir -p dist
+          mv "${PREFIX_DIR}.tar.gz" dist/
+
+      - name: Upload Tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-tarball
+          path: dist/*.tar.gz
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-deb, build-rpm, build-tarball]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets
+
+      - name: Organize assets & generate SHA256 checksums
+        run: |
+          mkdir -p final_assets
+          find release_assets/ -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" \) -exec cp {} final_assets/ \;
+          cd final_assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: final_assets/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+

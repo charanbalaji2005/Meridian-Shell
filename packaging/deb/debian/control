@@ -1,0 +1,25 @@
+Source: meridian-terminal
+Section: utils
+Priority: optional
+Maintainer: Charan Balaji <charan@example.com>
+Build-Depends: debhelper-compat (= 13),
+               g++ (>= 11),
+               make,
+               libc6-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/meridian-terminal/meridian-terminal
+Vcs-Git: https://github.com/meridian-terminal/meridian-terminal.git
+Vcs-Browser: https://github.com/meridian-terminal/meridian-terminal
+Rules-Requires-Root: no
+
+Package: meridian-terminal
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Independently engineered Linux terminal emulator with built-in shell and local AI
+ Meridian Terminal is a modern Linux terminal emulator and shell engine
+ written in C++20. It includes:
+  * High-performance VT100/ANSI screen buffer parser with TrueColor support
+  * Meridian Shell with POSIX process groups, job control (fg/bg), and builtins
+  * Meridian AI offline assistant for path-based typo corrections, risk
+    analysis, and secret redaction.
+
