@@ -11,6 +11,25 @@ ImageRenderer::ImageRenderer(QWidget* parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setAttribute(Qt::WA_OpaquePaintEvent, false);
+
+    // Auto-detect custom user artwork or default
+    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+    if (env_art && loadImage(QString::fromUtf8(env_art))) return;
+
+    QString home = QString::fromUtf8(std::getenv("HOME"));
+    if (!home.isEmpty()) {
+        QStringList candidates = {
+            home + "/.config/meridian/artwork.jpg",
+            home + "/.config/meridian/artwork.png",
+            home + "/.config/meridian/artwork.webp",
+            home + "/.config/meridian/artwork.gif",
+            "resources/images/artwork.jpg",
+            "resources/images/artwork.png"
+        };
+        for (const auto& c : candidates) {
+            if (QFileInfo::exists(c) && loadImage(c)) return;
+        }
+    }
 }
 
 bool ImageRenderer::loadImage(const QString& path) {

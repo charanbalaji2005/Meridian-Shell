@@ -9,6 +9,7 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 
@@ -114,6 +115,22 @@ static int builtin_type(const std::vector<std::string>& argv) {
 }
 
 static int builtin_pic(const std::vector<std::string>& argv) {
+    if (argv.size() >= 3 && argv[1] == "set") {
+        std::string src = argv[2];
+        const char* home = std::getenv("HOME");
+        if (home) {
+            std::string cfg_dir = std::string(home) + "/.config/meridian";
+            std::string cmd = "mkdir -p \"" + cfg_dir + "\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.jpg\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.png\"";
+            int res = system(cmd.c_str());
+            if (res == 0) {
+                std::cout << "\033[38;2;34;197;94m✔\033[0m Default terminal artwork updated to: " << src << "\n";
+                return 0;
+            }
+        }
+        std::cerr << "Failed to set default artwork from: " << src << "\n";
+        return 1;
+    }
+
     core::ImageOptions opts;
     opts.mode = core::ImageRenderMode::HalfBlock;
     opts.target_width = 36;
@@ -134,17 +151,29 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             try { opts.target_width = std::stoi(argv[++i]); } catch (...) {}
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
             try { opts.target_height = std::stoi(argv[++i]); } catch (...) {}
-        } else if (argv[i] == "--default" || argv[i] == "moon") {
-            filepath = "DEFAULT_MOON";
+        } else if (argv[i] == "--default") {
+            filepath.clear();
         } else if (argv[i][0] != '-') {
             filepath = argv[i];
         }
     }
 
-    if (filepath.empty() || filepath == "DEFAULT_MOON") {
-        auto default_art = core::TerminalImage::create_default_reference_artwork();
-        std::cout << default_art.render(opts);
-        return 0;
+    if (filepath.empty()) {
+        const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+        if (env_art) filepath = env_art;
+        else {
+            const char* home = std::getenv("HOME");
+            if (home) {
+                std::string p1 = std::string(home) + "/.config/meridian/artwork.jpg";
+                std::string p2 = std::string(home) + "/.config/meridian/artwork.png";
+                std::ifstream f1(p1); if (f1.is_open()) filepath = p1;
+                else { std::ifstream f2(p2); if (f2.is_open()) filepath = p2; }
+            }
+        }
+        if (filepath.empty()) {
+            std::ifstream r1("resources/images/artwork.jpg"); if (r1.is_open()) filepath = "resources/images/artwork.jpg";
+            else filepath = "resources/images/artwork.png";
+        }
     }
 
     core::TerminalImage img;
@@ -153,8 +182,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // Fallback: render default reference art
-    std::cout << "meridian-shell: rendering reference graphic for: " << filepath << "\n";
+    // Render fallback reference art
     auto default_art = core::TerminalImage::create_default_reference_artwork();
     std::cout << default_art.render(opts);
     return 0;
