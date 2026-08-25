@@ -151,7 +151,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
 
         if (is_real_interactive) {
             std::string date_badge = LineEditor::build_date_badge(cwd);
-            out << "\n" << date_badge << "\n";
+            out << date_badge << "\n";
             out.flush();
 
             std::string powerline_p = LineEditor::build_powerline_prompt(cwd);
@@ -167,19 +167,29 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
             if (!std::getline(in, line)) break;
         }
 
-        // Handle clear builtin (wipe screen, image and scrollback)
-        if (line == "clear" && is_real_interactive) {
+        // Handle clear builtin (wipe screen, image and scrollback completely)
+        std::string trimmed = line;
+        while (!trimmed.empty() && (trimmed.front() == ' ' || trimmed.front() == '\t' || trimmed.front() == '\r')) trimmed.erase(0, 1);
+        while (!trimmed.empty() && (trimmed.back() == ' ' || trimmed.back() == '\t' || trimmed.back() == '\r')) trimmed.pop_back();
+
+        if (trimmed == "clear" && is_real_interactive) {
             out << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\";
             out.flush();
+            executor_.push_history(line);
             continue;
         }
 
         std::string error;
         int status = executor_.run_line(line, &error);
         if (!error.empty()) err << "meridian-shell: " << error << "\n";
-        else if (status >= 0) executor_.push_history(line);
+        else if (status >= 0 && !trimmed.empty()) executor_.push_history(line);
 
         if (executor_.exit_requested()) return executor_.exit_code();
+
+        if (is_real_interactive && !trimmed.empty()) {
+            out << "\n";
+            out.flush();
+        }
     }
     return 0;
 }
