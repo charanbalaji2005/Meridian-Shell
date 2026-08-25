@@ -170,11 +170,16 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    if (sub == "ai") {
-        return handle_ai_subcommand(argc, argv);
+    if (sub == "update" || sub == "upgrade") {
+        std::cout << "-> Updating Meridian Terminal to latest release...\n";
+        int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash -s -- --user");
+        if (res == 0) {
+            std::cout << "\033[38;2;34;197;94m✔\033[0m Meridian Terminal successfully updated!\n";
+        }
+        return res;
     }
 
-    // meridian pic [file] [--ascii|--color-ascii|--hybrid|--width|--height]
+    // meridian pic [file]
     if (sub == "pic") {
         std::vector<std::string> args;
         for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
