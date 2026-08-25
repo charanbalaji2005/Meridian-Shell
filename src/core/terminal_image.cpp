@@ -287,14 +287,44 @@ std::string TerminalImage::render(const ImageOptions& opts) const {
     return ss.str();
 }
 
-std::string TerminalImage::render_kitty_graphics_artwork(int col, int row, int cols_spanned, int rows_spanned) {
+namespace {
+
+std::string emit_chunked_kitty_payload(const std::string& b64, int cols, int rows, int format, int width = 0, int height = 0) {
     std::ostringstream ss;
-    ss << "\033_Ga=T,f=100,t=d,c=" << cols_spanned << ",r=" << rows_spanned
-       << ",i=1,X=" << col << ",Y=" << row << ";" << kChainsawManKittyBase64 << "\033\\";
+    const size_t CHUNK_SIZE = 2048; // Safe chunk size (well under 4096 bytes)
+    size_t total = b64.size();
+    size_t offset = 0;
+    bool first = true;
+
+    while (offset < total) {
+        size_t len = std::min(CHUNK_SIZE, total - offset);
+        std::string chunk = b64.substr(offset, len);
+        bool has_more = (offset + len < total);
+
+        ss << "\033_G";
+        if (first) {
+            ss << "a=T,f=" << format << ",t=d";
+            if (cols > 0) ss << ",c=" << cols;
+            if (rows > 0) ss << ",r=" << rows;
+            if (width > 0) ss << ",s=" << width;
+            if (height > 0) ss << ",v=" << height;
+            first = false;
+        }
+        ss << ",m=" << (has_more ? "1" : "0") << ";" << chunk << "\033\\";
+        offset += len;
+    }
     return ss.str();
 }
 
+} // namespace
+
+std::string TerminalImage::render_kitty_graphics_artwork(int col, int row, int cols_spanned, int rows_spanned) {
+    (void)col; (void)row;
+    return emit_chunked_kitty_payload(kChainsawManKittyBase64, cols_spanned, rows_spanned, 100);
+}
+
 std::string TerminalImage::render_file_raster_escape(const std::string& filepath, int x, int y, int max_w, int max_h) {
+    (void)x; (void)y;
     if (filepath.empty()) return "";
     auto decoded = graphics::ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) return "";
@@ -330,11 +360,12 @@ std::string TerminalImage::render_file_raster_escape(const std::string& filepath
     }
 
     std::ostringstream ss;
-    ss << "\033_Ga=d,d=a\033\\\033_Ga=T,f=100,t=d,x=" << x << ",y=" << y << ",c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\";
+    ss << "\033_Ga=d,d=a\033\\" << emit_chunked_kitty_payload(b64, disp_w / 8, disp_h / 16, 100);
     return ss.str();
 }
 
 std::string TerminalImage::to_kitty_graphics_escape(int x, int y, int cols_spanned, int rows_spanned) const {
+    (void)x; (void)y;
     if (!is_valid()) return "";
 
     std::vector<uint8_t> raw_rgba(width_ * height_ * 4);
@@ -357,8 +388,7 @@ std::string TerminalImage::to_kitty_graphics_escape(int x, int y, int cols_spann
     }
 
     std::ostringstream ss;
-    ss << "\033_Ga=d,d=a\033\\\033_Ga=T,f=32,s=" << width_ << ",v=" << height_ << ",x=" << x << ",y=" << y
-       << ",c=" << cols_spanned << ",r=" << rows_spanned << ";" << b64 << "\033\\";
+    ss << "\033_Ga=d,d=a\033\\" << emit_chunked_kitty_payload(b64, cols_spanned, rows_spanned, 32, width_, height_);
     return ss.str();
 }
 
