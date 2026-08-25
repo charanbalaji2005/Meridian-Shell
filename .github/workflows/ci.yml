@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   # ---------------------------------------------------------------------------
   # 1. Linux Multi-Distro Build & Automated Test Suite
@@ -28,6 +32,7 @@ jobs:
       run: make -j$(nproc) all
 
     - name: Run Automated Test Suite (126 tests)
+      run: make test
 
     - name: Run Manual PTY Core Tests
       run: make manual-test
@@ -60,12 +65,14 @@ jobs:
       run: |
         cmake -B build -DCMAKE_BUILD_TYPE=Release -DMERIDIAN_BUILD_TESTS=OFF
         cmake --build build -j$(sysctl -n hw.ncpu)
+
     - name: Package macOS Universal Bundle
       run: |
         mkdir -p dist
         tar -czf dist/meridian-terminal-macos.tar.gz -C build meridian meridian-shell meridian_demo
 
     - name: Upload macOS Artifacts
+      uses: actions/upload-artifact@v4
       with:
         name: meridian-macos-packages
         path: dist/*
@@ -86,6 +93,7 @@ jobs:
 
     - name: Build with MSVC
       run: cmake --build build --config Release
+
     - name: Package Windows Bundle
       shell: pwsh
       run: |
@@ -95,6 +103,7 @@ jobs:
     - name: Upload Windows Artifacts
       uses: actions/upload-artifact@v4
       with:
+        name: meridian-windows-packages
         path: dist/*
 
   # ---------------------------------------------------------------------------
