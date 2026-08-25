@@ -6,6 +6,7 @@
 // small, deliberate API — it never reaches into the grid directly.
 
 #include "types.hpp"
+#include "graphics.hpp"
 #include <deque>
 #include <string>
 #include <vector>
@@ -57,6 +58,9 @@ public:
     const Cell& cell_at(int row, int col) const;
     const std::deque<std::vector<Cell>>& scrollback() const { return scrollback_; }
 
+    GraphicsEngine& graphics() { return graphics_; }
+    const GraphicsEngine& graphics() const { return graphics_; }
+
     // Plain-text dump of the visible screen, one line per row, trailing
     // spaces trimmed. Used by tests and the headless demo — not part of
     // the "real" rendering path (a GPU renderer would read cells directly).
@@ -86,6 +90,8 @@ private:
 
     int saved_cursor_row_ = 0;
     int saved_cursor_col_ = 0;
+
+    GraphicsEngine graphics_;
 };
 
 } // namespace meridian::vt

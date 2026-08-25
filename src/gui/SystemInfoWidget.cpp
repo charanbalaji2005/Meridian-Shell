@@ -71,13 +71,37 @@ void SystemInfoWidget::detectStaticDetails() {
     }
     details_.desktop_wm = QString("%1 (%2)").arg(wm, st);
 
-    // 4. Shell
+    // 4. Shell (dynamic version detection)
     const char* shell_env = std::getenv("SHELL");
-    QString sh_name = shell_env ? QString::fromUtf8(shell_env).section('/', -1) : "bash";
-    details_.shell_version = QString("%1 5.9").arg(sh_name);
+    QString sh_bin = shell_env ? QString::fromUtf8(shell_env) : "/bin/bash";
+    QString sh_name = sh_bin.section('/', -1);
+
+    QString ver_cmd = QString("%1 --version 2>/dev/null").arg(sh_bin);
+    FILE* pipe = popen(ver_cmd.toUtf8().constData(), "r");
+    QString full_ver;
+    if (pipe) {
+        char buf[256];
+        if (fgets(buf, sizeof(buf), pipe)) {
+            full_ver = QString::fromUtf8(buf).trimmed();
+        }
+        pclose(pipe);
+    }
+
+    QString ver_str;
+    for (const QString& part : full_ver.split(' ', Qt::SkipEmptyParts)) {
+        if (!part.isEmpty() && (part[0].isDigit() || (part.size() > 1 && part[0] == 'v' && part[1].isDigit()))) {
+            ver_str = part;
+            if (ver_str.startsWith('v')) ver_str = ver_str.mid(1);
+            if (ver_str.contains('(')) ver_str = ver_str.section('(', 0, 0);
+            if (ver_str.contains(',')) ver_str = ver_str.section(',', 0, 0);
+            break;
+        }
+    }
+    if (ver_str.isEmpty()) ver_str = "latest";
+    details_.shell_version = QString("%1 %2").arg(sh_name, ver_str);
 
     // 5. Terminal Version
-    details_.terminal_version = "meridian 2.0";
+    details_.terminal_version = "meridian 2.1";
 }
 
 void SystemInfoWidget::detectDynamicMetrics() {

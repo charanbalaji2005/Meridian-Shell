@@ -1,14 +1,13 @@
 #pragma once
 // src/gui/TabManager.hpp
 //
-// Manages active terminal tabs and splits, hosting the HeaderSection and TerminalView.
+// Manages active terminal tabs and splits, hosting the unified TerminalView canvas.
 
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <memory>
 
-#include "HeaderSection.hpp"
 #include "TerminalView.hpp"
 #include "PtyBridge.hpp"
 
@@ -21,12 +20,10 @@ public:
     explicit TerminalTab(QWidget* parent = nullptr);
     ~TerminalTab() override = default;
 
-    HeaderSection* headerSection() { return header_; }
     TerminalView* terminalView() { return terminal_view_; }
     std::shared_ptr<PtyBridge> ptyBridge() { return bridge_; }
 
 private:
-    HeaderSection* header_ = nullptr;
     TerminalView* terminal_view_ = nullptr;
     std::shared_ptr<PtyBridge> bridge_;
 };
@@ -43,4 +40,3 @@ public:
 };
 
 } // namespace meridian::gui
-

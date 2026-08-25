@@ -5,7 +5,7 @@
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#)
 
-**Meridian Terminal** is a high-performance, Kitty-class cross-platform terminal emulator, multiplexer, developer intelligence platform, and local AI agent built with **C++20 & Qt 6**.
+**Meridian Terminal** is a cross-platform terminal emulator being developed toward Kitty-class terminal compatibility, with native graphics, AI, security, and developer tooling built with **C++20 & Qt 6**.
 
 📖 **Live Website & Documentation**: [https://charanbalaji2005.github.io/Meridian-Shell/](https://charanbalaji2005.github.io/Meridian-Shell/)
 

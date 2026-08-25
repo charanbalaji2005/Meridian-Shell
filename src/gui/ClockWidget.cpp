@@ -117,16 +117,19 @@ void ClockWidget::paintEvent(QPaintEvent*) {
     painter.setPen(QColor("#ffffff"));
     painter.drawText(QRect(startX2 + arrowW + padX / 2, y1, textW2, h1), Qt::AlignVCenter | Qt::AlignLeft, current_dir_);
 
-    // Segment 3 (Live Git Intel: Crimson Red #c93b3b)
+    // Segment 3 (Live Git Intel: Emerald Green #10b981)
     char cwd_raw[1024];
     std::string raw_dir = getcwd(cwd_raw, sizeof(cwd_raw)) ? cwd_raw : ".";
     auto git = meridian::dev::GitIntel::inspect_directory(raw_dir);
 
     int startX3 = startX2 + textW2;
     if (git.is_git_repo) {
-        QString git_text = QString(" origin  %1").arg(QString::fromStdString(git.branch_name));
+        QString git_text = QString("󰘬 origin ☊ %1").arg(QString::fromStdString(git.branch_name));
+        if (git.ahead_count > 0) git_text += QString(" ↑%1").arg(git.ahead_count);
+        if (git.behind_count > 0) git_text += QString(" ↓%1").arg(git.behind_count);
         if (git.unstaged_count > 0) git_text += QString(" %1✸").arg(git.unstaged_count);
         if (git.staged_count > 0) git_text += QString(" %1●").arg(git.staged_count);
+        if (git.is_clean) git_text += " ✔";
 
         int textW3 = fm.horizontalAdvance(git_text) + padX * 2;
         QPainterPath p3;
@@ -138,8 +141,8 @@ void ClockWidget::paintEvent(QPaintEvent*) {
         p3.lineTo(startX3 + textW3, y1);
         p3.closeSubpath();
 
-        painter.fillPath(p3, QBrush(QColor("#c93b3b")));
-        painter.setPen(QColor("#ffffff"));
+        painter.fillPath(p3, QBrush(QColor("#10b981"))); // Emerald Green matching user reference
+        painter.setPen(QColor("#14231c")); // Deep dark green/charcoal text
         painter.drawText(QRect(startX3 + arrowW + padX / 2, y1, textW3, h1), Qt::AlignVCenter | Qt::AlignLeft, git_text);
     }
 

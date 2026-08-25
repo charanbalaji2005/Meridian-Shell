@@ -89,17 +89,22 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
         std::string branch = git_status.branch_name;
         int unstaged = git_status.unstaged_count + git_status.untracked_count;
         int staged = git_status.staged_count;
+        int ahead = git_status.ahead_count;
+        int behind = git_status.behind_count;
 
         std::string git_extra;
+        if (ahead > 0) git_extra += " ↑" + std::to_string(ahead);
+        if (behind > 0) git_extra += " ↓" + std::to_string(behind);
         if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✸";
         if (staged > 0) git_extra += " " + std::to_string(staged) + "●";
+        if (git_status.is_clean) git_extra += " ✔";
 
-        // Arrow from Ocean Cyan to Crimson Red
-        ss << "\033[48;2;201;59;59;38;2;24;156;184m"
-        // Badge 3: Vibrant Crimson Red Git Badge
-           << "\033[48;2;201;59;59;38;2;255;255;255;1m  origin  " << branch << git_extra << " "
-        // Ending Arrow from Crimson Red to Terminal Default
-           << "\033[0;38;2;201;59;59m\033[0m";
+        // Arrow from Ocean Cyan to Emerald Green
+        ss << "\033[48;2;16;185;129;38;2;24;156;184m"
+        // Badge 3: Vibrant Emerald Green Git Badge (matching user reference)
+           << "\033[48;2;16;185;129;38;2;20;35;28;1m 󰘬 origin ☊ " << branch << git_extra << " "
+        // Ending Arrow from Emerald Green to Terminal Default
+           << "\033[0;38;2;16;185;129m\033[0m";
     } else {
         // Ending Arrow from Ocean Cyan to Terminal Default
         ss << "\033[0;38;2;24;156;184m\033[0m";

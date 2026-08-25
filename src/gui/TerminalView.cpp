@@ -127,6 +127,7 @@ void TerminalView::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, false); // Crisp nearest-neighbor pixel art
     painter.setFont(font_);
 
     std::lock_guard<std::mutex> lock(bridge_->screenMutex());
@@ -135,19 +136,43 @@ void TerminalView::paintEvent(QPaintEvent*) {
     int rows = screen.rows();
     int cols = screen.cols();
 
-    // 1. Draw Cell Backgrounds & Glyphs
+    auto draw_images = [&](bool under_text) {
+        for (const auto& pl : screen.graphics().placements()) {
+            if ((pl.z_index < 0) != under_text) continue;
+            const auto* img = screen.graphics().find_image(pl.image_id);
+            if (!img || img->rgba_data.empty() || img->width <= 0 || img->height <= 0) continue;
+
+            QImage qimg(img->rgba_data.data(), img->width, img->height, img->width * 4, QImage::Format_RGBA8888);
+            qreal gx = pl.col * char_width_ + pl.x_offset;
+            qreal gy = pl.row * char_height_ + pl.y_offset;
+            qreal gw = pl.cols_spanned * char_width_;
+            qreal gh = pl.rows_spanned * char_height_;
+
+            painter.drawImage(QRectF(gx, gy, gw, gh), qimg);
+        }
+    };
+
+    // 1. Draw Graphics under text (z < 0)
+    draw_images(true);
+
+    // 2. Draw Cell Backgrounds & Batched Glyphs
     for (int r = 0; r < rows; ++r) {
         qreal y = r * char_height_;
 
+        int span_start = -1;
+        QString span_text;
+        QColor span_fg;
+        QFont span_font = font_;
+
         for (int c = 0; c < cols; ++c) {
             qreal x = c * char_width_;
-            const auto& cell = screen.cell(r, c);
+            const auto& cell = screen.cell_at(r, c);
 
             bool is_selected = selection_.contains(r, c);
             QColor bg = resolveColor(cell.attrs.bg, false);
             QColor fg = resolveColor(cell.attrs.fg, true);
 
-            if (cell.attrs.inverse) {
+            if (cell.attrs.reverse) {
                 std::swap(bg, fg);
             }
 
@@ -161,23 +186,54 @@ void TerminalView::paintEvent(QPaintEvent*) {
                 painter.fillRect(QRectF(x, y, char_width_ + 0.5, char_height_), SELECTION_BG);
             }
 
-            // Draw Glyph
+            // Batched Text Spans
             if (cell.codepoint != 0 && cell.codepoint != ' ') {
                 QFont cellFont = font_;
                 if (cell.attrs.bold) cellFont.setBold(true);
                 if (cell.attrs.italic) cellFont.setItalic(true);
                 if (cell.attrs.underline) cellFont.setUnderline(true);
-                painter.setFont(cellFont);
 
-                painter.setPen(fg);
-                QString ch = QString::fromUcs4(&cell.codepoint, 1);
-                painter.drawText(QPointF(x, y + char_ascent_), ch);
+                if (span_start == -1) {
+                    span_start = c;
+                    span_fg = fg;
+                    span_font = cellFont;
+                    span_text = QString::fromUcs4(&cell.codepoint, 1);
+                } else if (span_fg == fg && span_font == cellFont) {
+                    span_text.append(QString::fromUcs4(&cell.codepoint, 1));
+                } else {
+                    // Flush prior span
+                    painter.setFont(span_font);
+                    painter.setPen(span_fg);
+                    painter.drawText(QPointF(span_start * char_width_, y + char_ascent_), span_text);
+
+                    span_start = c;
+                    span_fg = fg;
+                    span_font = cellFont;
+                    span_text = QString::fromUcs4(&cell.codepoint, 1);
+                }
+            } else if (span_start != -1) {
+                // Flush open span on space / empty cell
+                painter.setFont(span_font);
+                painter.setPen(span_fg);
+                painter.drawText(QPointF(span_start * char_width_, y + char_ascent_), span_text);
+                span_start = -1;
+                span_text.clear();
             }
+        }
+
+        // Flush any remaining span at line end
+        if (span_start != -1 && !span_text.isEmpty()) {
+            painter.setFont(span_font);
+            painter.setPen(span_fg);
+            painter.drawText(QPointF(span_start * char_width_, y + char_ascent_), span_text);
         }
     }
 
-    // 2. Draw Cursor
-    if (cursor_visible_ && screen.is_cursor_visible() && hasFocus()) {
+    // 3. Draw Graphics over text (z >= 0)
+    draw_images(false);
+
+    // 4. Draw Cursor
+    if (cursor_visible_ && hasFocus()) {
         int cur_r = screen.cursor_row();
         int cur_c = screen.cursor_col();
 
@@ -185,25 +241,12 @@ void TerminalView::paintEvent(QPaintEvent*) {
             qreal cx = cur_c * char_width_;
             qreal cy = cur_r * char_height_;
 
-            switch (screen.cursor_shape()) {
-                case vt::CursorShape::Block:
-                    painter.fillRect(QRectF(cx, cy, char_width_, char_height_), QColor(255, 255, 255, 180));
-                    // Invert cursor char
-                    {
-                        const auto& cell = screen.cell(cur_r, cur_c);
-                        if (cell.codepoint != 0 && cell.codepoint != ' ') {
-                            painter.setPen(QColor(0, 0, 0));
-                            QString ch = QString::fromUcs4(&cell.codepoint, 1);
-                            painter.drawText(QPointF(cx, cy + char_ascent_), ch);
-                        }
-                    }
-                    break;
-                case vt::CursorShape::Underline:
-                    painter.fillRect(QRectF(cx, cy + char_height_ - 2, char_width_, 2), QColor(255, 255, 255, 220));
-                    break;
-                case vt::CursorShape::Bar:
-                    painter.fillRect(QRectF(cx, cy, 2, char_height_), QColor(255, 255, 255, 220));
-                    break;
+            painter.fillRect(QRectF(cx, cy, char_width_, char_height_), QColor(255, 255, 255, 180));
+            const auto& cell = screen.cell_at(cur_r, cur_c);
+            if (cell.codepoint != 0 && cell.codepoint != ' ') {
+                painter.setPen(QColor(0, 0, 0));
+                QString ch = QString::fromUcs4(&cell.codepoint, 1);
+                painter.drawText(QPointF(cx, cy + char_ascent_), ch);
             }
         }
     }

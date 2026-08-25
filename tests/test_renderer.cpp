@@ -104,16 +104,29 @@ MTEST(graphics_sixel_and_kitty) {
     std::string str(decoded.begin(), decoded.end());
     ASSERT_EQ(str, "Hello World");
 
-    // Sixel parsing
-    bool sixel_ok = engine.handle_sixel("~-~-~-", 2, 4);
+    // Sixel parsing with custom RGB palette and repeat
+    bool sixel_ok = engine.handle_sixel("#1;2;100;0;0!5~-!5~", 2, 4);
     ASSERT_TRUE(sixel_ok);
     ASSERT_EQ(engine.placements().size(), 1u);
     ASSERT_EQ(engine.placements()[0].row, 2);
     ASSERT_EQ(engine.placements()[0].col, 4);
 
-    // Kitty Graphics parsing
-    bool kitty_ok = engine.handle_kitty_graphics("a=T,f=32,s=20,v=40;AAAA");
+    // Kitty Graphics parsing (transmit & display)
+    bool kitty_ok = engine.handle_kitty_graphics("a=T,f=32,s=20,v=40,i=42;AAAA");
     ASSERT_TRUE(kitty_ok);
     ASSERT_EQ(engine.placements().size(), 2u);
+    ASSERT_TRUE(engine.find_image(42) != nullptr);
+
+    // Kitty Graphics Chunked Transfer (m=1, then m=0)
+    bool chunk1 = engine.handle_kitty_graphics("a=t,f=32,s=10,v=10,i=99,m=1;AAAA");
+    ASSERT_TRUE(chunk1);
+    bool chunk2 = engine.handle_kitty_graphics("i=99,m=0;BBBB");
+    ASSERT_TRUE(chunk2);
+    ASSERT_TRUE(engine.find_image(99) != nullptr);
+
+    // Kitty Graphics Delete
+    bool del_ok = engine.handle_kitty_graphics("a=d,d=i,i=42");
+    ASSERT_TRUE(del_ok);
+    ASSERT_TRUE(engine.find_image(42) == nullptr);
 }
 

@@ -10,6 +10,7 @@ namespace meridian::gui {
 PtyBridge::PtyBridge(int rows, int cols, QObject* parent)
     : QObject(parent)
     , screen_(rows, cols)
+    , parser_(screen_)
 {
 }
 
@@ -76,9 +77,9 @@ void PtyBridge::handlePtyRead() {
     if (!accumulated.empty()) {
         {
             std::lock_guard<std::mutex> lock(screen_mutex_);
-            parser_.parse(accumulated, screen_);
+            parser_.feed(accumulated);
         }
-        if (parser_.has_title_changed()) {
+        if (!parser_.window_title().empty()) {
             emit titleChanged(QString::fromStdString(parser_.window_title()));
         }
         emit screenUpdated();
