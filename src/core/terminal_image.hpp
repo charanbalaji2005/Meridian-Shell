@@ -60,6 +60,8 @@ public:
 
     // Emits Kitty Graphics Protocol high-res picture escape sequence
     static std::string render_kitty_graphics_artwork(int col = 2, int row = 1, int cols_spanned = 24, int rows_spanned = 10);
+    static std::string render_file_raster_escape(const std::string& filepath, int x = 30, int y = 30, int max_w = 220, int max_h = 220);
+    std::string to_kitty_graphics_escape(int x = 30, int y = 30, int cols_spanned = 28, int rows_spanned = 10) const;
 
 private:
     int width_ = 0;

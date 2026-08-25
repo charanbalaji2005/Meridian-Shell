@@ -294,5 +294,73 @@ std::string TerminalImage::render_kitty_graphics_artwork(int col, int row, int c
     return ss.str();
 }
 
+std::string TerminalImage::render_file_raster_escape(const std::string& filepath, int x, int y, int max_w, int max_h) {
+    if (filepath.empty()) return "";
+    auto decoded = graphics::ImageDecoder::decode_file(filepath);
+    if (!decoded.is_valid()) return "";
+
+    const auto& frame = decoded.frame(0);
+    int src_w = frame.width;
+    int src_h = frame.height;
+    int disp_w = max_w > 0 ? max_w : 220;
+    int disp_h = max_h > 0 ? max_h : 220;
+
+    if (src_w > 0 && src_h > 0) {
+        float scale = std::min(static_cast<float>(disp_w) / src_w, static_cast<float>(disp_h) / src_h);
+        disp_w = static_cast<int>(std::round(src_w * scale));
+        disp_h = static_cast<int>(std::round(src_h * scale));
+    }
+    if (disp_w <= 0) disp_w = 1;
+    if (disp_h <= 0) disp_h = 1;
+
+    std::ifstream f(filepath, std::ios::binary);
+    if (!f.is_open()) return "";
+    std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    if (buffer.empty()) return "";
+
+    static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string b64;
+    b64.reserve(((buffer.size() + 2) / 3) * 4);
+    for (size_t k = 0; k < buffer.size(); k += 3) {
+        uint32_t b = (buffer[k] << 16) | ((k + 1 < buffer.size() ? buffer[k + 1] : 0) << 8) | (k + 2 < buffer.size() ? buffer[k + 2] : 0);
+        b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
+        b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
+        b64.push_back((k + 1 < buffer.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
+        b64.push_back((k + 2 < buffer.size()) ? b64_tbl[b & 0x3F] : '=');
+    }
+
+    std::ostringstream ss;
+    ss << "\033_Ga=d,d=a\033\\\033_Ga=T,f=100,t=d,x=" << x << ",y=" << y << ",c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\";
+    return ss.str();
+}
+
+std::string TerminalImage::to_kitty_graphics_escape(int x, int y, int cols_spanned, int rows_spanned) const {
+    if (!is_valid()) return "";
+
+    std::vector<uint8_t> raw_rgba(width_ * height_ * 4);
+    for (int i = 0; i < width_ * height_; ++i) {
+        raw_rgba[i * 4 + 0] = pixels_[i].r;
+        raw_rgba[i * 4 + 1] = pixels_[i].g;
+        raw_rgba[i * 4 + 2] = pixels_[i].b;
+        raw_rgba[i * 4 + 3] = pixels_[i].a;
+    }
+
+    static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string b64;
+    b64.reserve(((raw_rgba.size() + 2) / 3) * 4);
+    for (size_t k = 0; k < raw_rgba.size(); k += 3) {
+        uint32_t b = (raw_rgba[k] << 16) | ((k + 1 < raw_rgba.size() ? raw_rgba[k + 1] : 0) << 8) | (k + 2 < raw_rgba.size() ? raw_rgba[k + 2] : 0);
+        b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
+        b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
+        b64.push_back((k + 1 < raw_rgba.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
+        b64.push_back((k + 2 < raw_rgba.size()) ? b64_tbl[b & 0x3F] : '=');
+    }
+
+    std::ostringstream ss;
+    ss << "\033_Ga=d,d=a\033\\\033_Ga=T,f=32,s=" << width_ << ",v=" << height_ << ",x=" << x << ",y=" << y
+       << ",c=" << cols_spanned << ",r=" << rows_spanned << ";" << b64 << "\033\\";
+    return ss.str();
+}
+
 } // namespace meridian::core
 

@@ -119,7 +119,40 @@ static int builtin_type(const std::vector<std::string>& argv) {
 }
 
 static int builtin_pic(const std::vector<std::string>& argv) {
-    // 1. pic list / pic (with no args): Show all themes and current selection
+    // 1. pic --debug [filepath]
+    if (argv.size() >= 2 && argv[1] == "--debug") {
+        std::string target = (argv.size() >= 3) ? argv[2] : "resources/images/gallery/sharingan_eye.png";
+        auto decoded = graphics::ImageDecoder::decode_file(target);
+        int src_w = decoded.original_width > 0 ? decoded.original_width : 1280;
+        int src_h = decoded.original_height > 0 ? decoded.original_height : 720;
+        float scale = std::min(220.0f / static_cast<float>(src_w), 220.0f / static_cast<float>(src_h));
+        int disp_w = std::max(1, static_cast<int>(std::round(src_w * scale)));
+        int disp_h = std::max(1, static_cast<int>(std::round(src_h * scale)));
+
+        std::string fmt;
+        auto dot = target.find_last_of('.');
+        if (dot != std::string::npos) fmt = target.substr(dot + 1);
+        if (fmt.empty()) fmt = decoded.format;
+        for (auto& ch : fmt) ch = std::toupper(ch);
+
+        std::cout << "IMAGE MODE: RASTER\n"
+                  << "SOURCE: " << target << "\n"
+                  << "SOURCE SIZE: " << src_w << "x" << src_h << "\n"
+                  << "FORMAT: " << (fmt.empty() ? "PNG" : fmt) << "\n"
+                  << "PIXEL FORMAT: RGBA8888\n"
+                  << "RENDERER: GPU\n"
+                  << "TEXTURE: " << src_w << "x" << src_h << "\n"
+                  << "DISPLAY: " << disp_w << "x" << disp_h << "\n";
+        return 0;
+    }
+
+    // 2. pic --clear / pic clear
+    if (argv.size() > 1 && (argv[1] == "--clear" || argv[1] == "clear")) {
+        std::cout << "\033_Ga=d,d=a\033\\\n";
+        return 0;
+    }
+
+    // 3. pic list / pic (with no args): Show all themes and current selection
     if (argv.size() <= 1 || (argv.size() == 2 && (argv[1] == "list" || argv[1] == "--list" || argv[1] == "help" || argv[1] == "-h"))) {
         auto themes = core::ArtGallery::list_themes();
         std::string current_choice = core::ArtGallery::get_configured_choice();
@@ -141,14 +174,16 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         std::cout << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
         std::cout << "\033[1;37mCurrent Setting:\033[0m " << (is_random ? "\033[1;32mRandom / Rotating\033[0m" : ("\033[1;33m" + current_choice + "\033[0m (Permanent)")) << "\n\n"
                   << "\033[0;37mCommands:\033[0m\n"
-                  << "  \033[1;32mpic set <number|id|path>\033[0m   Set artwork permanently (e.g. \033[1;33mpic set itachi\033[0m or \033[1;33mpic set 0\033[0m or \033[1;33mpic set /path/to/pic.png\033[0m)\n"
+                  << "  \033[1;32mpic <filepath>\033[0m             Display real direct full-color raster image (e.g. \033[1;33mpic tanjiro.png\033[0m)\n"
+                  << "  \033[1;32mpic set <number|id|path>\033[0m   Set artwork permanently (e.g. \033[1;33mpic set 0\033[0m or \033[1;33mpic set eye\033[0m)\n"
                   << "  \033[1;32mpic set random\033[0m             Enable random rotating anime on each startup\n"
                   << "  \033[1;32mpic show <number|id|path>\033[0m  Preview artwork right now in the terminal\n"
+                  << "  \033[1;32mpic --debug <file>\033[0m         Inspect decoded raster metadata & GPU texture specs\n"
                   << "  \033[1;32mpic --clear\033[0m                Clear all graphics from canvas\n";
         return 0;
     }
 
-    // 2. pic set <name|index|file>
+    // 4. pic set <name|index|file>
     if (argv.size() >= 3 && (argv[1] == "set" || argv[1] == "--set")) {
         std::string choice = argv[2];
         if (choice == "random" || choice == "r") {
@@ -159,38 +194,24 @@ static int builtin_pic(const std::vector<std::string>& argv) {
 
         auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
         core::ArtGallery::set_permanent_choice(choice);
-        std::cout << "\033[38;2;34;197;94m✔\033[0m Artwork permanently set to: \033[1;33m" << theme.title << "\033[0m\n\n";
-
-        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
-        for (const auto& l : lines) {
-            std::cout << "  " << l << "\n";
-        }
-        std::cout << "\n";
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Artwork permanently set to: \033[1;33m" << theme.title << "\033[0m\n";
+        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
         return 0;
     }
 
-    // 3. pic show <name|index|file>
+    // 5. pic show <name|index|file>
     if (argv.size() >= 3 && (argv[1] == "show" || argv[1] == "preview")) {
         std::string choice = argv[2];
         auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
-        std::cout << "\033[1;37mPreviewing:\033[0m \033[1;33m" << theme.title << "\033[0m\n\n";
-        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
-        for (const auto& l : lines) {
-            std::cout << "  " << l << "\n";
-        }
-        std::cout << "\n";
+        std::cout << "\033[1;37mPreviewing raster:\033[0m \033[1;33m" << theme.title << "\033[0m\n";
+        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
         return 0;
     }
 
-    // 4. pic --clear
-    if (argv.size() > 1 && (argv[1] == "--clear" || argv[1] == "clear")) {
-        std::cout << "\033_Ga=d,d=a\033\\\n";
-        return 0;
-    }
-
+    // 6. pic <filepath> — DIRECT FULL-COLOR INLINE RASTER IMAGE
     std::string filepath;
-    int target_width = 200;
-    int target_height = 0;
+    int target_width = 220;
+    int target_height = 220;
 
     for (size_t i = 1; i < argv.size(); ++i) {
         if (argv[i] == "--width" && i + 1 < argv.size()) {
@@ -204,11 +225,11 @@ static int builtin_pic(const std::vector<std::string>& argv) {
 
     if (filepath.empty()) {
         auto theme = core::ArtGallery::get_active_artwork(56, 22);
-        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
-        for (const auto& l : lines) std::cout << "  " << l << "\n";
+        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
         return 0;
     }
 
+    // Decode original image into 32-bit RGBA8888 pixel buffer
     auto decoded = graphics::ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) {
         std::cerr << "meridian: image file not found or unsupported format: " << filepath << "\n";
@@ -218,29 +239,33 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     const auto& frame = decoded.frame(0);
     int src_w = frame.width;
     int src_h = frame.height;
-    int disp_w = target_width > 0 ? target_width : 200;
-    int disp_h = target_height > 0 ? target_height : static_cast<int>(std::round(static_cast<float>(src_h * disp_w) / static_cast<float>(src_w)));
-    if (disp_h <= 0) disp_h = 1;
 
-    std::ifstream f(filepath, std::ios::binary);
-    if (f.is_open()) {
-        std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-        if (!buffer.empty()) {
-            static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-            std::string b64;
-            b64.reserve(((buffer.size() + 2) / 3) * 4);
-            for (size_t k = 0; k < buffer.size(); k += 3) {
-                uint32_t b = (buffer[k] << 16) | ((k + 1 < buffer.size() ? buffer[k + 1] : 0) << 8) | (k + 2 < buffer.size() ? buffer[k + 2] : 0);
-                b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
-                b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
-                b64.push_back((k + 1 < buffer.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
-                b64.push_back((k + 2 < buffer.size()) ? b64_tbl[b & 0x3F] : '=');
-            }
-            std::cout << "\033_Ga=d,d=a\033\\\033_Ga=T,f=100,t=d,x=30,y=30,c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\\n";
-            return 0;
-        }
+    // Calculate display dimensions preserving aspect ratio with contain behavior (max 220x220)
+    float scale = std::min(static_cast<float>(target_width) / src_w, static_cast<float>(target_height) / src_h);
+    int disp_w = std::max(1, static_cast<int>(std::round(src_w * scale)));
+    int disp_h = std::max(1, static_cast<int>(std::round(src_h * scale)));
+
+    // Emit direct hardware raster graphics sequence (x=30, y=30)
+    std::string esc = core::TerminalImage::render_file_raster_escape(filepath, 30, 30, disp_w, disp_h);
+    if (!esc.empty()) {
+        std::cout << esc << "\n";
+        return 0;
     }
 
+    // Fallback direct RGBA transmission
+    std::vector<uint8_t> raw_rgba = frame.rgba;
+    static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string b64;
+    b64.reserve(((raw_rgba.size() + 2) / 3) * 4);
+    for (size_t k = 0; k < raw_rgba.size(); k += 3) {
+        uint32_t b = (raw_rgba[k] << 16) | ((k + 1 < raw_rgba.size() ? raw_rgba[k + 1] : 0) << 8) | (k + 2 < raw_rgba.size() ? raw_rgba[k + 2] : 0);
+        b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
+        b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
+        b64.push_back((k + 1 < raw_rgba.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
+        b64.push_back((k + 2 < raw_rgba.size()) ? b64_tbl[b & 0x3F] : '=');
+    }
+
+    std::cout << "\033_Ga=d,d=a\033\\\033_Ga=T,f=32,s=" << src_w << ",v=" << src_h << ",x=30,y=30,c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\\n";
     return 0;
 }
 

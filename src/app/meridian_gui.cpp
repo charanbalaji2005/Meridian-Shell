@@ -99,9 +99,6 @@ std::string MeridianGui::render_frame(int width, int height) {
     char time_buf[64];
     std::strftime(time_buf, sizeof(time_buf), "%a %d %b  -  %H:%M", local_tm);
 
-    // TrueColor Picture Card (Chainsaw Man Image)
-    std::vector<std::string> art_lines = core::TerminalImage::render_reference_artwork_lines(10);
-
     // System info lines (sleek Nerd Font glyphs matching reference theme)
     std::vector<std::string> sys_lines = {
         "\033[1;37m" + user + "@" + hostname + "\033[0m",
@@ -116,21 +113,14 @@ std::string MeridianGui::render_frame(int width, int height) {
         "\033[38;2;0;229;255m● \033[38;2;59;130;246m● \033[38;2;168;85;247m● \033[38;2;244;63;94m● \033[38;2;34;197;94m● \033[38;2;245;158;11m● \033[38;2;253;224;71m● \033[38;2;251;146;60m● \033[38;2;239;68;68m●\033[0m"
     };
 
-    // Render Top Box: Artwork (Left) + System Info (Right)
+    // Render Top Box: Artwork (Left via Kitty Graphics) + System Info (Right)
     ss << "\n";
     ss << core::TerminalImage::render_kitty_graphics_artwork(2, 1, 24, 10);
-    size_t max_rows = std::max(art_lines.size(), sys_lines.size());
-    for (size_t i = 0; i < max_rows; ++i) {
+    for (size_t i = 0; i < sys_lines.size(); ++i) {
         ss << "  ";
-        if (i < art_lines.size()) {
-            ss << art_lines[i];
-        } else {
-            ss << "                        ";
-        }
+        ss << "                        "; // 24 spaces reserved for raster graphics
         ss << "    ";
-        if (i < sys_lines.size()) {
-            ss << sys_lines[i];
-        }
+        ss << sys_lines[i];
         ss << "\n";
     }
 
