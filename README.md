@@ -9,6 +9,10 @@
 
 📖 **Live Website & Documentation**: [https://charanbalaji2005.github.io/Meridian-Shell/](https://charanbalaji2005.github.io/Meridian-Shell/)
 
+<p align="center">
+  <img src="resources/images/meridian_screenshot.png" alt="Meridian Terminal 2.0 Screenshot on Fedora Hyprland" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
+</p>
+
 ---
 
 > [!NOTE]
