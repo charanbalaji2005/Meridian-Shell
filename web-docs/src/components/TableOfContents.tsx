@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, HeartHandshake } from 'lucide-react';
+import { ChevronRight, Activity } from 'lucide-react';
 
 interface TableOfContentsProps {
   headings: { id: string; text: string; level: number }[];
@@ -52,11 +52,11 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   };
 
   return (
-    <aside className="fedora-toc">
+    <aside className="meridian-toc">
       <div className="toc-inner">
         <h4 className="toc-title">Contents</h4>
         {headings.length === 0 ? (
-          <p className="toc-empty">No subheadings</p>
+          <p className="toc-empty">Overview</p>
         ) : (
           <ul className="toc-list">
             {headings.map((h) => {
@@ -78,20 +78,51 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           </ul>
         )}
 
-        <div className="toc-contribute-card">
-          <div className="contribute-card-content">
-            <HeartHandshake size={18} className="contribute-icon" />
-            <div className="contribute-text">
-              <span className="contribute-heading">Want to help?</span>
-              <button
-                onClick={onNavigateToContributing}
-                className="contribute-cta-btn"
-              >
-                <span>Learn how to contribute</span>
-                <ChevronRight size={14} />
-              </button>
+        {/* Project Status Panel matching specification */}
+        <div className="toc-status-panel">
+          <div className="status-panel-header">
+            <Activity size={14} className="status-panel-icon" />
+            <span className="status-panel-title">Project Status</span>
+          </div>
+          
+          <div className="status-rows-list">
+            <div className="status-row">
+              <span className="status-row-name">PTY / Shell</span>
+              <span className="status-dot dot-green">● Implemented</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">VT / Screen</span>
+              <span className="status-dot dot-green">● Implemented</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">GUI</span>
+              <span className="status-dot dot-amber">● Development</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">GPU Graphics</span>
+              <span className="status-dot dot-amber">● Development</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">AI</span>
+              <span className="status-dot dot-purple">● Experimental</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">Windows</span>
+              <span className="status-dot dot-amber">● Development</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">macOS</span>
+              <span className="status-dot dot-amber">● Development</span>
             </div>
           </div>
+        </div>
+
+        {/* Contributing Link */}
+        <div className="toc-contribute-box">
+          <button onClick={onNavigateToContributing} className="toc-contribute-btn">
+            <span>Want to help? Contribute</span>
+            <ChevronRight size={14} />
+          </button>
         </div>
       </div>
     </aside>

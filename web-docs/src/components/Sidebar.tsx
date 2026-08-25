@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { NAV_STRUCTURE } from '../data/docsData';
-import { ChevronDown, ChevronRight, Compass, Terminal, Image, Sparkles, Wrench, Layers, Package, Users } from 'lucide-react';
+import { NAV_STRUCTURE } from '../data/docsNav';
+import { ChevronDown, ChevronRight, Compass, Terminal, Image, Layout, Layers, Settings, Package, Code, BookOpen, Info } from 'lucide-react';
 
 interface SidebarProps {
   activeId: string;
@@ -9,27 +9,31 @@ interface SidebarProps {
 }
 
 const iconMap: Record<string, React.ReactNode> = {
-  Compass: <Compass size={16} />,
-  Terminal: <Terminal size={16} />,
-  Image: <Image size={16} />,
-  Sparkles: <Sparkles size={16} />,
-  Wrench: <Wrench size={16} />,
-  Layers: <Layers size={16} />,
-  Package: <Package size={16} />,
-  Users: <Users size={16} />,
+  Compass: <Compass size={15} />,
+  Terminal: <Terminal size={15} />,
+  Image: <Image size={15} />,
+  Layout: <Layout size={15} />,
+  Layers: <Layers size={15} />,
+  Settings: <Settings size={15} />,
+  Package: <Package size={15} />,
+  Code: <Code size={15} />,
+  BookOpen: <BookOpen size={15} />,
+  Info: <Info size={15} />,
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) => {
-  // All categories open by default
+  // Open all categories by default
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
-    'Getting Started': true,
-    'Terminal & Shell': true,
-    'Graphics & Artwork': true,
-    'AI & Intelligence': true,
-    'Developer Tooling': true,
-    'Architecture & Core': true,
-    'Packaging & Releases': true,
-    'Community & Status': true,
+    'GETTING STARTED': true,
+    'TERMINAL': true,
+    'GRAPHICS': true,
+    'INTERFACE': true,
+    'DEVELOPER': true,
+    'CONFIGURATION': true,
+    'PACKAGING': true,
+    'DEVELOPMENT': true,
+    'REFERENCE': true,
+    'PROJECT': true,
   });
 
   const toggleCategory = (title: string) => {
@@ -40,49 +44,51 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) 
   };
 
   return (
-    <aside className={`fedora-sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-header">
-        <span className="sidebar-product-label">Meridian Documentation</span>
-        <span className="sidebar-version-badge">v2.0 (f44)</span>
+    <aside className={`meridian-sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-brand-header">
+        <span className="sidebar-doc-label">Meridian Documentation</span>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-scroll-nav">
         {NAV_STRUCTURE.map((category) => {
           const isCategoryOpen = openCategories[category.title] ?? true;
           const hasActiveItem = category.items.some((item) => item.id === activeId);
 
           return (
-            <div key={category.title} className="nav-group">
+            <div key={category.title} className="sidebar-group">
               <button
-                className={`nav-group-header ${hasActiveItem ? 'has-active' : ''}`}
+                className={`sidebar-group-header ${hasActiveItem ? 'group-active' : ''}`}
                 onClick={() => toggleCategory(category.title)}
               >
-                <span className="nav-group-icon">
-                  {iconMap[category.icon] || <Compass size={16} />}
+                <span className="group-icon">
+                  {iconMap[category.icon] || <Compass size={15} />}
                 </span>
-                <span className="nav-group-title">{category.title}</span>
-                <span className="nav-group-chevron">
-                  {isCategoryOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                <span className="group-title">{category.title}</span>
+                <span className="group-chevron">
+                  {isCategoryOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                 </span>
               </button>
 
               {isCategoryOpen && (
-                <ul className="nav-sub-list">
+                <ul className="sidebar-items-list">
                   {category.items.map((item) => {
                     const isActive = item.id === activeId;
                     return (
                       <li key={item.id}>
                         <button
-                          className={`nav-sub-item ${isActive ? 'active' : ''}`}
+                          className={`sidebar-link ${isActive ? 'active' : ''}`}
                           onClick={() => onSelect(item.id)}
                         >
-                          <span className="nav-item-bullet">•</span>
-                          <span className="nav-item-text">{item.title}</span>
-                          {item.status === 'experimental' && (
-                            <span className="nav-status-tag tag-exp">exp</span>
-                          )}
+                          <span className="link-bullet"></span>
+                          <span className="link-text">{item.title}</span>
                           {item.status === 'development' && (
-                            <span className="nav-status-tag tag-dev">dev</span>
+                            <span className="badge-tag badge-dev">DEV</span>
+                          )}
+                          {item.status === 'experimental' && (
+                            <span className="badge-tag badge-exp">EXP</span>
+                          )}
+                          {item.status === 'planned' && (
+                            <span className="badge-tag badge-plan">PLAN</span>
                           )}
                         </button>
                       </li>
@@ -95,12 +101,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) 
         })}
       </nav>
 
-      <div className="sidebar-footer">
+      <div className="sidebar-footer-panel">
         <a
           href="https://github.com/charanbalaji2005/Meridian-Shell"
           target="_blank"
           rel="noreferrer"
-          className="sidebar-github-link"
+          className="footer-repo-link"
         >
           <span>charanbalaji2005/Meridian-Shell</span>
         </a>

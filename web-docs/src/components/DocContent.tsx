@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { DocArticle } from '../data/docsContent';
-import { NAV_STRUCTURE } from '../data/docsData';
-import { Check, Copy, Clock, ArrowLeft, ArrowRight, ShieldCheck, Wrench, Sparkles } from 'lucide-react';
+import { NAV_STRUCTURE } from '../data/docsNav';
+import { Clock, ArrowLeft, ArrowRight, ShieldCheck, Wrench, Sparkles, CircleDashed } from 'lucide-react';
 
 interface DocContentProps {
   article: DocArticle;
@@ -9,8 +9,6 @@ interface DocContentProps {
 }
 
 export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) => {
-  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
-
   // Flatten navigation items to calculate previous & next article
   const allNavItems: { id: string; title: string }[] = [];
   NAV_STRUCTURE.forEach((cat) => {
@@ -25,8 +23,8 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
 
   useEffect(() => {
     // Add copy buttons to rendered pre blocks
-    const preBlocks = document.querySelectorAll('.doc-article-body pre');
-    preBlocks.forEach((pre, idx) => {
+    const preBlocks = document.querySelectorAll('.doc-body-content pre');
+    preBlocks.forEach((pre) => {
       if (pre.querySelector('.code-copy-btn')) return;
 
       const btn = document.createElement('button');
@@ -35,7 +33,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
       btn.onclick = () => {
         const codeText = pre.querySelector('code')?.innerText || pre.textContent || '';
         navigator.clipboard.writeText(codeText.trim());
-        btn.innerHTML = `<span style="color: #4ade80;">Copied!</span>`;
+        btn.innerHTML = `<span style="color: #22C55E;">Copied!</span>`;
         setTimeout(() => {
           btn.innerHTML = `<span>Copy</span>`;
         }, 2000);
@@ -45,50 +43,59 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
   }, [article]);
 
   return (
-    <article className="fedora-doc-article">
-      <header className="article-header">
-        <div className="article-meta-row">
-          <span className="article-category-badge">{article.category}</span>
+    <article className="meridian-article">
+      <header className="article-top-header">
+        <div className="article-meta-bar">
+          <span className="article-cat-tag">{article.category}</span>
+          
           {article.status === 'implemented' && (
-            <span className="article-status status-impl">
-              <ShieldCheck size={13} /> Implemented & Tested
+            <span className="status-tag status-impl">
+              <ShieldCheck size={12} /> IMPLEMENTED
             </span>
           )}
           {article.status === 'development' && (
-            <span className="article-status status-dev">
-              <Wrench size={13} /> In Development
+            <span className="status-tag status-dev">
+              <Wrench size={12} /> IN DEVELOPMENT
             </span>
           )}
           {article.status === 'experimental' && (
-            <span className="article-status status-exp">
-              <Sparkles size={13} /> Experimental Preview
+            <span className="status-tag status-exp">
+              <Sparkles size={12} /> EXPERIMENTAL
             </span>
           )}
-          <span className="article-updated">
-            <Clock size={13} /> {article.lastUpdated}
+          {article.status === 'planned' && (
+            <span className="status-tag status-plan">
+              <CircleDashed size={12} /> PLANNED
+            </span>
+          )}
+
+          <span className="article-date">
+            <Clock size={12} /> {article.lastUpdated}
           </span>
         </div>
 
-        <h1 className="article-title">{article.title}</h1>
-        {article.summary && <p className="article-summary">{article.summary}</p>}
+        <h1 className="article-main-title">{article.title}</h1>
+        {article.summary && article.id !== 'intro' && (
+          <p className="article-lead-summary">{article.summary}</p>
+        )}
       </header>
 
       <div
-        className="doc-article-body"
+        className="doc-body-content"
         dangerouslySetInnerHTML={{ __html: article.body }}
       />
 
-      <footer className="article-footer">
-        <div className="article-nav-buttons">
+      <footer className="article-bottom-footer">
+        <div className="article-nav-pager">
           {prevItem ? (
             <button
               onClick={() => onNavigate(prevItem.id)}
-              className="doc-nav-btn prev-btn"
+              className="pager-btn prev-pager"
             >
               <ArrowLeft size={16} />
-              <div className="nav-btn-text">
-                <span className="nav-btn-label">Previous</span>
-                <span className="nav-btn-title">{prevItem.title}</span>
+              <div className="pager-text-block">
+                <span className="pager-dir">Previous</span>
+                <span className="pager-name">{prevItem.title}</span>
               </div>
             </button>
           ) : <div />}
@@ -96,11 +103,11 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
           {nextItem && (
             <button
               onClick={() => onNavigate(nextItem.id)}
-              className="doc-nav-btn next-btn"
+              className="pager-btn next-pager"
             >
-              <div className="nav-btn-text">
-                <span className="nav-btn-label">Next</span>
-                <span className="nav-btn-title">{nextItem.title}</span>
+              <div className="pager-text-block">
+                <span className="pager-dir">Next</span>
+                <span className="pager-name">{nextItem.title}</span>
               </div>
               <ArrowRight size={16} />
             </button>
