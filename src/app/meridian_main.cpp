@@ -170,6 +170,10 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (sub == "ai") {
+        return handle_ai_subcommand(argc, argv);
+    }
+
     if (sub == "update" || sub == "upgrade") {
         std::cout << "-> Updating Meridian Terminal to latest release...\n";
         int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash -s -- --user");
