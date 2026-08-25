@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Meridian Terminal
 Comment=Modern Linux Terminal & Unified Developer Environment
-Exec=meridian-shell
+Exec=meridian
 Icon=utilities-terminal
 Terminal=true
 Type=Application
