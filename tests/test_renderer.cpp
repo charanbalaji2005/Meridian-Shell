@@ -4,6 +4,8 @@
 #include "../src/core/renderer/render_pipeline.hpp"
 #include "../src/core/vt/graphics.hpp"
 #include "../src/core/vt/screen_buffer.hpp"
+#include "../src/core/graphics/image_decoder.hpp"
+#include "../src/core/graphics/terminal_graphic.hpp"
 
 using namespace meridian::renderer;
 using namespace meridian::vt;
@@ -128,5 +130,72 @@ MTEST(graphics_sixel_and_kitty) {
     bool del_ok = engine.handle_kitty_graphics("a=d,d=i,i=42");
     ASSERT_TRUE(del_ok);
     ASSERT_TRUE(engine.find_image(42) == nullptr);
+}
+
+MTEST(image_decoder_and_aspect_fit) {
+    using namespace meridian::graphics;
+
+    // Aspect ratio contain calculation
+    auto fit1 = ImageDecoder::calculate_fit(1920, 1080, 200.0f, 200.0f, ImageFitMode::Contain);
+    ASSERT_EQ(static_cast<int>(fit1.width), 200);
+    ASSERT_EQ(static_cast<int>(fit1.height), 112); // 200 * (1080 / 1920) = 112.5
+
+    // Aspect ratio cover calculation
+    auto fit2 = ImageDecoder::calculate_fit(1920, 1080, 200.0f, 200.0f, ImageFitMode::Cover);
+    ASSERT_EQ(static_cast<int>(fit2.height), 200);
+    ASSERT_EQ(static_cast<int>(fit2.width), 355); // 200 * (1920 / 1080) = 355.5
+
+    // Aspect ratio stretch calculation
+    auto fit3 = ImageDecoder::calculate_fit(1920, 1080, 200.0f, 150.0f, ImageFitMode::Stretch);
+    ASSERT_EQ(static_cast<int>(fit3.width), 200);
+    ASSERT_EQ(static_cast<int>(fit3.height), 150);
+
+    // Frame Rescaling
+    ImageFrame src_frame;
+    src_frame.width = 2;
+    src_frame.height = 2;
+    src_frame.rgba = {
+        255, 0, 0, 255,   0, 255, 0, 255,
+        0, 0, 255, 255,   255, 255, 255, 255
+    };
+    auto rescaled = ImageDecoder::rescale_frame(src_frame, 4, 4, ImageScaleFilter::Pixel);
+    ASSERT_EQ(rescaled.width, 4);
+    ASSERT_EQ(rescaled.height, 4);
+    ASSERT_EQ(rescaled.rgba.size(), 64u);
+}
+
+MTEST(graphic_manager_and_animations) {
+    using namespace meridian::graphics;
+
+    GraphicManager mgr;
+    auto startup_g = GraphicManager::create_startup_artwork_graphic(30.0f, 35.0f, 200.0f, 180.0f);
+    ASSERT_TRUE(startup_g.visible);
+    ASSERT_EQ(startup_g.fit_mode, ImageFitMode::Contain);
+    ASSERT_EQ(startup_g.filter_mode, ImageScaleFilter::Smooth);
+    ASSERT_GT(startup_g.frames.size(), 0u);
+
+    mgr.add_graphic(startup_g);
+    ASSERT_EQ(mgr.graphics().size(), 1u);
+    ASSERT_TRUE(mgr.find_graphic(startup_g.id) != nullptr);
+
+    // Test animation advancement
+    TerminalGraphic anim_g;
+    anim_g.id = 2002;
+    anim_g.type = GraphicType::Animation;
+    ImageFrame f1{10, 10, std::vector<uint8_t>(400, 255), 0.05};
+    ImageFrame f2{10, 10, std::vector<uint8_t>(400, 128), 0.05};
+    anim_g.frames.push_back(f1);
+    anim_g.frames.push_back(f2);
+    ASSERT_TRUE(anim_g.is_animated());
+    ASSERT_EQ(anim_g.current_frame, 0u);
+
+    mgr.add_graphic(anim_g);
+    ASSERT_EQ(mgr.graphics().size(), 2u);
+
+    // Advance 0.06 seconds (should transition to frame 1)
+    mgr.tick(0.06);
+    auto* found = mgr.find_graphic(2002);
+    ASSERT_TRUE(found != nullptr);
+    ASSERT_EQ(found->current_frame, 1u);
 }
 

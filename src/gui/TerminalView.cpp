@@ -53,6 +53,9 @@ TerminalView::TerminalView(std::shared_ptr<PtyBridge> bridge, QWidget* parent)
     font_.setFixedPitch(true);
     setFontSize(11.0);
 
+    // Add native full-color startup artwork graphic
+    graphic_mgr_.add_graphic(graphics::GraphicManager::create_startup_artwork_graphic(28.0f, 32.0f, 220.0f, 170.0f));
+
     connect(bridge_.get(), &PtyBridge::screenUpdated, this, [this]() {
         update();
     });
@@ -62,6 +65,12 @@ TerminalView::TerminalView(std::shared_ptr<PtyBridge> bridge, QWidget* parent)
         update();
     });
     cursor_timer_.start(500);
+
+    connect(&anim_timer_, &QTimer::timeout, this, [this]() {
+        graphic_mgr_.tick(0.033);
+        update();
+    });
+    anim_timer_.start(33);
 }
 
 void TerminalView::setFontSize(qreal pt_size) {
@@ -82,19 +91,19 @@ void TerminalView::setFontSize(qreal pt_size) {
 }
 
 QColor TerminalView::resolveColor(const vt::Color& color, bool is_fg) {
-    switch (color.type) {
-        case vt::ColorType::Default:
+    switch (color.kind) {
+        case vt::Color::Kind::Default:
             return is_fg ? DEFAULT_FG : DEFAULT_BG;
-        case vt::ColorType::Indexed: {
+        case vt::Color::Kind::Indexed: {
             if (color.index < 16) {
                 return ANSI_COLORS[color.index];
             }
-            // 256-color cube
+            // 6x6x6 color cube
             if (color.index >= 16 && color.index <= 231) {
                 int idx = color.index - 16;
-                int r = (idx / 36) * 51;
-                int g = ((idx % 36) / 6) * 51;
-                int b = (idx % 6) * 51;
+                int r = (idx / 36) ? (idx / 36 * 40 + 55) : 0;
+                int g = ((idx % 36) / 6) ? ((idx % 36) / 6 * 40 + 55) : 0;
+                int b = (idx % 6) ? (idx % 6 * 40 + 55) : 0;
                 return QColor(r, g, b);
             }
             // Grayscale ramp
@@ -104,7 +113,7 @@ QColor TerminalView::resolveColor(const vt::Color& color, bool is_fg) {
             }
             return is_fg ? DEFAULT_FG : DEFAULT_BG;
         }
-        case vt::ColorType::Rgb:
+        case vt::Color::Kind::Rgb:
             return QColor(color.r, color.g, color.b);
     }
     return is_fg ? DEFAULT_FG : DEFAULT_BG;
@@ -127,7 +136,7 @@ void TerminalView::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, false); // Crisp nearest-neighbor pixel art
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true); // Real full-color smooth image rendering
     painter.setFont(font_);
 
     std::lock_guard<std::mutex> lock(bridge_->screenMutex());
@@ -137,6 +146,22 @@ void TerminalView::paintEvent(QPaintEvent*) {
     int cols = screen.cols();
 
     auto draw_images = [&](bool under_text) {
+        // 1. Draw GraphicManager native raster graphics (Real Full-Color RGBA Images & GIFs)
+        for (const auto& g : graphic_mgr_.graphics()) {
+            if (!g.visible || (g.z_index < 0) != under_text) continue;
+            const auto& frame = g.active_frame();
+            if (!frame.is_valid()) continue;
+
+            QImage qimg(frame.rgba.data(), frame.width, frame.height, frame.width * 4, QImage::Format_RGBA8888);
+            auto fit = graphics::ImageDecoder::calculate_fit(frame.width, frame.height, g.width, g.height, g.fit_mode, g.x, g.y);
+
+            painter.setOpacity(g.opacity);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, g.filter_mode == graphics::ImageScaleFilter::Smooth);
+            painter.drawImage(QRectF(fit.x, fit.y, fit.width, fit.height), qimg);
+            painter.setOpacity(1.0f);
+        }
+
+        // 2. Draw Kitty Graphics Protocol images & Sixel rasters
         for (const auto& pl : screen.graphics().placements()) {
             if ((pl.z_index < 0) != under_text) continue;
             const auto* img = screen.graphics().find_image(pl.image_id);
@@ -148,6 +173,7 @@ void TerminalView::paintEvent(QPaintEvent*) {
             qreal gw = pl.cols_spanned * char_width_;
             qreal gh = pl.rows_spanned * char_height_;
 
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
             painter.drawImage(QRectF(gx, gy, gw, gh), qimg);
         }
     };

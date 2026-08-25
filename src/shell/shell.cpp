@@ -83,39 +83,8 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Reference graphic lines (TrueColor half-block moon/mountains or user custom image)
-    std::vector<std::string> art_lines;
-    std::string custom_image_path;
-    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
-    if (env_art && access(env_art, R_OK) == 0) {
-        custom_image_path = env_art;
-    } else {
-        const char* home = std::getenv("HOME");
-        std::string cfg_art = std::string(home ? home : ".") + "/.config/meridian/artwork.ppm";
-        if (access(cfg_art.c_str(), R_OK) == 0) {
-            custom_image_path = cfg_art;
-        }
-    }
-
-    if (!custom_image_path.empty()) {
-        core::TerminalImage img;
-        if (img.load_file(custom_image_path)) {
-            core::ImageOptions opts;
-            opts.mode = core::ImageRenderMode::HalfBlock;
-            opts.target_width = 24;
-            opts.target_height = 10;
-            std::string rendered = img.render(opts);
-            std::istringstream rss(rendered);
-            std::string line;
-            while (std::getline(rss, line)) {
-                if (!line.empty()) art_lines.push_back(line);
-            }
-        }
-    }
-
-    if (art_lines.empty()) {
-        art_lines = core::TerminalImage::render_reference_artwork_lines(10);
-    }
+    // 2. Picture graphic lines (24-bit TrueColor Chainsaw Man image)
+    std::vector<std::string> art_lines = core::TerminalImage::render_reference_artwork_lines(10);
 
     // 3. System info lines (sleek Nerd Font glyphs matching reference theme)
     std::vector<std::string> sys_lines = {
@@ -133,6 +102,8 @@ void render_reference_layout_header(std::ostream& out) {
 
     // 4. Print Side-by-Side Reference Header
     out << "\n";
+    out << core::TerminalImage::render_kitty_graphics_artwork(2, 1, 24, 10);
+
     size_t rows = std::max(art_lines.size(), sys_lines.size());
     for (size_t r = 0; r < rows; ++r) {
         out << "  ";

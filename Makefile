@@ -12,6 +12,8 @@ CORE_SRC := \
     src/core/vt/screen_buffer.cpp \
     src/core/vt/ansi_parser.cpp \
     src/core/vt/graphics.cpp \
+    src/core/graphics/image_decoder.cpp \
+    src/core/graphics/terminal_graphic.cpp \
     src/core/pty/pty_manager.cpp \
     src/core/pty/pty_session.cpp \
     src/core/config.cpp \

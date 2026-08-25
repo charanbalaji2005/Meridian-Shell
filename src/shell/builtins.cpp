@@ -119,6 +119,17 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         std::string src = argv[2];
         const char* home = std::getenv("HOME");
         if (home) {
+            if (src.rfind("~/", 0) == 0) {
+                src = std::string(home) + src.substr(1);
+            }
+            std::ifstream test_f(src);
+            if (!test_f.is_open()) {
+                std::cerr << "\033[38;2;239;68;68m✘\033[0m File not found: " << src << "\n";
+                std::cerr << "  Please specify an existing image file on your system.\n";
+                return 1;
+            }
+            test_f.close();
+
             std::string cfg_dir = std::string(home) + "/.config/meridian";
             std::string cmd = "mkdir -p \"" + cfg_dir + "\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.jpg\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.png\"";
             int res = system(cmd.c_str());
@@ -132,7 +143,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     }
 
     core::ImageOptions opts;
-    opts.mode = core::ImageRenderMode::HalfBlock;
+    opts.mode = core::ImageRenderMode::RealRaster;
     opts.target_width = 36;
     opts.target_height = 18;
 
@@ -143,10 +154,14 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             opts.mode = core::ImageRenderMode::Ascii;
         } else if (argv[i] == "--color-ascii" || argv[i] == "--color") {
             opts.mode = core::ImageRenderMode::ColorAscii;
+        } else if (argv[i] == "--pixel") {
+            opts.mode = core::ImageRenderMode::Pixel;
         } else if (argv[i] == "--hybrid") {
             opts.mode = core::ImageRenderMode::Hybrid;
-        } else if (argv[i] == "--image" || argv[i] == "--halfblock") {
+        } else if (argv[i] == "--halfblock") {
             opts.mode = core::ImageRenderMode::HalfBlock;
+        } else if (argv[i] == "--image" || argv[i] == "--raster" || argv[i] == "--full-color") {
+            opts.mode = core::ImageRenderMode::RealRaster;
         } else if (argv[i] == "--width" && i + 1 < argv.size()) {
             try { opts.target_width = std::stoi(argv[++i]); } catch (...) {}
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
@@ -173,6 +188,28 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         if (filepath.empty()) {
             std::ifstream r1("resources/images/artwork.jpg"); if (r1.is_open()) filepath = "resources/images/artwork.jpg";
             else filepath = "resources/images/artwork.png";
+        }
+    }
+
+    // If RealRaster mode is requested on a real file, emit native Kitty Graphics stream
+    if (opts.mode == core::ImageRenderMode::RealRaster && !filepath.empty()) {
+        std::ifstream test_f(filepath, std::ios::binary);
+        if (test_f.is_open()) {
+            std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(test_f)), std::istreambuf_iterator<char>());
+            if (!buffer.empty()) {
+                static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+                std::string b64;
+                b64.reserve(((buffer.size() + 2) / 3) * 4);
+                for (size_t k = 0; k < buffer.size(); k += 3) {
+                    uint32_t b = (buffer[k] << 16) | ((k + 1 < buffer.size() ? buffer[k + 1] : 0) << 8) | (k + 2 < buffer.size() ? buffer[k + 2] : 0);
+                    b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
+                    b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
+                    b64.push_back((k + 1 < buffer.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
+                    b64.push_back((k + 2 < buffer.size()) ? b64_tbl[b & 0x3F] : '=');
+                }
+                std::cout << "\033_Ga=T,f=100,t=d,c=" << opts.target_width << ",r=" << opts.target_height << ";" << b64 << "\033\\\n";
+                return 0;
+            }
         }
     }
 

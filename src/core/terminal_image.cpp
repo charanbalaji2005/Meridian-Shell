@@ -112,108 +112,20 @@ bool TerminalImage::load_file(const std::string& path) {
     return false;
 }
 
+#include "chainsaw_man_data.inl"
+
 TerminalImage TerminalImage::create_default_reference_artwork() {
-    // Generates a 48x44 pixel art nightscape matching the reference image:
-    // Glowing moon, starry sky, clouds, jagged mountains, and reflective lake
     int w = 48;
     int h = 44;
     TerminalImage img(w, h);
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            float nx = static_cast<float>(x) / w;
-            float ny = static_cast<float>(y) / h;
-
-            // Sky gradient (deep indigo to navy)
-            int sky_r = static_cast<int>(12 + ny * 18);
-            int sky_g = static_cast<int>(18 + ny * 24);
-            int sky_b = static_cast<int>(30 + ny * 35);
-            RgbColor col{static_cast<uint8_t>(sky_r), static_cast<uint8_t>(sky_g), static_cast<uint8_t>(sky_b), 255};
-
-            // Glowing Moon at (12, 10), radius ~7.5
-            float dx = x - 12.0f;
-            float dy = y - 10.0f;
-            float dist = std::sqrt(dx * dx + dy * dy);
-            if (dist <= 7.2f) {
-                // Moon surface & craters
-                if (dist > 5.8f) {
-                    col = RgbColor{255, 245, 185, 255}; // glowing edge
-                } else if ((x == 10 && y == 9) || (x == 13 && y == 12) || (x == 9 && y == 11)) {
-                    col = RgbColor{225, 215, 155, 255}; // crater
-                } else {
-                    col = RgbColor{255, 252, 215, 255}; // moon body
-                }
-            } else if (dist <= 10.5f) {
-                // Subtle moon glow halo
-                float glow = (10.5f - dist) / 3.3f;
-                col.r = static_cast<uint8_t>(std::clamp(col.r + glow * 50.0f, 0.0f, 255.0f));
-                col.g = static_cast<uint8_t>(std::clamp(col.g + glow * 50.0f, 0.0f, 255.0f));
-                col.b = static_cast<uint8_t>(std::clamp(col.b + glow * 40.0f, 0.0f, 255.0f));
-            }
-
-            // Stars
-            if ((x == 26 && y == 5) || (x == 38 && y == 7) || (x == 44 && y == 12) ||
-                (x == 4 && y == 6) || (x == 33 && y == 10) || (x == 20 && y == 3)) {
-                col = RgbColor{240, 248, 255, 255};
-            }
-
-            // Clouds across sky (around y = 11 to 16)
-            if (y >= 11 && y <= 16 && x >= 18 && x <= 46) {
-                float cdist = std::abs(y - 13.5f) + std::abs(x - 32.0f) * 0.2f;
-                if (cdist < 3.5f) {
-                    col = RgbColor{45, 68, 92, 255};
-                } else if (cdist < 4.8f) {
-                    col = RgbColor{35, 52, 74, 255};
-                }
-            }
-
-            // Mountain Peaks (Layer 1 - back mountains)
-            float back_mtn = 16.0f + 7.0f * std::sin(nx * 4.5f + 1.2f) + 4.0f * std::cos(nx * 8.0f);
-            if (y >= back_mtn && y < 28) {
-                // Highlights on left slopes
-                if ((x % 6 < 3)) {
-                    col = RgbColor{55, 78, 105, 255};
-                } else {
-                    col = RgbColor{38, 54, 76, 255};
-                }
-            }
-
-            // Mountain Peaks (Layer 2 - front mountains)
-            float mtn_h1 = 18.0f + std::abs(x - 22.0f) * 0.85f;
-            float mtn_h2 = 19.0f + std::abs(x - 36.0f) * 0.95f;
-            float front_mtn = std::min(mtn_h1, mtn_h2);
-            if (y >= front_mtn && y < 30) {
-                if ((x >= 16 && x <= 22) || (x >= 30 && x <= 36)) {
-                    col = RgbColor{42, 60, 82, 255}; // lit slope
-                } else {
-                    col = RgbColor{24, 36, 52, 255}; // shadow slope
-                }
-            }
-
-            // Lake & Water Reflections (y >= 29 to 44)
-            if (y >= 29) {
-                // Base water color
-                col = RgbColor{14, 24, 38, 255};
-
-                // Vertical Moon reflection shimmer in lake (around x = 10 to 16)
-                if (x >= 9 && x <= 16) {
-                    int dist_from_center = std::abs(x - 12);
-                    if ((y % 2 == 0) && (dist_from_center <= ((y - 28) / 3))) {
-                        col = RgbColor{255, 242, 175, 255}; // bright shimmer
-                    } else if (dist_from_center <= ((y - 28) / 2)) {
-                        col = RgbColor{180, 195, 180, 255}; // soft reflection
-                    }
-                }
-
-                // Pine tree silhouettes along left and right banks
-                if (x <= 7 && y < (36 + x)) {
-                    col = RgbColor{10, 18, 26, 255}; // left shore pine
-                } else if (x >= 40 && y < (34 + (47 - x))) {
-                    col = RgbColor{10, 18, 26, 255}; // right shore pine
-                }
-            }
-
-            img.set_pixel(x, y, col);
+            int idx = (y * w + x) * 3;
+            uint8_t r = kChainsawManPixels[idx];
+            uint8_t g = kChainsawManPixels[idx + 1];
+            uint8_t b = kChainsawManPixels[idx + 2];
+            img.set_pixel(x, y, RgbColor{r, g, b, 255});
         }
     }
 
@@ -253,6 +165,20 @@ std::vector<std::string> TerminalImage::render_reference_artwork_lines(int max_r
     return lines;
 }
 
+static std::string to_base64(const uint8_t* data, size_t len) {
+    static const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string out;
+    out.reserve(((len + 2) / 3) * 4);
+    for (size_t i = 0; i < len; i += 3) {
+        uint32_t b = (data[i] << 16) | ((i + 1 < len ? data[i + 1] : 0) << 8) | (i + 2 < len ? data[i + 2] : 0);
+        out.push_back(table[(b >> 18) & 0x3F]);
+        out.push_back(table[(b >> 12) & 0x3F]);
+        out.push_back((i + 1 < len) ? table[(b >> 6) & 0x3F] : '=');
+        out.push_back((i + 2 < len) ? table[b & 0x3F] : '=');
+    }
+    return out;
+}
+
 std::string TerminalImage::render(const ImageOptions& opts) const {
     if (!is_valid()) return "";
 
@@ -260,7 +186,36 @@ std::string TerminalImage::render(const ImageOptions& opts) const {
     int target_w = std::max(4, opts.target_width);
     int target_h = std::max(2, opts.target_height);
 
-    if (opts.mode == ImageRenderMode::HalfBlock) {
+    if (opts.mode == ImageRenderMode::RealRaster) {
+        std::vector<uint8_t> raw_rgba(width_ * height_ * 4);
+        for (int i = 0; i < width_ * height_; ++i) {
+            raw_rgba[i * 4 + 0] = pixels_[i].r;
+            raw_rgba[i * 4 + 1] = pixels_[i].g;
+            raw_rgba[i * 4 + 2] = pixels_[i].b;
+            raw_rgba[i * 4 + 3] = pixels_[i].a;
+        }
+        std::string b64 = to_base64(raw_rgba.data(), raw_rgba.size());
+        ss << "\033_Ga=T,f=32,s=" << width_ << ",v=" << height_
+           << ",c=" << target_w << ",r=" << target_h << ";" << b64 << "\033\\";
+        return ss.str();
+    } else if (opts.mode == ImageRenderMode::Pixel) {
+        // Nearest-neighbor pixel art mode
+        for (int r = 0; r < target_h; ++r) {
+            for (int c = 0; c < target_w; ++c) {
+                int px = std::clamp(c * width_ / target_w, 0, width_ - 1);
+                int py_top = std::clamp((r * 2) * height_ / (target_h * 2), 0, height_ - 1);
+                int py_bot = std::clamp((r * 2 + 1) * height_ / (target_h * 2), 0, height_ - 1);
+
+                auto c_top = get_pixel(px, py_top);
+                auto c_bot = get_pixel(px, py_bot);
+
+                ss << "\033[38;2;" << static_cast<int>(c_top.r) << ";" << static_cast<int>(c_top.g) << ";" << static_cast<int>(c_top.b)
+                   << ";48;2;" << static_cast<int>(c_bot.r) << ";" << static_cast<int>(c_bot.g) << ";" << static_cast<int>(c_bot.b)
+                   << "m▀";
+            }
+            ss << "\033[0m\n";
+        }
+    } else if (opts.mode == ImageRenderMode::HalfBlock) {
         for (int r = 0; r < target_h; ++r) {
             for (int c = 0; c < target_w; ++c) {
                 float u = static_cast<float>(c) / (target_w - 1);
@@ -317,6 +272,13 @@ std::string TerminalImage::render(const ImageOptions& opts) const {
         }
     }
 
+    return ss.str();
+}
+
+std::string TerminalImage::render_kitty_graphics_artwork(int col, int row, int cols_spanned, int rows_spanned) {
+    std::ostringstream ss;
+    ss << "\033_Ga=T,f=100,t=d,c=" << cols_spanned << ",r=" << rows_spanned
+       << ",i=1,X=" << col << ",Y=" << row << ";" << kChainsawManKittyBase64 << "\033\\";
     return ss.str();
 }
 

@@ -43,6 +43,8 @@ add_library(meridian-core STATIC
     src/core/vt/screen_buffer.cpp
     src/core/vt/ansi_parser.cpp
     src/core/vt/graphics.cpp
+    src/core/graphics/image_decoder.cpp
+    src/core/graphics/terminal_graphic.cpp
     src/core/config.cpp
     src/core/terminal_image.cpp
     src/core/renderer/damage_tracker.cpp

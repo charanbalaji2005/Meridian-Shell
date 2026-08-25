@@ -12,6 +12,8 @@
 namespace meridian::core {
 
 enum class ImageRenderMode {
+    RealRaster,   // Authentic full-color raster image (Kitty Graphics Protocol / GPU texture) [DEFAULT]
+    Pixel,        // Nearest-neighbor pixel art
     HalfBlock,    // TrueColor 24-bit half-blocks (2 vertical subpixels per char cell)
     Ascii,        // Grayscale ASCII characters
     ColorAscii,   // Colored ASCII characters with TrueColor ANSI
@@ -19,7 +21,7 @@ enum class ImageRenderMode {
 };
 
 struct ImageOptions {
-    ImageRenderMode mode = ImageRenderMode::HalfBlock;
+    ImageRenderMode mode = ImageRenderMode::RealRaster;
     int target_width = 32;   // in character columns
     int target_height = 16;  // in character rows (each row = 2 vertical subpixels in HalfBlock)
     bool center = false;
@@ -55,6 +57,9 @@ public:
 
     // Renders the reference artwork as an array of ANSI terminal lines
     static std::vector<std::string> render_reference_artwork_lines(int max_rows = 11);
+
+    // Emits Kitty Graphics Protocol high-res picture escape sequence
+    static std::string render_kitty_graphics_artwork(int col = 2, int row = 1, int cols_spanned = 24, int rows_spanned = 10);
 
 private:
     int width_ = 0;

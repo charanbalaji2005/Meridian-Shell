@@ -15,6 +15,8 @@
 #include "PtyBridge.hpp"
 #include "../core/renderer/render_pipeline.hpp"
 
+#include "../core/graphics/terminal_graphic.hpp"
+
 namespace meridian::gui {
 
 struct GridSelection {
@@ -52,6 +54,7 @@ public:
     void pasteClipboard();
     void selectAll();
     void clearScrollback();
+    graphics::GraphicManager& graphicManager() { return graphic_mgr_; }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -73,9 +76,12 @@ private:
     qreal char_ascent_ = 12.0;
 
     QTimer cursor_timer_;
+    QTimer anim_timer_;
     bool cursor_visible_ = true;
     GridSelection selection_;
     bool selecting_ = false;
+
+    graphics::GraphicManager graphic_mgr_;
 
     QColor resolveColor(const vt::Color& color, bool is_fg);
     QPoint pixelToCell(const QPoint& pt) const;

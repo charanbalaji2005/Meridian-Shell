@@ -1,4 +1,5 @@
 #include "meridian_gui.hpp"
+#include "../core/terminal_image.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -98,18 +99,8 @@ std::string MeridianGui::render_frame(int width, int height) {
     char time_buf[64];
     std::strftime(time_buf, sizeof(time_buf), "%a %d %b  -  %H:%M", local_tm);
 
-    // Pixel art card lines (Moon & Mountains)
-    std::vector<std::string> art_lines = {
-        "\033[38;2;240;230;180m   .---.   \033[38;2;90;120;140m *   .   \033[0m",
-        "\033[38;2;255;245;200m  /     \\  \033[38;2;70;100;120m  .    * \033[0m",
-        "\033[38;2;255;245;200m  \\     /  \033[38;2;50;80;100m .     .  \033[0m",
-        "\033[38;2;240;230;180m   '---'   \033[38;2;40;60;80m    *    \033[0m",
-        "\033[38;2;60;90;120m   /\\    \033[38;2;80;110;140m /\\      \033[38;2;40;70;90m/\\  \033[0m",
-        "\033[38;2;50;80;110m  /  \\  \033[38;2;70;100;130m/  \\    \033[38;2;30;60;80m/  \\ \033[0m",
-        "\033[38;2;30;60;90m / /\\ \\\033[38;2;50;80;110m/ /\\ \\  \033[38;2;20;45;65m/ /\\ \\\033[0m",
-        "\033[38;2;20;50;75m~~~~~~~~~~~~~~~~~~~~~\033[0m",
-        "\033[38;2;15;40;65m  ~ ~  ~  ~  ~ ~ ~ ~ \033[0m"
-    };
+    // TrueColor Picture Card (Chainsaw Man Image)
+    std::vector<std::string> art_lines = core::TerminalImage::render_reference_artwork_lines(10);
 
     // System info lines (sleek Nerd Font glyphs matching reference theme)
     std::vector<std::string> sys_lines = {
@@ -127,13 +118,14 @@ std::string MeridianGui::render_frame(int width, int height) {
 
     // Render Top Box: Artwork (Left) + System Info (Right)
     ss << "\n";
+    ss << core::TerminalImage::render_kitty_graphics_artwork(2, 1, 24, 10);
     size_t max_rows = std::max(art_lines.size(), sys_lines.size());
     for (size_t i = 0; i < max_rows; ++i) {
         ss << "  ";
         if (i < art_lines.size()) {
             ss << art_lines[i];
         } else {
-            ss << "                     ";
+            ss << "                        ";
         }
         ss << "    ";
         if (i < sys_lines.size()) {
