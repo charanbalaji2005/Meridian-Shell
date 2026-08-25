@@ -6,6 +6,9 @@
 #include <fstream>
 #include <sstream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace meridian::graphics {
 
 namespace {
@@ -151,31 +154,30 @@ DecodedImage ImageDecoder::decode_memory(const uint8_t* data, size_t size, const
     DecodedImage out;
     if (!data || size < 4) return out;
 
-    // 1. Try PPM
+    // 1. Try high-performance stb_image for PNG, JPEG, BMP, GIF, PSD, TGA
+    int w = 0, h = 0, channels = 0;
+    stbi_uc* pixels = stbi_load_from_memory(data, static_cast<int>(size), &w, &h, &channels, 4);
+    if (pixels && w > 0 && h > 0) {
+        ImageFrame frame;
+        frame.width = w;
+        frame.height = h;
+        frame.duration = 0.1;
+        frame.rgba.assign(pixels, pixels + (w * h * 4));
+        stbi_image_free(pixels);
+
+        out.original_width = w;
+        out.original_height = h;
+        out.format = hint.empty() ? "image" : hint;
+        out.is_animated = false;
+        out.frames.push_back(std::move(frame));
+        return out;
+    }
+
+    // 2. Try PPM fallback
     if (decode_ppm(data, size, out)) return out;
 
-    // 2. Try BMP
+    // 3. Try BMP fallback
     if (decode_bmp(data, size, out)) return out;
-
-    // 3. Fallback: Parse common header dimensions (JPEG / PNG / WebP / GIF)
-    if (size >= 8 && data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G') {
-        out.format = "png";
-        if (size >= 24) {
-            uint32_t w = (data[16] << 24) | (data[17] << 16) | (data[18] << 8) | data[19];
-            uint32_t h = (data[20] << 24) | (data[21] << 16) | (data[22] << 8) | data[23];
-            out.original_width = static_cast<int>(w);
-            out.original_height = static_cast<int>(h);
-        }
-    } else if (size >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) {
-        out.format = "jpeg";
-    } else if (size >= 6 && (std::memcmp(data, "GIF87a", 6) == 0 || std::memcmp(data, "GIF89a", 6) == 0)) {
-        out.format = "gif";
-        out.is_animated = true;
-        out.original_width = data[6] | (data[7] << 8);
-        out.original_height = data[8] | (data[9] << 8);
-    } else if (size >= 12 && std::memcmp(data, "RIFF", 4) == 0 && std::memcmp(data + 8, "WEBP", 4) == 0) {
-        out.format = "webp";
-    }
 
     return out;
 }

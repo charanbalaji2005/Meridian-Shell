@@ -1,4 +1,5 @@
 #include "terminal_image.hpp"
+#include "graphics/image_decoder.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -73,41 +74,25 @@ char TerminalImage::char_for_luminance(float lum, const std::string& charset) co
 bool TerminalImage::load_file(const std::string& path) {
     if (path.empty()) return false;
 
-    // 1. Try binary Netpbm PPM (P6)
-    std::ifstream f(path, std::ios::binary);
-    if (!f.is_open()) return false;
-
-    std::string magic;
-    f >> magic;
-    if (magic == "P6") {
-        int w = 0, h = 0, maxval = 0;
-        f >> w >> h >> maxval;
-        f.get(); // skip whitespace
-        if (w > 0 && h > 0 && maxval > 0) {
-            width_ = w;
-            height_ = h;
-            pixels_.resize(w * h);
-            for (int i = 0; i < w * h; ++i) {
-                uint8_t rgb[3];
-                f.read(reinterpret_cast<char*>(rgb), 3);
-                pixels_[i] = RgbColor{rgb[0], rgb[1], rgb[2], 255};
+    // Decode original image (PNG, JPEG, WebP, GIF, BMP, PPM) into full 32-bit RGBA pixels
+    auto decoded = graphics::ImageDecoder::decode_file(path);
+    if (decoded.is_valid()) {
+        const auto& frame = decoded.frame(0);
+        width_ = frame.width;
+        height_ = frame.height;
+        pixels_.resize(width_ * height_);
+        for (int y = 0; y < height_; ++y) {
+            for (int x = 0; x < width_; ++x) {
+                size_t idx = (y * width_ + x) * 4;
+                pixels_[y * width_ + x] = RgbColor{
+                    frame.rgba[idx],
+                    frame.rgba[idx + 1],
+                    frame.rgba[idx + 2],
+                    frame.rgba[idx + 3]
+                };
             }
-            return true;
         }
-    } else if (magic == "P3") { // Plain text PPM
-        int w = 0, h = 0, maxval = 0;
-        f >> w >> h >> maxval;
-        if (w > 0 && h > 0) {
-            width_ = w;
-            height_ = h;
-            pixels_.resize(w * h);
-            for (int i = 0; i < w * h; ++i) {
-                int r, g, b;
-                f >> r >> g >> b;
-                pixels_[i] = RgbColor{static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), 255};
-            }
-            return true;
-        }
+        return true;
     }
 
     return false;

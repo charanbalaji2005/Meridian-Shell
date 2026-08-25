@@ -62,6 +62,18 @@ if [ "$USER_MODE" = false ] && [ -w /etc/shells ]; then
     fi
 fi
 
+# Install Artwork Gallery Assets
+if [ -d "resources/images/gallery" ]; then
+    GALLERY_DIR="${HOME}/.config/meridian/gallery"
+    mkdir -p "${GALLERY_DIR}"
+    cp -rf resources/images/gallery/* "${GALLERY_DIR}/" 2>/dev/null || true
+    if [ "$USER_MODE" = false ]; then
+        mkdir -p "/usr/local/share/meridian/images/gallery"
+        cp -rf resources/images/gallery/* "/usr/local/share/meridian/images/gallery/" 2>/dev/null || true
+    fi
+    echo "-> Installed anime artwork gallery assets to ${GALLERY_DIR}"
+fi
+
 # Desktop Entry for Linux
 if [ "$(uname)" = "Linux" ]; then
     DESKTOP_DIR="$HOME/.local/share/applications"
