@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(meridian-terminal
-    VERSION 0.1.0
-    DESCRIPTION "Meridian Terminal — an independently engineered Linux terminal emulator + AI dev platform"
+    VERSION 2.0.0
+    DESCRIPTION "Meridian Terminal — Modern Linux Terminal Emulator & Unified Developer Canvas"
     LANGUAGES CXX
 )
 
@@ -13,30 +13,17 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-if(MSVC)
-    add_compile_options(/W4 /EHsc /permissive-)
-else()
-    add_compile_options(-Wall -Wextra)
-endif()
+add_compile_options(-Wall -Wextra -O2)
 
 option(MERIDIAN_BUILD_TESTS "Build the Meridian test suite" ON)
 option(MERIDIAN_ENABLE_ASAN "Build with AddressSanitizer + UBSan" OFF)
 
-if(MERIDIAN_ENABLE_ASAN AND NOT MSVC)
+if(MERIDIAN_ENABLE_ASAN)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
     add_link_options(-fsanitize=address,undefined)
 endif()
 
-set(PLATFORM_SOURCES "")
-if(APPLE)
-    list(APPEND PLATFORM_SOURCES src/platform/MacPTY.cpp)
-elseif(WIN32)
-    list(APPEND PLATFORM_SOURCES src/platform/WindowsConPTY.cpp)
-else()
-    list(APPEND PLATFORM_SOURCES src/platform/LinuxPTY.cpp)
-endif()
-
-# ---- meridian-core: PTY + VT/ANSI engine + GPU renderer ------------------
+# ---- meridian-core: Linux PTY + VT/ANSI engine + GPU renderer ------------
 add_library(meridian-core STATIC
     src/core/pty/pty_manager.cpp
     src/core/pty/pty_session.cpp
@@ -50,14 +37,12 @@ add_library(meridian-core STATIC
     src/core/renderer/damage_tracker.cpp
     src/core/renderer/glyph_atlas.cpp
     src/core/renderer/render_pipeline.cpp
-    ${PLATFORM_SOURCES}
+    src/platform/LinuxPTY.cpp
 )
 target_include_directories(meridian-core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT (APPLE OR WIN32))
-    target_link_libraries(meridian-core PUBLIC util)
-endif()
+target_link_libraries(meridian-core PUBLIC util)
 
 # ---- meridian-shell-lib: lexer/parser/executor/builtins/Shell/LineEditor -
 add_library(meridian-shell-lib STATIC
@@ -71,10 +56,7 @@ add_library(meridian-shell-lib STATIC
 target_include_directories(meridian-shell-lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_link_libraries(meridian-shell-lib PUBLIC meridian-core meridian-ai-lib meridian-dev-lib)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT (APPLE OR WIN32))
-    target_link_libraries(meridian-shell-lib PUBLIC util)
-endif()
+target_link_libraries(meridian-shell-lib PUBLIC util meridian-core meridian-ai-lib meridian-dev-lib)
 
 # ---- meridian-workspace-lib: multiplexer panes + persistent workspaces ---
 add_library(meridian-workspace-lib STATIC
@@ -148,53 +130,16 @@ target_link_libraries(meridian PRIVATE
     meridian-dev-lib
     meridian-config-lib
     meridian-security-lib
+    util
 )
-
 
 # ---- meridian-shell: standalone shell binary ------------------------------
 add_executable(meridian-shell src/app/shell_main.cpp)
-target_link_libraries(meridian-shell PRIVATE meridian-shell-lib)
+target_link_libraries(meridian-shell PRIVATE meridian-shell-lib util)
 
 # ---- meridian_demo: headless PTY + ANSI integration demo -----------------
 add_executable(meridian_demo src/app/demo_main.cpp)
-target_link_libraries(meridian_demo PRIVATE meridian-core)
-
-# ---- meridian-app: Qt6 Graphical Terminal Application --------------------
-find_package(Qt6 COMPONENTS Widgets Core Gui QUIET)
-if(Qt6_FOUND)
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
-
-    add_executable(meridian-app
-        src/app/gui_main.cpp
-        src/gui/ImageRenderer.hpp
-        src/gui/ImageRenderer.cpp
-        src/gui/SystemInfoWidget.hpp
-        src/gui/SystemInfoWidget.cpp
-        src/gui/ClockWidget.hpp
-        src/gui/ClockWidget.cpp
-        src/gui/PtyBridge.hpp
-        src/gui/PtyBridge.cpp
-        src/gui/TerminalView.hpp
-        src/gui/TerminalView.cpp
-        src/gui/HeaderSection.hpp
-        src/gui/HeaderSection.cpp
-        src/gui/TabManager.hpp
-        src/gui/TabManager.cpp
-        src/gui/MainWindow.hpp
-        src/gui/MainWindow.cpp
-        resources/meridian.qrc
-    )
-    target_link_libraries(meridian-app PRIVATE
-        meridian-core
-        meridian-shell-lib
-        meridian-ai-lib
-        Qt6::Widgets
-        Qt6::Core
-        Qt6::Gui
-    )
-endif()
+target_link_libraries(meridian_demo PRIVATE meridian-core util)
 
 # ---- Tests -----------------------------------------------------------------
 if(MERIDIAN_BUILD_TESTS)
@@ -222,6 +167,7 @@ if(MERIDIAN_BUILD_TESTS)
         meridian-core meridian-shell-lib meridian-ai-lib
         meridian-workspace-lib meridian-dev-lib
         meridian-config-lib meridian-security-lib
+        util
     )
     add_test(NAME meridian_tests COMMAND meridian_tests)
     add_test(NAME meridian_manual_core_test
@@ -229,7 +175,7 @@ if(MERIDIAN_BUILD_TESTS)
              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-# ---- CPack Multi-Platform Packaging -----------------------------------------
+# ---- CPack Multi-Platform Linux Packaging -----------------------------------
 install(TARGETS meridian meridian-shell RUNTIME DESTINATION bin)
 install(FILES meridian.desktop DESTINATION share/applications)
 install(FILES LICENSE README.md DESTINATION share/doc/meridian-terminal)
