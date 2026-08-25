@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Component Status Matrix"
+category: "Status"
+---
+
 # Status — what's real here, and what isn't yet
 
 This document exists because the spec this repo was built from

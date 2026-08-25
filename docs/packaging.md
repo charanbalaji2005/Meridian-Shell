@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Fedora RPM & Linux Packages"
+category: "Packaging"
+---
+
 # Meridian Terminal — Packaging & Distribution Guide
 
 This document is the complete guide for building, maintaining, and publishing Meridian Terminal packages across all major Linux distribution ecosystems (Fedora/RHEL/AetherOS, Ubuntu/Debian/Mint, Arch/Manjaro, Flatpak, Snap, and the Universal Installer).

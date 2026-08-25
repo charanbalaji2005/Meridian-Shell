@@ -1,3 +1,9 @@
+---
+layout: default
+title: "AI Architecture"
+category: "Developer"
+---
+
 # Meridian AI
 
 **Two different statuses in this one system — read carefully, because

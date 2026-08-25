@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Configuration"
+category: "Getting Started"
+---
+
 # Configuration
 
 Spec §75/§76 describe `~/.config/meridian/{terminal.toml,keybindings.toml,ai.toml}`.

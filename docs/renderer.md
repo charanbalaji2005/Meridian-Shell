@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Renderer & Direct Images"
+category: "Graphics"
+---
+
 # Renderer
 
 **Status: not implemented.** No source exists under `src/renderer/`.

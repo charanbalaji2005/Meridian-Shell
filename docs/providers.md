@@ -1,3 +1,9 @@
+---
+layout: default
+title: "AI Providers Configuration"
+category: "Developer"
+---
+
 # AI providers — planned endpoints, not implemented
 
 See `docs/ai.md` for why nothing here has been built yet. This file

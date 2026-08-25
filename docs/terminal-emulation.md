@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Terminal Emulation"
+category: "Terminal"
+---
+
 # Terminal emulation (VT/ANSI engine)
 
 ## What's implemented

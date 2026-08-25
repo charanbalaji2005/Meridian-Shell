@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Security & Credentials"
+category: "Developer"
+---
+
 # Security
 
 Spec §82's requirements, checked against what's actually true of this

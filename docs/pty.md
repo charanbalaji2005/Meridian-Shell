@@ -1,3 +1,9 @@
+---
+layout: default
+title: "PTY Multiplexer"
+category: "Terminal"
+---
+
 # PTY layer
 
 `src/core/pty/pty_manager.{hpp,cpp}` wraps a real Linux pseudo-terminal

@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Shell & AST Engine"
+category: "Terminal"
+---
+
 # Meridian Shell
 
 An independent POSIX-ish shell: `src/shell/{ast,lexer,parser,executor,

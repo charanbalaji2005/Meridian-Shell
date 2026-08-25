@@ -1,3 +1,9 @@
+---
+layout: default
+title: "GUI & Canvas Architecture"
+category: "Interface"
+---
+
 # GUI (Qt6 window, renderer, tabs/panes, AI popup)
 
 **Status: not implemented.** No source files exist under `src/gui/` yet

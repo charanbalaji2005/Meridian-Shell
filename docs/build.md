@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Installation & Build"
+category: "Getting Started"
+---
+
 # Build
 
 ## Path 1: `make` — actually verified in this repo's build environment

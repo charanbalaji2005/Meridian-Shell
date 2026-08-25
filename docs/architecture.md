@@ -1,3 +1,9 @@
+---
+layout: default
+title: "System Architecture"
+category: "Developer"
+---
+
 # Architecture
 
 Meridian is three independent systems, matching the spec: the terminal
