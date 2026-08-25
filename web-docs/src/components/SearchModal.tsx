@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ChevronRight, FileText } from 'lucide-react';
 import { DOCS_ARTICLES, DocArticle } from '../data/docsContent';
+import { TranslationStrings } from '../i18n/translations';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectArticle: (id: string) => void;
+  t: TranslationStrings;
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   onSelectArticle,
+  t,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -81,7 +84,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             ref={inputRef}
             type="text"
             className="search-text-input"
-            placeholder="Search documentation, commands, APIs, architecture..."
+            placeholder={t.searchPlaceholder}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -126,9 +129,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         </div>
 
         <div className="search-footer-hints">
-          <span className="hint-pill"><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span>
-          <span className="hint-pill"><kbd>↵</kbd> Select</span>
-          <span className="hint-pill"><kbd>ESC</kbd> Close</span>
+          <span className="hint-pill"><kbd>↑</kbd> <kbd>↓</kbd> {t.navHintNavigate}</span>
+          <span className="hint-pill"><kbd>↵</kbd> {t.navHintSelect}</span>
+          <span className="hint-pill"><kbd>ESC</kbd> {t.navHintClose}</span>
         </div>
       </div>
     </div>

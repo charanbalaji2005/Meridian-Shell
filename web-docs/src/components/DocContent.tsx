@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { DocArticle } from '../data/docsContent';
 import { NAV_STRUCTURE } from '../data/docsNav';
 import { Copy, Check, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { TranslationStrings } from '../i18n/translations';
 
 interface DocContentProps {
   article: DocArticle;
   onNavigate: (id: string) => void;
+  t: TranslationStrings;
 }
 
-export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) => {
+export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }) => {
   const [copiedLLM, setCopiedLLM] = useState(false);
 
   // Flatten navigation items to calculate previous & next article
@@ -51,7 +53,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
         <span class="code-lang-label">${lang}</span>
         <button class="code-copy-btn" aria-label="Copy code">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-          <span>Copy</span>
+          <span>${t.copy}</span>
         </button>
       `;
 
@@ -62,12 +64,12 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
           navigator.clipboard.writeText(text.trim());
           copyBtn.innerHTML = `
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00A8B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span style="color: #00A8B5; font-weight: 500;">Copied</span>
+            <span style="color: #00A8B5; font-weight: 500;">${t.copied}</span>
           `;
           setTimeout(() => {
             copyBtn.innerHTML = `
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-              <span>Copy</span>
+              <span>${t.copy}</span>
             `;
           }, 2000);
         });
@@ -75,7 +77,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
 
       pre.insertBefore(headerBar, pre.firstChild);
     });
-  }, [article]);
+  }, [article, t]);
 
   return (
     <article className="claude-article">
@@ -84,7 +86,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
           <h1 className="article-serif-title">{article.title}</h1>
           <button onClick={handleCopyForLLM} className="copy-llm-btn" aria-label="Copy for LLM">
             {copiedLLM ? <Check size={14} className="copied-icon" /> : <Copy size={14} />}
-            <span>{copiedLLM ? 'Copied for LLM' : 'Copy for LLM'}</span>
+            <span>{copiedLLM ? t.copiedForLLM : t.copyForLLM}</span>
             <ChevronDown size={12} className="chevron-icon" />
           </button>
         </div>
@@ -109,7 +111,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
             >
               <ArrowLeft size={16} className="pager-arrow" />
               <div className="pager-meta">
-                <span className="pager-label">Previous</span>
+                <span className="pager-label">{t.previous}</span>
                 <span className="pager-title">{prevItem.title}</span>
               </div>
             </button>
@@ -121,7 +123,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
               className="claude-pager-card next-card"
             >
               <div className="pager-meta text-right">
-                <span className="pager-label">Next</span>
+                <span className="pager-label">{t.next}</span>
                 <span className="pager-title">{nextItem.title}</span>
               </div>
               <ArrowRight size={16} className="pager-arrow" />

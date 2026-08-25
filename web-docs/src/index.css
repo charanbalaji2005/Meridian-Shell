@@ -69,8 +69,8 @@
 
 html, body {
   width: 100%;
-  overflow-x: hidden;
   background-color: var(--bg-primary);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -80,6 +80,35 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Custom Sleek Scrollbars (Never leave empty sidebar gaps)
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4D4D0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A8A8A2;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3F3F46;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #52525B;
 }
 
 /* ==========================================================================
@@ -179,22 +208,116 @@ body {
   color: var(--text-heading);
 }
 
+/* International Language Dropdown */
+.header-lang-wrapper {
+  position: relative;
+}
+
 .header-lang-btn {
   background: transparent;
-  border: none;
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .header-lang-btn:hover {
   color: var(--text-heading);
   background-color: var(--bg-hover);
+  border-color: #BDBDBD;
+}
+
+.lang-chevron {
+  transition: transform 0.2s ease;
+}
+
+.lang-chevron.open {
+  transform: rotate(180deg);
+}
+
+.lang-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  z-index: 1050;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lang-menu-header {
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.lang-list {
+  list-style: none;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.lang-option-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease;
+}
+
+.lang-option-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.lang-option-btn.active {
+  background-color: var(--bg-active-item);
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.lang-flag {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.lang-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.lang-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.lang-check {
+  color: var(--accent-cyan);
 }
 
 .header-search-btn {
@@ -252,7 +375,7 @@ body {
 }
 
 /* ==========================================================================
-   Layout Frame
+   Layout Frame & Sticky Sidebars (Image 3 Fix)
    ========================================================================== */
 .claude-docs-app {
   min-height: 100vh;
@@ -264,6 +387,7 @@ body {
   display: flex;
   flex: 1;
   width: 100%;
+  align-items: flex-start;
 }
 
 .claude-backdrop {
@@ -282,18 +406,19 @@ body {
 }
 
 /* ==========================================================================
-   Left Sidebar
+   Left Sidebar (Independent Scrollbar - Never Leaves Empty Gap)
    ========================================================================== */
 .meridian-sidebar {
   width: var(--sidebar-width);
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: 20px 0 40px 0;
+  padding: 20px 0 60px 0;
   flex-shrink: 0;
   height: calc(100vh - var(--header-height));
   position: sticky;
   top: var(--header-height);
+  z-index: 100;
 }
 
 .sidebar-mobile-header {
@@ -418,6 +543,7 @@ body {
   justify-content: center;
   background-color: var(--bg-primary);
   min-width: 0;
+  align-items: flex-start;
 }
 
 .claude-article-wrapper {
@@ -764,19 +890,22 @@ body {
 }
 
 /* ==========================================================================
-   Right Table of Contents & Helpful Widget
+   Right Table of Contents & Helpful Widget (Sticky & Smooth Scroll)
    ========================================================================== */
 .claude-toc {
   width: var(--toc-width);
   flex-shrink: 0;
   padding: 32px 20px 40px 10px;
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
 }
 
 .toc-sticky-container {
-  position: sticky;
-  top: calc(var(--header-height) + 32px);
-  max-height: calc(100vh - var(--header-height) - 50px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .toc-section-heading {
@@ -785,7 +914,7 @@ body {
   color: var(--text-heading);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .toc-items-list {
@@ -832,13 +961,13 @@ body {
   color: var(--text-muted);
 }
 
-/* Was this helpful card */
+/* Was this helpful card - One-time per page */
 .was-this-helpful-card {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 14px;
-  margin-top: 28px;
+  margin-top: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
@@ -878,12 +1007,22 @@ body {
 .feedback-btn:hover {
   background-color: var(--bg-hover);
   color: var(--text-main);
+  border-color: #BDBDBD;
 }
 
-.feedback-btn.selected {
-  background-color: var(--bg-active-item);
-  border-color: var(--accent-cyan);
+.feedback-thankyou-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--accent-cyan);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.thankyou-icon {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -1018,6 +1157,104 @@ body {
 .footer-copy {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Cookie Consent Toast Banner (English)
+   ========================================================================== */
+.cookie-consent-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: 420px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  padding: 16px 18px;
+  z-index: 2500;
+  animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cookie-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cookie-icon {
+  color: var(--accent-cyan);
+}
+
+.cookie-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  flex: 1;
+}
+
+.cookie-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.cookie-text {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.cookie-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cookie-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.accept-btn {
+  background-color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  color: #FFFFFF;
+}
+
+.accept-btn:hover {
+  background-color: #00939F;
+  border-color: #00939F;
+}
+
+.decline-btn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.decline-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
 }
 
 /* ==========================================================================
@@ -1224,5 +1461,10 @@ body {
   .title-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .cookie-consent-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
   }
 }

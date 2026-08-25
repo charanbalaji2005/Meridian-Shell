@@ -5,13 +5,16 @@ import { Breadcrumbs } from './components/Breadcrumbs';
 import { DocContent } from './components/DocContent';
 import { TableOfContents } from './components/TableOfContents';
 import { SearchModal } from './components/SearchModal';
+import { CookieConsent } from './components/CookieConsent';
 import { DOCS_ARTICLES } from './data/docsContent';
+import { SupportedLanguage, TRANSLATIONS } from './i18n/translations';
 
 export const App: React.FC = () => {
   const [activeId, setActiveId] = useState<string>('graphics-inline-images');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
 
   // Handle URL hash changes
   useEffect(() => {
@@ -59,6 +62,19 @@ export const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
 
+  // Handle Language
+  useEffect(() => {
+    const savedLang = (localStorage.getItem('meridian_lang') as SupportedLanguage) || 'en';
+    if (TRANSLATIONS[savedLang]) {
+      setLanguage(savedLang);
+    }
+  }, []);
+
+  const handleSelectLanguage = (lang: SupportedLanguage) => {
+    setLanguage(lang);
+    localStorage.setItem('meridian_lang', lang);
+  };
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -76,6 +92,7 @@ export const App: React.FC = () => {
   };
 
   const currentArticle = DOCS_ARTICLES[activeId] || DOCS_ARTICLES['graphics-inline-images'] || DOCS_ARTICLES['intro'];
+  const t = TRANSLATIONS[language] || TRANSLATIONS.en;
 
   return (
     <div className="claude-docs-app">
@@ -86,6 +103,9 @@ export const App: React.FC = () => {
         theme={theme}
         onToggleTheme={toggleTheme}
         onNavigate={handleSelectArticle}
+        language={language}
+        onSelectLanguage={handleSelectLanguage}
+        t={t}
       />
 
       <div className="claude-layout-container">
@@ -109,17 +129,20 @@ export const App: React.FC = () => {
               category={currentArticle.category}
               title={currentArticle.title}
               onNavigateHome={() => handleSelectArticle('intro')}
+              t={t}
             />
 
             <DocContent
               article={currentArticle}
               onNavigate={handleSelectArticle}
+              t={t}
             />
           </div>
 
           <TableOfContents
+            articleId={activeId}
             headings={currentArticle.headings}
-            onNavigateToContributing={() => handleSelectArticle('proj-contributing')}
+            t={t}
           />
         </main>
       </div>
@@ -136,9 +159,9 @@ export const App: React.FC = () => {
             <span className="footer-title">Meridian Shell</span>
           </div>
           <div className="footer-links">
-            <button onClick={() => handleSelectArticle('intro')} className="footer-link-btn">Documentation</button>
+            <button onClick={() => handleSelectArticle('intro')} className="footer-link-btn">{t.docTitle}</button>
             <a href="https://github.com/charanbalaji2005/Meridian-Shell" target="_blank" rel="noreferrer" className="footer-link">GitHub</a>
-            <button onClick={() => handleSelectArticle('proj-changelog')} className="footer-link-btn">Release Notes</button>
+            <button onClick={() => handleSelectArticle('proj-changelog')} className="footer-link-btn">{t.releaseNotes}</button>
             <button onClick={() => handleSelectArticle('proj-contributing')} className="footer-link-btn">Contributing</button>
             <button onClick={() => handleSelectArticle('proj-license')} className="footer-link-btn">License</button>
             <button onClick={() => handleSelectArticle('dev-security')} className="footer-link-btn">Security</button>
@@ -153,7 +176,10 @@ export const App: React.FC = () => {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectArticle={handleSelectArticle}
+        t={t}
       />
+
+      <CookieConsent t={t} />
     </div>
   );
 };

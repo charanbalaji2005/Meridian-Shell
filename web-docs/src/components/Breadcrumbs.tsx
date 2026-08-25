@@ -1,16 +1,19 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { TranslationStrings } from '../i18n/translations';
 
 interface BreadcrumbsProps {
   category: string;
   title: string;
   onNavigateHome: () => void;
+  t: TranslationStrings;
 }
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   category,
   title,
   onNavigateHome,
+  t,
 }) => {
   // Format category to Title Case if uppercase
   const formattedCategory = category
@@ -22,11 +25,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   return (
     <nav className="claude-breadcrumbs" aria-label="Breadcrumbs">
       <button onClick={onNavigateHome} className="breadcrumb-link">
-        All Collections
+        {t.allCollections}
       </button>
       <ChevronRight size={13} className="breadcrumb-separator" />
       <button onClick={onNavigateHome} className="breadcrumb-link">
-        Meridian Shell
+        {t.meridianShell}
       </button>
       <ChevronRight size={13} className="breadcrumb-separator" />
       <span className="breadcrumb-link">{formattedCategory}</span>

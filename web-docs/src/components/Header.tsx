@@ -1,5 +1,6 @@
-import React from 'react';
-import { Search, Moon, Sun, Menu, X, Globe, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Moon, Sun, Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
+import { SupportedLanguage, LANGUAGE_OPTIONS, TranslationStrings } from '../i18n/translations';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -8,6 +9,9 @@ interface HeaderProps {
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
   onNavigate: (id: string) => void;
+  language: SupportedLanguage;
+  onSelectLanguage: (lang: SupportedLanguage) => void;
+  t: TranslationStrings;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,7 +21,26 @@ export const Header: React.FC<HeaderProps> = ({
   theme,
   onToggleTheme,
   onNavigate,
+  language,
+  onSelectLanguage,
+  t,
 }) => {
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close language menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentLang = LANGUAGE_OPTIONS.find((l) => l.code === language) || LANGUAGE_OPTIONS[0];
+
   return (
     <header className="meridian-header">
       <div className="header-left">
@@ -54,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div className="brand-text-block">
             <span className="brand-name">MERIDIAN SHELL</span>
-            <span className="brand-tag">DOCS</span>
+            <span className="brand-tag">{t.brandDocs}</span>
           </div>
         </a>
       </div>
@@ -62,27 +85,57 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-right">
         <nav className="header-nav-links">
           <button onClick={() => onNavigate('ref-cli')} className="header-nav-link">
-            API Docs
+            {t.apiDocs}
           </button>
           <button onClick={() => onNavigate('proj-changelog')} className="header-nav-link">
-            Release Notes
+            {t.releaseNotes}
           </button>
           <button onClick={() => onNavigate('quickstart')} className="header-nav-link">
-            Getting Started
+            {t.gettingStarted}
           </button>
         </nav>
 
-        <div className="header-lang-wrapper">
-          <button className="header-lang-btn" aria-label="Select Language">
+        {/* International Language Selector with Telugu */}
+        <div className="header-lang-wrapper" ref={langMenuRef}>
+          <button
+            className="header-lang-btn"
+            onClick={() => setIsLangOpen(!isLangOpen)}
+            aria-label="Select Language"
+            aria-expanded={isLangOpen}
+          >
             <Globe size={14} />
-            <span>English</span>
-            <ChevronDown size={12} />
+            <span>{currentLang.nativeName}</span>
+            <ChevronDown size={12} className={`lang-chevron ${isLangOpen ? 'open' : ''}`} />
           </button>
+
+          {isLangOpen && (
+            <div className="lang-dropdown-menu">
+              <div className="lang-menu-header">Select Language</div>
+              <ul className="lang-list">
+                {LANGUAGE_OPTIONS.map((opt) => (
+                  <li key={opt.code}>
+                    <button
+                      className={`lang-option-btn ${opt.code === language ? 'active' : ''}`}
+                      onClick={() => {
+                        onSelectLanguage(opt.code);
+                        setIsLangOpen(false);
+                      }}
+                    >
+                      <span className="lang-flag">{opt.flag}</span>
+                      <span className="lang-label">{opt.nativeName}</span>
+                      <span className="lang-sub">{opt.name}</span>
+                      {opt.code === language && <Check size={14} className="lang-check" />}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
-        <button className="header-search-btn" onClick={onOpenSearch} aria-label="Search documentation">
+        <button className="header-search-btn" onClick={onOpenSearch} aria-label={t.search}>
           <Search size={14} className="search-icon" />
-          <span className="search-placeholder">Search</span>
+          <span className="search-placeholder">{t.search}</span>
           <kbd className="search-kbd">Ctrl K</kbd>
         </button>
 
