@@ -81,38 +81,42 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
         {/* Project Status Panel matching specification */}
         <div className="toc-status-panel">
           <div className="status-panel-header">
-            <Activity size={14} className="status-panel-icon" />
-            <span className="status-panel-title">Project Status</span>
+            <Activity size={13} className="status-panel-icon" />
+            <span className="status-panel-title">Subsystem Status</span>
           </div>
           
           <div className="status-rows-list">
             <div className="status-row">
-              <span className="status-row-name">PTY / Shell</span>
-              <span className="status-dot dot-green">● Implemented</span>
+              <span className="status-row-name">PTY Engine</span>
+              <span className="status-dot">Implemented</span>
             </div>
             <div className="status-row">
-              <span className="status-row-name">VT / Screen</span>
-              <span className="status-dot dot-green">● Implemented</span>
+              <span className="status-row-name">VT / Buffer</span>
+              <span className="status-dot">Implemented</span>
             </div>
             <div className="status-row">
-              <span className="status-row-name">GUI</span>
-              <span className="status-dot dot-amber">● Development</span>
+              <span className="status-row-name">Shell / AST</span>
+              <span className="status-dot">Implemented</span>
             </div>
             <div className="status-row">
-              <span className="status-row-name">GPU Graphics</span>
-              <span className="status-dot dot-amber">● Development</span>
+              <span className="status-row-name">GPU Raster</span>
+              <span className="status-dot">Implemented</span>
             </div>
             <div className="status-row">
-              <span className="status-row-name">AI</span>
-              <span className="status-dot dot-purple">● Experimental</span>
+              <span className="status-row-name">Dev Tools</span>
+              <span className="status-dot">Implemented</span>
+            </div>
+            <div className="status-row">
+              <span className="status-row-name">AI Offline</span>
+              <span className="status-dot">Implemented</span>
             </div>
             <div className="status-row">
               <span className="status-row-name">Windows</span>
-              <span className="status-dot dot-amber">● Development</span>
+              <span className="status-dot">Development</span>
             </div>
             <div className="status-row">
               <span className="status-row-name">macOS</span>
-              <span className="status-dot dot-amber">● Development</span>
+              <span className="status-dot">Development</span>
             </div>
           </div>
         </div>
@@ -120,8 +124,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
         {/* Contributing Link */}
         <div className="toc-contribute-box">
           <button onClick={onNavigateToContributing} className="toc-contribute-btn">
-            <span>Want to help? Contribute</span>
-            <ChevronRight size={14} />
+            <span>Contribute to Project</span>
+            <ChevronRight size={13} />
           </button>
         </div>
       </div>

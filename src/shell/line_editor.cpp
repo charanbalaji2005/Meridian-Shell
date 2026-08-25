@@ -1,5 +1,10 @@
 #include "line_editor.hpp"
 #include "../dev/git_intel.hpp"
+#include "../dev/command_palette.hpp"
+#include "../dev/universal_search.hpp"
+#include "../dev/rich_history.hpp"
+#include "../core/vt/screen_buffer.hpp"
+#include "../workspace/pane_tree.hpp"
 #include "../core/art_gallery.hpp"
 
 #include <algorithm>
@@ -234,14 +239,61 @@ std::string LineEditor::read_line(
             return "";
         }
 
-        // Ctrl+D (EOF on empty line)
+        // Ctrl+D / Ctrl+Shift+D
         if (c == 4) {
             if (current_line.empty()) {
                 if (preview_lines_drawn > 0) {
                     clear_history_preview(out, preview_lines_drawn);
                 }
                 return "exit";
+            } else {
+                // Split vertical
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
+                }
+                workspace::PaneTree tree;
+                uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
+                out << "\n\033[38;2;34;197;94m✔\033[0m Pane split vertically (ID: " << new_id << ") [Ctrl+Shift+D]\n";
+                out.flush();
+                refresh_prompt();
+                continue;
             }
+        }
+
+        // Ctrl+E / Ctrl+Shift+E: Split Horizontal
+        if (c == 5) {
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
+            }
+            workspace::PaneTree tree;
+            uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Horizontal);
+            out << "\n\033[38;2;34;197;94m✔\033[0m Pane split horizontally (ID: " << new_id << ") [Ctrl+Shift+E]\n";
+            out.flush();
+            refresh_prompt();
+            continue;
+        }
+
+        // Ctrl+F / Ctrl+Shift+F: Universal Search across scrollback buffer & history
+        if (c == 6) {
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
+            }
+            std::string q = current_line;
+            if (q.empty()) q = "error";
+            vt::ScreenBuffer screen;
+            dev::RichHistory r_hist;
+            auto matches = dev::UniversalSearch::search_all(screen, r_hist, q);
+            out << "\n\033[1;36m┌─── Universal Search (Ctrl+Shift+F) ──────────────────────────┐\033[0m\n"
+                << "\033[1;37mQuery: \"" << q << "\" (" << matches.size() << " matches across scrollback & history)\033[0m\n";
+            for (const auto& m : matches) {
+                out << "  \033[1;33m[" << m.source_label << "]\033[0m " << m.line_content << "\n";
+            }
+            out << "\033[1;36m└──────────────────────────────────────────────────────────────┘\033[0m\n";
+            out.flush();
+            refresh_prompt();
             continue;
         }
 
@@ -257,33 +309,23 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Ctrl+P / Ctrl+Shift+P: Terminal Anime / Artwork Selector
+        // Ctrl+P / Ctrl+Shift+P: Command Palette Fuzzy Search & Action Launcher
         if (c == 16) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);
                 preview_lines_drawn = 0;
             }
-            auto themes = core::ArtGallery::list_themes();
-            std::string cur = core::ArtGallery::get_configured_choice();
+            dev::CommandPalette palette;
+            auto results = palette.search(current_line);
 
-            out << "\n\033[1;36m┌─── MERIDIAN ANIME & ARTWORK SELECTOR (Ctrl+P) ──────────────────────────────────┐\033[0m\n";
-            for (size_t i = 0; i < themes.size(); ++i) {
-                bool is_active = (cur == themes[i].first || cur == std::to_string(i));
-                out << "\033[1;36m│\033[0m " << (is_active ? "\033[1;32m●\033[0m" : " ")
-                    << " \033[1;33m[" << i << "]\033[0m \033[1;37m" << themes[i].second;
-                int pad = 58 - static_cast<int>(themes[i].second.size());
-                for (int p = 0; p < pad; ++p) out << " ";
-                out << (is_active ? "\033[1;32m[ACTIVE]\033[0m" : "        ") << " \033[1;36m│\033[0m\n";
+            out << "\n\033[1;37m┌─── Meridian Command Palette (Ctrl+Shift+P) ──────────────────┐\033[0m\n";
+            for (const auto& a : results) {
+                out << "\033[1;37m│\033[0m \033[1;36m[" << a.category << "]\033[0m \033[1;37m" << a.title << "\033[0m "
+                    << "\033[38;2;140;150;170m(" << a.shortcut << ")\033[0m\n";
             }
-            bool is_random = (cur == "random" || cur.empty());
-            out << "\033[1;36m│\033[0m " << (is_random ? "\033[1;32m●\033[0m" : " ")
-                << " \033[1;33m[r]\033[0m \033[1;37mRandom / Rotating on every startup                         \033[0m"
-                << (is_random ? "\033[1;32m[ACTIVE]\033[0m" : "        ") << " \033[1;36m│\033[0m\n";
-            out << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────────┘\033[0m\n"
-                << "\033[0;37mTip: Type '\033[1;32mpic set <0-9|name|path>\033[0m' or '\033[1;32mpic set random\033[0m' to switch anytime!\033[0m\n";
+            out << "\033[1;37m└──────────────────────────────────────────────────────────────┘\033[0m\n"
+                << "\033[0;37mTip: Type '\033[1;32mpalette <query>\033[0m' or '\033[1;32mpic set <theme>\033[0m' anytime!\033[0m\n";
             out.flush();
-            current_line = "pic set ";
-            cursor_pos = static_cast<int>(current_line.size());
             refresh_prompt();
             continue;
         }

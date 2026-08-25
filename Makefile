@@ -123,7 +123,7 @@ $(BUILD)/meridian_demo: $(CORE_OBJ) $(BUILD)/src/app/demo_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian-shell: $(BUILD)/src/app/shell_main.o $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ)
+$(BUILD)/meridian-shell: $(BUILD)/src/app/shell_main.o $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 

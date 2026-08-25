@@ -9,7 +9,7 @@ module.exports = function(addArt) {
     `
 <h2 id="github-links-spec">Official GitHub Repository</h2>
 <p>The official source code repository is hosted on GitHub:</p>
-<p><a href="https://github.com/charanbalaji2005/Meridian-Shell" target="_blank" style="color: #00E5FF; font-weight: 600;">https://github.com/charanbalaji2005/Meridian-Shell</a></p>
+<p><a href="https://github.com/charanbalaji2005/Meridian-Shell" target="_blank">https://github.com/charanbalaji2005/Meridian-Shell</a></p>
 
 <h2 id="issue-tracker">Issue Tracker & Bug Reports</h2>
 <p>Encountered a bug or rendering issue? Submit an issue on our GitHub issue tracker with your OS version, GPU hardware, and terminal logs.</p>
@@ -76,7 +76,7 @@ module.exports = function(addArt) {
     ],
     `
 <div class="note-box note-success">
-  <div class="note-title">🤝 Open Source Community Welcome!</div>
+  <div class="note-title">Open Source Community Welcome</div>
   <p>Contributions of all kinds are warmly welcomed! Bug fixes, rendering improvements, new anime themes, and shell features are highly encouraged.</p>
 </div>
 

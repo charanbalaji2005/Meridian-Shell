@@ -4,8 +4,19 @@
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
 #include "../core/graphics/image_decoder.hpp"
+#include "../core/vt/screen_buffer.hpp"
+#include "../core/renderer/telemetry_profiler.hpp"
 #include "../ai/intent_engine.hpp"
 #include "../ai/error_diagnostics.hpp"
+#include "../dev/command_palette.hpp"
+#include "../dev/universal_search.hpp"
+#include "../dev/system_monitor.hpp"
+#include "../dev/git_intel.hpp"
+#include "../dev/file_explorer.hpp"
+#include "../dev/ssh_manager.hpp"
+#include "../dev/rich_history.hpp"
+#include "../plugins/plugin_manager.hpp"
+#include "../workspace/pane_tree.hpp"
 
 #include <cerrno>
 #include <climits>
@@ -25,7 +36,7 @@ namespace {
 const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
-    "pic", "ai"
+    "pic", "ai", "palette", "search", "split", "monitor", "git", "files", "ssh", "plugins", "perf"
 };
 } // namespace
 
@@ -298,6 +309,96 @@ static int builtin_ai(const std::vector<std::string>& argv) {
     return 0;
 }
 
+static int builtin_palette(const std::vector<std::string>& argv) {
+    std::string q = (argv.size() >= 2) ? argv[1] : "";
+    dev::CommandPalette palette;
+    auto results = palette.search(q);
+    std::cout << "┌─── Meridian Command Palette (Ctrl+Shift+P) ────────────\n";
+    for (const auto& a : results) {
+        std::cout << "│ [" << a.category << "] " << a.title << " (" << a.shortcut << ")\n";
+    }
+    std::cout << "└─────────────────────────────────────────────────────────\n";
+    return 0;
+}
+
+static int builtin_search(const std::vector<std::string>& argv, Executor& ctx) {
+    std::string q;
+    for (size_t i = 1; i < argv.size(); ++i) {
+        if (i > 1) q += " ";
+        q += argv[i];
+    }
+    if (q.empty()) {
+        std::cout << "Usage: search <query>\n";
+        return 1;
+    }
+    vt::ScreenBuffer screen;
+    dev::RichHistory history;
+    auto matches = dev::UniversalSearch::search_all(screen, history, q);
+    std::cout << "Universal Search results for \"" << q << "\" (" << matches.size() << " matches):\n";
+    for (const auto& m : matches) {
+        std::cout << "  [" << m.source_label << "] " << m.line_content << "\n";
+    }
+    return 0;
+}
+
+static int builtin_split(const std::vector<std::string>& argv) {
+    std::string dir = (argv.size() >= 2) ? argv[1] : "v";
+    workspace::PaneTree tree;
+    if (dir == "v" || dir == "vertical" || dir == "-v") {
+        uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split vertically (ID: " << new_id << ") [Ctrl+Shift+D]\n";
+    } else {
+        uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Horizontal);
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split horizontally (ID: " << new_id << ") [Ctrl+Shift+E]\n";
+    }
+    return 0;
+}
+
+static int builtin_monitor() {
+    dev::SystemMonitor mon;
+    auto metrics = mon.sample();
+    std::cout << metrics.format_dashboard();
+    return 0;
+}
+
+static int builtin_git() {
+    auto status = dev::GitIntel::inspect_directory(".");
+    std::cout << status.format_panel();
+    return 0;
+}
+
+static int builtin_files(const std::vector<std::string>& argv) {
+    std::string target = (argv.size() >= 2) ? argv[1] : ".";
+    auto root = dev::FileExplorer::scan_directory(target, 2);
+    std::cout << dev::FileExplorer::format_tree(root);
+    return 0;
+}
+
+static int builtin_ssh(const std::vector<std::string>& argv) {
+    dev::SSHManager ssh_mgr;
+    if (argv.size() >= 2) {
+        std::string alias = argv[1];
+        auto host = ssh_mgr.find_host(alias);
+        if (host) {
+            std::cout << "\033[1;38;2;0;229;255mConnecting to " << host->alias << " (" << host->hostname << ")...\033[0m\n";
+            std::string cmd = host->command_line();
+            return std::system(cmd.c_str());
+        }
+    }
+    std::cout << ssh_mgr.format_overview();
+    return 0;
+}
+
+static int builtin_plugins() {
+    std::cout << plugins::PluginManager::instance().format_plugin_list();
+    return 0;
+}
+
+static int builtin_perf() {
+    std::cout << renderer::TelemetryProfiler::instance().format_report();
+    return 0;
+}
+
 static int builtin_help() {
     std::cout <<
         "Meridian Shell builtins:\n"
@@ -312,8 +413,16 @@ static int builtin_help() {
         "  fg [%N]          bring a job to the foreground\n"
         "  bg [%N]          resume a stopped job in the background\n"
         "  type NAME        show whether NAME is a builtin or found in PATH\n"
-        "  pic <image-file> render original full-color raster image directly on canvas\n"
-        "                   Options: --clear, --width <W>, --height <H>, set <path>\n"
+        "  palette [query]  open / fuzzy-search Command Palette (Ctrl+Shift+P)\n"
+        "  search <query>   search across scrollback & history (Ctrl+Shift+F)\n"
+        "  split [v|h]      split active terminal pane (Ctrl+Shift+D / Ctrl+Shift+E)\n"
+        "  monitor          display live CPU, RAM, Disk, Network metrics\n"
+        "  git              inspect Git branch divergence and changes\n"
+        "  files [dir]      view tree file explorer with git badges\n"
+        "  ssh [alias]      manage & connect to SSH remote workspaces\n"
+        "  plugins          list active extensible plugins & hooks\n"
+        "  perf             display GPU framerate & telemetry profiler\n"
+        "  pic <file>       render direct full-color raster image\n"
         "  ai <query>       inline AI intent translation or error diagnosis\n"
         "  exit [code]      exit the shell\n";
     return 0;
@@ -333,6 +442,15 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "type" || name == "which") return builtin_type(argv);
     if (name == "pic") return builtin_pic(argv);
     if (name == "ai") return builtin_ai(argv);
+    if (name == "palette") return builtin_palette(argv);
+    if (name == "search") return builtin_search(argv, ctx);
+    if (name == "split") return builtin_split(argv);
+    if (name == "monitor") return builtin_monitor();
+    if (name == "git") return builtin_git();
+    if (name == "files") return builtin_files(argv);
+    if (name == "ssh") return builtin_ssh(argv);
+    if (name == "plugins") return builtin_plugins();
+    if (name == "perf" || name == "performance") return builtin_perf();
     if (name == "help") return builtin_help();
     if (name == "clear") { std::cout << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\"; return 0; }
     if (name == "alias") return 0;
