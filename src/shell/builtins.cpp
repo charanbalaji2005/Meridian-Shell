@@ -330,6 +330,7 @@ static int builtin_palette(const std::vector<std::string>& argv) {
 }
 
 static int builtin_search(const std::vector<std::string>& argv, Executor& ctx) {
+    (void)ctx;
     std::string q;
     for (size_t i = 1; i < argv.size(); ++i) {
         if (i > 1) q += " ";
