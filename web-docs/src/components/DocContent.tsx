@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { DocArticle } from '../data/docsContent';
 import { NAV_STRUCTURE } from '../data/docsNav';
-import { Copy, Check, ArrowLeft, ArrowRight } from 'lucide-react';
+import {
+  Copy,
+  Check,
+  ArrowLeft,
+  ArrowRight,
+  List,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  ThumbsUp,
+  ThumbsDown,
+  CheckCircle2
+} from 'lucide-react';
 import { SupportedLanguage, TranslationStrings } from '../i18n/translations';
 import { getLocalizedArticleTitle } from '../i18n/articleTranslations';
 
@@ -19,6 +31,19 @@ export const DocContent: React.FC<DocContentProps> = ({
   t,
 }) => {
   const [copiedPage, setCopiedPage] = useState(false);
+  const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
+  const [mobileFeedbackGiven, setMobileFeedbackGiven] = useState(false);
+
+  // Check saved feedback for this page
+  useEffect(() => {
+    const saved = localStorage.getItem(`meridian_feedback_${article.id}`);
+    setMobileFeedbackGiven(!!saved);
+  }, [article.id]);
+
+  const handleMobileVote = (choice: 'up' | 'down') => {
+    setMobileFeedbackGiven(true);
+    localStorage.setItem(`meridian_feedback_${article.id}`, choice);
+  };
 
   // Flatten navigation items to calculate previous & next article
   const allNavItems: { id: string; title: string }[] = [];
@@ -39,6 +64,20 @@ export const DocContent: React.FC<DocContentProps> = ({
     navigator.clipboard.writeText(rawContent.trim());
     setCopiedPage(true);
     setTimeout(() => setCopiedPage(false), 2000);
+  };
+
+  const scrollToHeading = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const topOffset = 75;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+      setIsMobileTocOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -79,7 +118,6 @@ export const DocContent: React.FC<DocContentProps> = ({
     // 2. Enhance all standalone <pre> blocks with Claude-style header bar and copy button
     const preBlocks = document.querySelectorAll('.doc-body-content pre');
     preBlocks.forEach((pre) => {
-      // Skip if inside a wrapper that already has a code-header
       if (pre.closest('.code-block-wrapper')) return;
       if (pre.querySelector('.code-header-bar')) return;
 
@@ -142,10 +180,78 @@ export const DocContent: React.FC<DocContentProps> = ({
         <p className="article-lead-intro">{article.summary}</p>
       )}
 
+      {/* Mobile/Tablet Table of Contents Collapsible Box */}
+      {article.headings && article.headings.length > 0 && (
+        <div className="mobile-toc-accordion">
+          <button
+            className="mobile-toc-trigger"
+            onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
+            aria-expanded={isMobileTocOpen}
+          >
+            <div className="mobile-toc-label">
+              <List size={14} className="mobile-toc-icon" />
+              <span>{t.onThisPage}</span>
+            </div>
+            {isMobileTocOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          {isMobileTocOpen && (
+            <ul className="mobile-toc-list">
+              {article.headings.map((h) => (
+                <li key={h.id} className={`mobile-toc-item level-${h.level}`}>
+                  <button
+                    onClick={() => scrollToHeading(h.id)}
+                    className="mobile-toc-link"
+                  >
+                    {h.text}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div
         className="doc-body-content"
         dangerouslySetInnerHTML={{ __html: article.body }}
       />
+
+      {/* Mobile/Tablet Feedback Card */}
+      <div className="mobile-feedback-section">
+        <div className="was-this-helpful-card">
+          {mobileFeedbackGiven ? (
+            <div className="feedback-thankyou-state">
+              <CheckCircle2 size={16} className="thankyou-icon" />
+              <span className="thankyou-text">{t.feedbackThankYou}</span>
+            </div>
+          ) : (
+            <>
+              <div className="helpful-title">
+                <HelpCircle size={14} className="helpful-icon" />
+                <span>{t.wasThisHelpful}</span>
+              </div>
+              <div className="helpful-actions">
+                <button
+                  onClick={() => handleMobileVote('up')}
+                  className="feedback-btn"
+                  title="Yes, helpful"
+                  aria-label="Yes, this was helpful"
+                >
+                  <ThumbsUp size={14} />
+                </button>
+                <button
+                  onClick={() => handleMobileVote('down')}
+                  className="feedback-btn"
+                  title="No, not helpful"
+                  aria-label="No, this was not helpful"
+                >
+                  <ThumbsDown size={14} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       <footer className="article-bottom-pager">
         <div className="pager-container">
