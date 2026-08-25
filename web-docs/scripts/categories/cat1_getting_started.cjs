@@ -26,10 +26,17 @@ module.exports = function(addArt) {
   </div>
 </div>
 
-<div class="screenshot-container">
-  <img src="./assets/meridian_screenshot.png" alt="Meridian Terminal live session running on Fedora Linux" class="meridian-live-screenshot" />
-  <div class="screenshot-label">
-    <span>Meridian Shell 2.0 on Fedora Linux (x86_64) running Hyprland with anime artwork header (Theme 2 / Ribbon Girl) and live Fastfetch hardware metrics.</span>
+<div class="terminal-screenshot-card">
+  <img src="./assets/meridian-terminal-screenshot-1.png" alt="Meridian Terminal Live Interface with Anime Artwork and System Telemetry" class="terminal-screenshot-img" />
+  <div class="terminal-screenshot-caption">
+    Meridian Shell running live interactive session with GPU-accelerated raster artwork header, multi-badge Powerline status, and system telemetry.
+  </div>
+</div>
+
+<div class="terminal-screenshot-card">
+  <img src="./assets/meridian-terminal-screenshot-2.png" alt="Meridian Terminal Split Panes and Fastfetch Metrics" class="terminal-screenshot-img" />
+  <div class="terminal-screenshot-caption">
+    Meridian Terminal displaying custom anime wallpapers, live Git branch divergence, and system metrics on Fedora Linux.
   </div>
 </div>
 
