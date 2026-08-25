@@ -12,6 +12,7 @@ namespace meridian::shell {
 class Executor; // forward decl to avoid a header cycle
 
 bool is_builtin(const std::string& name);
+std::vector<std::string> get_builtin_names();
 
 // Runs a builtin. `argv` is already word-expanded. Returns the exit
 // status. Safe to call either in-process (lone builtin, no redirection)

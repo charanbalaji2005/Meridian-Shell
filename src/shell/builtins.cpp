@@ -46,6 +46,14 @@ bool is_builtin(const std::string& name) {
     return false;
 }
 
+std::vector<std::string> get_builtin_names() {
+    std::vector<std::string> list;
+    for (auto* n : kBuiltinNames) {
+        list.push_back(n);
+    }
+    return list;
+}
+
 static int builtin_cd(const std::vector<std::string>& argv) {
     std::string target;
     if (argv.size() < 2) {

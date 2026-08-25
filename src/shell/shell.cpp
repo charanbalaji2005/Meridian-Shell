@@ -1,7 +1,10 @@
 #include "shell.hpp"
 #include "line_editor.hpp"
+#include "builtins.hpp"
+#include "../ai/command_analyzer.hpp"
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
+#include <termios.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -142,6 +145,9 @@ int Shell::run_command(const std::string& command, std::ostream& err) {
 int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& err) {
     bool is_real_interactive = (&in == &std::cin && LineEditor::is_terminal_interactive());
 
+    ai::CommandAnalyzer analyzer(get_builtin_names());
+    analyzer.refresh_path_index();
+
     if (is_real_interactive) {
         out << "\033[2J\033[H"; // Clear screen & home cursor so no previous shell prompt is visible
         render_reference_layout_header(out);
@@ -180,6 +186,50 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
             out.flush();
             executor_.push_history(line);
             continue;
+        }
+
+        // Interactive AI Typo Detection & Correction Popup
+        if (is_real_interactive && !trimmed.empty()) {
+            std::string first_token;
+            size_t sp = trimmed.find_first_of(" \t;&|");
+            if (sp != std::string::npos) first_token = trimmed.substr(0, sp);
+            else first_token = trimmed;
+
+            if (!first_token.empty() && first_token.find('=') == std::string::npos && first_token.front() != '#') {
+                auto suggestion = analyzer.analyze(first_token);
+                if (suggestion.has_value()) {
+                    std::string suggested_cmd = suggestion->suggested + trimmed.substr(first_token.size());
+                    out << "\n\033[38;2;0;229;255m┌── \033[1;33m💡 Meridian AI Typo Correction\033[0;38;2;0;229;255m ──────────────────────────────────────────┐\033[0m\n"
+                        << "\033[38;2;0;229;255m│\033[0m Command '\033[1;31m" << first_token << "\033[0m' not found in system PATH or builtins.\n"
+                        << "\033[38;2;0;229;255m│\033[0m Did you mean: \033[1;38;2;34;197;94m" << suggested_cmd << "\033[0m ?\n"
+                        << "\033[38;2;0;229;255m│\033[0m\n"
+                        << "\033[38;2;0;229;255m│\033[0m Press [\033[1;32mY\033[0m/Enter] Run correction   [\033[1;31mN\033[0m/Esc] Keep original\n"
+                        << "\033[38;2;0;229;255m└───────────────────────────────────────────────────────────────────────┘\033[0m\n";
+                    out.flush();
+
+                    struct termios orig_t{}, raw_t{};
+                    if (tcgetattr(STDIN_FILENO, &orig_t) == 0) {
+                        raw_t = orig_t;
+                        raw_t.c_lflag &= ~(ICANON | ECHO);
+                        tcsetattr(STDIN_FILENO, TCSANOW, &raw_t);
+
+                        char key = 0;
+                        int n = read(STDIN_FILENO, &key, 1);
+
+                        tcsetattr(STDIN_FILENO, TCSANOW, &orig_t);
+
+                        if (n > 0 && (key == 'y' || key == 'Y' || key == '\r' || key == '\n')) {
+                            line = suggested_cmd;
+                            trimmed = suggested_cmd;
+                            out << "\033[38;2;34;197;94m✔ Running: " << line << "\033[0m\n";
+                            out.flush();
+                        } else {
+                            out << "\033[38;2;140;150;170m↪ Running original: " << line << "\033[0m\n";
+                            out.flush();
+                        }
+                    }
+                }
+            }
         }
 
         std::string error;

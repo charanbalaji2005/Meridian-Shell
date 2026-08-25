@@ -955,9 +955,14 @@ export const DOCS_ARTICLES: Record<string, DocArticle> = {
     "id": "dev-ai-engine",
     "title": "AI Engine",
     "category": "DEVELOPER",
-    "status": "experimental",
+    "status": "implemented",
     "lastUpdated": "August 25, 2026",
     "headings": [
+      {
+        "id": "typo-popup-algorithm",
+        "text": "Interactive AI Typo Correction Popup & Algorithm",
+        "level": 2
+      },
       {
         "id": "intent-engine-dev",
         "text": "Intent Engine (meridian ask)",
@@ -974,8 +979,8 @@ export const DOCS_ARTICLES: Record<string, DocArticle> = {
         "level": 2
       }
     ],
-    "summary": "Offline natural language intent translation, compiler diagnostics, and autonomous coding agent.",
-    "body": "<h2 id=\"intent-engine-dev\">Intent Engine (meridian ask)</h2>\n<pre><code class=\"language-bash\">meridian ask \"find all log files modified in the last 24 hours\"\n# -> find . -name \"*.log\" -mtime -1</code></pre>\n\n<h2 id=\"diagnostics-dev\">Compiler & Runtime Diagnostics (meridian diag)</h2>\n<pre><code class=\"language-bash\">meridian diag \"g++: error: cannot find -lutil\"\n# -> Diagnosis: Missing POSIX utility library. Fix: install glibc-devel / libutil.</code></pre>\n\n<h2 id=\"agent-dev\">Autonomous Coding Agent (meridian agent)</h2>\n<pre><code class=\"language-bash\">meridian agent \"add unit tests for OSC 8 hyperlinks\"</code></pre>"
+    "summary": "Offline natural language intent translation, interactive typo correction popup, compiler diagnostics, and autonomous coding agent.",
+    "body": "<h2 id=\"typo-popup-algorithm\">Interactive AI Typo Correction Popup & Algorithm</h2>\n<p>When a misspelled or unknown command is entered in interactive mode (e.g. <code>gti status</code>, <code>sl</code>, <code>mkdri test</code>, <code>pyhton script.py</code>), Meridian AI automatically analyzes the command and renders an interactive confirmation popup.</p>\n\n<div class=\"code-block-wrapper\">\n  <div class=\"code-header\"><span>Interactive AI Typo Popup Dialog</span></div>\n  <pre><code class=\"language-text\">┌── 💡 Meridian AI Typo Correction ──────────────────────────────────────────┐\n│ Command 'gti' not found in system PATH or builtins.                        │\n│ Did you mean: git status ?                                                 │\n│                                                                            │\n│ Press [Y/Enter] Run correction   [N/Esc] Keep original                     │\n└────────────────────────────────────────────────────────────────────────────┘</code></pre>\n</div>\n\n<p><strong>Correction Algorithm:</strong></p>\n<ol>\n  <li><strong>Optimal String Alignment (OSA):</strong> Calculates edit distance across insertions, deletions, substitutions, and adjacent transpositions (e.g. <code>gerp</code> &rarr; <code>grep</code>).</li>\n  <li><strong>Dynamic Proportional Threshold:</strong> Rejects false positives by requiring <code>distance &le; max(1, len / 3)</code> against known builtins and cached <code>$PATH</code> binaries.</li>\n  <li><strong>Single-Key Interactive Intercept:</strong> Puts terminal in non-canonical raw mode (<code>ICANON | ECHO</code> cleared) to read response immediately without requiring extra prompts.</li>\n</ol>\n\n<h2 id=\"intent-engine-dev\">Intent Engine (meridian ask)</h2>\n<pre><code class=\"language-bash\">meridian ask \"find all log files modified in the last 24 hours\"\n# -> find . -name \"*.log\" -mtime -1</code></pre>\n\n<h2 id=\"diagnostics-dev\">Compiler & Runtime Diagnostics (meridian diag)</h2>\n<pre><code class=\"language-bash\">meridian diag \"g++: error: cannot find -lutil\"\n# -> Diagnosis: Missing POSIX utility library. Fix: install glibc-devel / libutil.</code></pre>\n\n<h2 id=\"agent-dev\">Autonomous Coding Agent (meridian agent)</h2>\n<pre><code class=\"language-bash\">meridian agent \"add unit tests for OSC 8 hyperlinks\"</code></pre>"
   },
   "dev-security": {
     "id": "dev-security",

@@ -108,14 +108,35 @@ struct Attributes {
 `
   );
 
-  addArt('dev-ai-engine', 'AI Engine', 'DEVELOPER', 'experimental',
-    'Offline natural language intent translation, compiler diagnostics, and autonomous coding agent.',
+  addArt('dev-ai-engine', 'AI Engine', 'DEVELOPER', 'implemented',
+    'Offline natural language intent translation, interactive typo correction popup, compiler diagnostics, and autonomous coding agent.',
     [
+      { id: 'typo-popup-algorithm', text: 'Interactive AI Typo Correction Popup & Algorithm', level: 2 },
       { id: 'intent-engine-dev', text: 'Intent Engine (meridian ask)', level: 2 },
       { id: 'diagnostics-dev', text: 'Compiler & Runtime Diagnostics (meridian diag)', level: 2 },
       { id: 'agent-dev', text: 'Autonomous Coding Agent (meridian agent)', level: 2 }
     ],
     `
+<h2 id="typo-popup-algorithm">Interactive AI Typo Correction Popup & Algorithm</h2>
+<p>When a misspelled or unknown command is entered in interactive mode (e.g. <code>gti status</code>, <code>sl</code>, <code>mkdri test</code>, <code>pyhton script.py</code>), Meridian AI automatically analyzes the command and renders an interactive confirmation popup.</p>
+
+<div class="code-block-wrapper">
+  <div class="code-header"><span>Interactive AI Typo Popup Dialog</span></div>
+  <pre><code class="language-text">┌── 💡 Meridian AI Typo Correction ──────────────────────────────────────────┐
+│ Command 'gti' not found in system PATH or builtins.                        │
+│ Did you mean: git status ?                                                 │
+│                                                                            │
+│ Press [Y/Enter] Run correction   [N/Esc] Keep original                     │
+└────────────────────────────────────────────────────────────────────────────┘</code></pre>
+</div>
+
+<p><strong>Correction Algorithm:</strong></p>
+<ol>
+  <li><strong>Optimal String Alignment (OSA):</strong> Calculates edit distance across insertions, deletions, substitutions, and adjacent transpositions (e.g. <code>gerp</code> &rarr; <code>grep</code>).</li>
+  <li><strong>Dynamic Proportional Threshold:</strong> Rejects false positives by requiring <code>distance &le; max(1, len / 3)</code> against known builtins and cached <code>$PATH</code> binaries.</li>
+  <li><strong>Single-Key Interactive Intercept:</strong> Puts terminal in non-canonical raw mode (<code>ICANON | ECHO</code> cleared) to read response immediately without requiring extra prompts.</li>
+</ol>
+
 <h2 id="intent-engine-dev">Intent Engine (meridian ask)</h2>
 <pre><code class="language-bash">meridian ask "find all log files modified in the last 24 hours"
 # -> find . -name "*.log" -mtime -1</code></pre>
