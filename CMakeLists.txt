@@ -34,6 +34,7 @@ add_library(meridian-core STATIC
     src/core/graphics/terminal_graphic.cpp
     src/core/config.cpp
     src/core/terminal_image.cpp
+    src/core/art_gallery.cpp
     src/core/renderer/damage_tracker.cpp
     src/core/renderer/glyph_atlas.cpp
     src/core/renderer/render_pipeline.cpp

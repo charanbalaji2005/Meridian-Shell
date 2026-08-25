@@ -18,6 +18,7 @@ CORE_SRC := \
     src/core/pty/pty_session.cpp \
     src/core/config.cpp \
     src/core/terminal_image.cpp \
+    src/core/art_gallery.cpp \
     src/platform/LinuxPTY.cpp \
     src/core/renderer/damage_tracker.cpp \
     src/core/renderer/glyph_atlas.cpp \

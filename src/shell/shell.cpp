@@ -1,6 +1,7 @@
 #include "shell.hpp"
 #include "line_editor.hpp"
 #include "../core/terminal_image.hpp"
+#include "../core/art_gallery.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -83,8 +84,9 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Picture graphic lines (24-bit TrueColor Chainsaw Man image)
-    std::vector<std::string> art_lines = core::TerminalImage::render_reference_artwork_lines(10);
+    // 2. Picture graphic lines (High-resolution rotating ArtGallery artwork)
+    auto theme = core::ArtGallery::get_next_artwork(56, 22);
+    std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
 
     // 3. System info lines (sleek Nerd Font glyphs matching reference theme)
     std::vector<std::string> sys_lines = {
@@ -100,22 +102,23 @@ void render_reference_layout_header(std::ostream& out) {
         "\033[38;2;45;106;116m● \033[38;2;78;135;144m● \033[38;2;125;111;141m● \033[38;2;168;91;107m● \033[38;2;201;95;78m● \033[38;2;217;129;87m● \033[38;2;235;196;122m● \033[38;2;243;224;181m● \033[38;2;140;163;136m●\033[0m"
     };
 
-    // 4. Print Side-by-Side Reference Header
+    // 4. Print Side-by-Side Reference Header with balanced margins & gaps
     out << "\n";
     size_t rows = std::max(art_lines.size(), sys_lines.size());
     for (size_t r = 0; r < rows; ++r) {
-        out << "  ";
+        out << "  "; // 2 spaces left margin
         if (r < art_lines.size()) {
             out << art_lines[r];
         } else {
-            out << "                        ";
+            out << "                            "; // 28 spaces
         }
-        out << "    ";
+        out << "    "; // 4 spaces clean gap
         if (r < sys_lines.size()) {
             out << sys_lines[r];
         }
         out << "\n";
     }
+    out << "\n"; // Clean vertical space before Powerline badge
     out.flush();
 }
 
