@@ -263,5 +263,10 @@ std::optional<uint32_t> PaneTree::find_adjacent_pane(uint32_t from_id, Navigatio
     return std::nullopt;
 }
 
+PaneTree& get_session_pane_tree() {
+    static PaneTree s_session_tree;
+    return s_session_tree;
+}
+
 } // namespace meridian::workspace
 

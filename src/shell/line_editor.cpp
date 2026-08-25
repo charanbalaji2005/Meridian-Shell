@@ -239,37 +239,33 @@ std::string LineEditor::read_line(
             return "";
         }
 
-        // Ctrl+D / Ctrl+Shift+D
+        // Ctrl+D / Ctrl+Shift+D: Split active pane vertically
         if (c == 4) {
-            if (current_line.empty()) {
-                if (preview_lines_drawn > 0) {
-                    clear_history_preview(out, preview_lines_drawn);
-                }
-                return "exit";
-            } else {
-                // Split vertical
-                if (preview_lines_drawn > 0) {
-                    clear_history_preview(out, preview_lines_drawn);
-                    preview_lines_drawn = 0;
-                }
-                workspace::PaneTree tree;
-                uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
-                out << "\n\033[38;2;34;197;94m✔\033[0m Pane split vertically (ID: " << new_id << ") [Ctrl+Shift+D]\n";
-                out.flush();
-                refresh_prompt();
-                continue;
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
             }
+            auto& tree = workspace::get_session_pane_tree();
+            uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
+            out << "\n\033[38;2;34;197;94m✔\033[0m Pane split vertically [ID: " << new_id
+                << " | Active: " << tree.active_pane_id()
+                << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+D)\n";
+            out.flush();
+            refresh_prompt();
+            continue;
         }
 
-        // Ctrl+E / Ctrl+Shift+E: Split Horizontal
+        // Ctrl+E / Ctrl+Shift+E: Split active pane horizontally
         if (c == 5) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);
                 preview_lines_drawn = 0;
             }
-            workspace::PaneTree tree;
+            auto& tree = workspace::get_session_pane_tree();
             uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Horizontal);
-            out << "\n\033[38;2;34;197;94m✔\033[0m Pane split horizontally (ID: " << new_id << ") [Ctrl+Shift+E]\n";
+            out << "\n\033[38;2;34;197;94m✔\033[0m Pane split horizontally [ID: " << new_id
+                << " | Active: " << tree.active_pane_id()
+                << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+E)\n";
             out.flush();
             refresh_prompt();
             continue;
@@ -330,6 +326,25 @@ std::string LineEditor::read_line(
             continue;
         }
 
+        // Ctrl+Z / Ctrl+Shift+Z: Toggle zoom on active pane
+        if (c == 26) {
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
+            }
+            auto& tree = workspace::get_session_pane_tree();
+            tree.toggle_zoom();
+            if (tree.is_zoomed()) {
+                out << "\n\033[38;2;245;158;11m⛶\033[0m Pane ZOOMED / Maximized [ID: " << tree.active_pane_id() << "] (Ctrl+Shift+Z)\n";
+            } else {
+                out << "\n\033[38;2;59;130;246m⧉\033[0m Pane Zoom RESTORED / Unmaximized [Active ID: " << tree.active_pane_id()
+                    << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+Z)\n";
+            }
+            out.flush();
+            refresh_prompt();
+            continue;
+        }
+
         // Backspace: in-place character deletion
         if (c == 127 || c == 8) {
             if (preview_lines_drawn > 0) {
@@ -375,11 +390,20 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Escape key or Escape sequences (Arrows, Home, End)
+        // Escape key or Escape sequences (Arrows, Alt+Arrows, Ctrl+Shift+X, Home, End)
         if (c == 27) {
-            // Check if this is a standalone ESC keypress or the beginning of a sequence
-            if (!has_pending_input(STDIN_FILENO, 50)) {
-                // Standalone ESC pressed: Dismiss history preview and restore original text
+            std::string seq;
+            while (has_pending_input(STDIN_FILENO, 30)) {
+                char ch = 0;
+                if (read(STDIN_FILENO, &ch, 1) <= 0) break;
+                seq += ch;
+                if (seq.size() > 1 && ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '~' || ch == '@')) {
+                    break;
+                }
+            }
+
+            // Standalone ESC pressed: Dismiss history preview and restore original text
+            if (seq.empty()) {
                 if (preview_lines_drawn > 0) {
                     clear_history_preview(out, preview_lines_drawn);
                     preview_lines_drawn = 0;
@@ -391,82 +415,218 @@ std::string LineEditor::read_line(
                 continue;
             }
 
-            char seq[3] = {0, 0, 0};
-            if (read(STDIN_FILENO, &seq[0], 1) <= 0) continue;
-            if (read(STDIN_FILENO, &seq[1], 1) <= 0) continue;
+            // --- 1. Alt + Up Arrow: Navigate focus UP ---
+            if (seq == "[1;3A" || seq == "[1;9A" || seq == "[1;4A" || seq == "[1;7A" ||
+                seq == "\033[A" || seq == "[a" || seq == "[57352;3u") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
+                }
+                auto& tree = workspace::get_session_pane_tree();
+                auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Up);
+                if (adj.has_value()) {
+                    tree.set_active_pane(adj.value());
+                    out << "\n\033[38;2;0;229;255m▲\033[0m Focused pane UP [ID: " << adj.value() << "] (Alt+Up)\n";
+                } else {
+                    out << "\n\033[38;2;140;150;170mℹ No adjacent pane above current active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+                }
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
 
-            if (seq[0] == '[') {
-                // Up Arrow: History backward & show preview
-                if (seq[1] == 'A') {
-                    if (!history.empty() && history_idx > 0) {
-                        if (history_idx == static_cast<int>(history.size())) {
-                            original_line = current_line;
-                        }
-                        history_idx--;
-                        current_line = history[history_idx];
-                        cursor_pos = static_cast<int>(current_line.size());
+            // --- 2. Alt + Down Arrow: Navigate focus DOWN ---
+            if (seq == "[1;3B" || seq == "[1;9B" || seq == "[1;4B" || seq == "[1;7B" ||
+                seq == "\033[B" || seq == "[b" || seq == "[57353;3u") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
+                }
+                auto& tree = workspace::get_session_pane_tree();
+                auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Down);
+                if (adj.has_value()) {
+                    tree.set_active_pane(adj.value());
+                    out << "\n\033[38;2;0;229;255m▼\033[0m Focused pane DOWN [ID: " << adj.value() << "] (Alt+Down)\n";
+                } else {
+                    out << "\n\033[38;2;140;150;170mℹ No adjacent pane below current active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+                }
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
 
-                        int items_to_show = std::min(5, static_cast<int>(history.size()));
-                        int needed_lines = items_to_show + 2;
-                        if (preview_lines_drawn > 0) {
-                            clear_history_preview(out, preview_lines_drawn);
-                        }
-                        draw_history_preview(out, history, history_idx, 5);
-                        preview_lines_drawn = needed_lines;
-                        refresh_prompt();
-                    }
+            // --- 3. Alt + Left Arrow: Navigate focus LEFT ---
+            if (seq == "[1;3D" || seq == "[1;9D" || seq == "[1;4D" || seq == "[1;7D" ||
+                seq == "\033[D" || seq == "[d" || seq == "[57350;3u") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
                 }
-                // Down Arrow: History forward
-                else if (seq[1] == 'B') {
-                    if (history_idx + 1 < static_cast<int>(history.size())) {
-                        history_idx++;
-                        current_line = history[history_idx];
-                        cursor_pos = static_cast<int>(current_line.size());
+                auto& tree = workspace::get_session_pane_tree();
+                auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Left);
+                if (adj.has_value()) {
+                    tree.set_active_pane(adj.value());
+                    out << "\n\033[38;2;0;229;255m◀\033[0m Focused pane LEFT [ID: " << adj.value() << "] (Alt+Left)\n";
+                } else {
+                    out << "\n\033[38;2;140;150;170mℹ No adjacent pane to the left of active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+                }
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
 
-                        int items_to_show = std::min(5, static_cast<int>(history.size()));
-                        int needed_lines = items_to_show + 2;
-                        if (preview_lines_drawn > 0) {
-                            clear_history_preview(out, preview_lines_drawn);
-                        }
-                        draw_history_preview(out, history, history_idx, 5);
-                        preview_lines_drawn = needed_lines;
-                        refresh_prompt();
-                    } else if (history_idx + 1 == static_cast<int>(history.size())) {
-                        history_idx++;
-                        if (preview_lines_drawn > 0) {
-                            clear_history_preview(out, preview_lines_drawn);
-                            preview_lines_drawn = 0;
-                        }
-                        current_line = original_line;
-                        cursor_pos = static_cast<int>(current_line.size());
-                        refresh_prompt();
-                    }
+            // --- 4. Alt + Right Arrow: Navigate focus RIGHT ---
+            if (seq == "[1;3C" || seq == "[1;9C" || seq == "[1;4C" || seq == "[1;7C" ||
+                seq == "\033[C" || seq == "[c" || seq == "[57351;3u") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
                 }
-                // Right Arrow
-                else if (seq[1] == 'C') {
-                    if (cursor_pos < static_cast<int>(current_line.size())) {
-                        cursor_pos++;
-                        refresh_prompt();
-                    }
+                auto& tree = workspace::get_session_pane_tree();
+                auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Right);
+                if (adj.has_value()) {
+                    tree.set_active_pane(adj.value());
+                    out << "\n\033[38;2;0;229;255m▶\033[0m Focused pane RIGHT [ID: " << adj.value() << "] (Alt+Right)\n";
+                } else {
+                    out << "\n\033[38;2;140;150;170mℹ No adjacent pane to the right of active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
                 }
-                // Left Arrow
-                else if (seq[1] == 'D') {
-                    if (cursor_pos > 0) {
-                        cursor_pos--;
-                        refresh_prompt();
-                    }
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
+
+            // --- 5. Ctrl+Shift+D: Split active pane vertically ---
+            if (seq == "[1;6D" || seq == "[1;5D" || seq == "[1;2D" || seq == "[68;6u" ||
+                seq == "[100;6u" || seq == "[68;5u" || seq == "[100;5u" || seq == "[4;6~" || seq == "[4;5~") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
                 }
-                // Home
-                else if (seq[1] == 'H') {
-                    cursor_pos = 0;
+                auto& tree = workspace::get_session_pane_tree();
+                uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
+                out << "\n\033[38;2;34;197;94m✔\033[0m Pane split vertically [ID: " << new_id
+                    << " | Active: " << tree.active_pane_id()
+                    << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+D)\n";
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
+
+            // --- 6. Ctrl+Shift+E: Split active pane horizontally ---
+            if (seq == "[1;6E" || seq == "[1;5E" || seq == "[1;2E" || seq == "[69;6u" ||
+                seq == "[101;6u" || seq == "[69;5u" || seq == "[101;5u" || seq == "[5;6~" || seq == "[5;5~") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
+                }
+                auto& tree = workspace::get_session_pane_tree();
+                uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Horizontal);
+                out << "\n\033[38;2;34;197;94m✔\033[0m Pane split horizontally [ID: " << new_id
+                    << " | Active: " << tree.active_pane_id()
+                    << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+E)\n";
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
+
+            // --- 7. Ctrl+Shift+Z: Toggle zoom on active pane ---
+            if (seq == "[1;6Z" || seq == "[1;5Z" || seq == "[1;2Z" || seq == "[90;6u" ||
+                seq == "[122;6u" || seq == "[90;5u" || seq == "[122;5u" || seq == "[26;6~" || seq == "[26;5~") {
+                if (preview_lines_drawn > 0) {
+                    clear_history_preview(out, preview_lines_drawn);
+                    preview_lines_drawn = 0;
+                }
+                auto& tree = workspace::get_session_pane_tree();
+                tree.toggle_zoom();
+                if (tree.is_zoomed()) {
+                    out << "\n\033[38;2;245;158;11m⛶\033[0m Pane ZOOMED / Maximized [ID: " << tree.active_pane_id() << "] (Ctrl+Shift+Z)\n";
+                } else {
+                    out << "\n\033[38;2;59;130;246m⧉\033[0m Pane Zoom RESTORED / Unmaximized [Active ID: " << tree.active_pane_id()
+                        << " | Total: " << tree.count_panes() << "] (Ctrl+Shift+Z)\n";
+                }
+                out.flush();
+                refresh_prompt();
+                continue;
+            }
+
+            // --- 8. Regular Navigation: Up, Down, Left, Right, Home, End ---
+            if (seq == "[A" || seq == "OA") {
+                // Up Arrow: History backward
+                if (!history.empty() && history_idx > 0) {
+                    if (history_idx == static_cast<int>(history.size())) {
+                        original_line = current_line;
+                    }
+                    history_idx--;
+                    current_line = history[history_idx];
+                    cursor_pos = static_cast<int>(current_line.size());
+
+                    int items_to_show = std::min(5, static_cast<int>(history.size()));
+                    int needed_lines = items_to_show + 2;
+                    if (preview_lines_drawn > 0) {
+                        clear_history_preview(out, preview_lines_drawn);
+                    }
+                    draw_history_preview(out, history, history_idx, 5);
+                    preview_lines_drawn = needed_lines;
                     refresh_prompt();
                 }
-                // End
-                else if (seq[1] == 'F') {
+                continue;
+            }
+            if (seq == "[B" || seq == "OB") {
+                // Down Arrow: History forward
+                if (history_idx + 1 < static_cast<int>(history.size())) {
+                    history_idx++;
+                    current_line = history[history_idx];
+                    cursor_pos = static_cast<int>(current_line.size());
+
+                    int items_to_show = std::min(5, static_cast<int>(history.size()));
+                    int needed_lines = items_to_show + 2;
+                    if (preview_lines_drawn > 0) {
+                        clear_history_preview(out, preview_lines_drawn);
+                    }
+                    draw_history_preview(out, history, history_idx, 5);
+                    preview_lines_drawn = needed_lines;
+                    refresh_prompt();
+                } else if (history_idx + 1 == static_cast<int>(history.size())) {
+                    history_idx++;
+                    if (preview_lines_drawn > 0) {
+                        clear_history_preview(out, preview_lines_drawn);
+                        preview_lines_drawn = 0;
+                    }
+                    current_line = original_line;
                     cursor_pos = static_cast<int>(current_line.size());
                     refresh_prompt();
                 }
+                continue;
             }
+            if (seq == "[C" || seq == "OC") {
+                // Right Arrow
+                if (cursor_pos < static_cast<int>(current_line.size())) {
+                    cursor_pos++;
+                    refresh_prompt();
+                }
+                continue;
+            }
+            if (seq == "[D" || seq == "OD") {
+                // Left Arrow
+                if (cursor_pos > 0) {
+                    cursor_pos--;
+                    refresh_prompt();
+                }
+                continue;
+            }
+            if (seq == "[H" || seq == "OH" || seq == "[1~" || seq == "[7~") {
+                // Home
+                cursor_pos = 0;
+                refresh_prompt();
+                continue;
+            }
+            if (seq == "[F" || seq == "OF" || seq == "[4~" || seq == "[8~") {
+                // End
+                cursor_pos = static_cast<int>(current_line.size());
+                refresh_prompt();
+                continue;
+            }
+
             continue;
         }
 

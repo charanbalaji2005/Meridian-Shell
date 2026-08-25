@@ -36,7 +36,7 @@ namespace {
 const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
-    "pic", "ai", "palette", "search", "split", "monitor", "git", "files", "ssh", "plugins", "perf"
+    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "git", "files", "ssh", "plugins", "perf"
 };
 } // namespace
 
@@ -343,14 +343,104 @@ static int builtin_search(const std::vector<std::string>& argv, Executor& ctx) {
 
 static int builtin_split(const std::vector<std::string>& argv) {
     std::string dir = (argv.size() >= 2) ? argv[1] : "v";
-    workspace::PaneTree tree;
+    auto& tree = workspace::get_session_pane_tree();
     if (dir == "v" || dir == "vertical" || dir == "-v") {
         uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Vertical);
-        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split vertically (ID: " << new_id << ") [Ctrl+Shift+D]\n";
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split vertically [ID: " << new_id
+                  << " | Active: " << tree.active_pane_id()
+                  << " | Total: " << tree.count_panes() << "] [Ctrl+Shift+D]\n";
     } else {
         uint32_t new_id = tree.split_pane(tree.active_pane_id(), workspace::SplitDirection::Horizontal);
-        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split horizontally (ID: " << new_id << ") [Ctrl+Shift+E]\n";
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Pane split horizontally [ID: " << new_id
+                  << " | Active: " << tree.active_pane_id()
+                  << " | Total: " << tree.count_panes() << "] [Ctrl+Shift+E]\n";
     }
+    return 0;
+}
+
+static int builtin_zoom() {
+    auto& tree = workspace::get_session_pane_tree();
+    tree.toggle_zoom();
+    if (tree.is_zoomed()) {
+        std::cout << "\033[38;2;245;158;11m⛶\033[0m Pane ZOOMED / Maximized [ID: " << tree.active_pane_id() << "] [Ctrl+Shift+Z]\n";
+    } else {
+        std::cout << "\033[38;2;59;130;246m⧉\033[0m Pane Zoom RESTORED / Unmaximized [Active ID: " << tree.active_pane_id()
+                  << " | Total: " << tree.count_panes() << "] [Ctrl+Shift+Z]\n";
+    }
+    return 0;
+}
+
+static int builtin_pane(const std::vector<std::string>& argv) {
+    auto& tree = workspace::get_session_pane_tree();
+    if (argv.size() < 2 || argv[1] == "list" || argv[1] == "status") {
+        std::cout << "┌─── Meridian Panes (Active ID: " << tree.active_pane_id()
+                  << " | Total: " << tree.count_panes()
+                  << " | Zoomed: " << (tree.is_zoomed() ? "Yes" : "No") << ") ───\n";
+        auto items = tree.compute_layout(80, 24);
+        for (const auto& item : items) {
+            std::cout << "│ Pane " << item.pane_id << ": " << item.title
+                      << " [" << item.bounds.width << "x" << item.bounds.height
+                      << " at " << item.bounds.x << "," << item.bounds.y << "]"
+                      << (item.is_focused ? " \033[1;32m(FOCUSED)\033[0m" : "") << "\n";
+        }
+        std::cout << "└─────────────────────────────────────────────────────────────\n";
+        return 0;
+    }
+
+    std::string sub = argv[1];
+    if (sub == "zoom" || sub == "z") {
+        return builtin_zoom();
+    }
+    if (sub == "up" || sub == "k") {
+        auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Up);
+        if (adj.has_value()) {
+            tree.set_active_pane(adj.value());
+            std::cout << "\033[38;2;0;229;255m▲\033[0m Focused pane UP [ID: " << adj.value() << "] [Alt+Up]\n";
+        } else {
+            std::cout << "\033[38;2;140;150;170mℹ No adjacent pane above current active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+        }
+        return 0;
+    }
+    if (sub == "down" || sub == "j") {
+        auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Down);
+        if (adj.has_value()) {
+            tree.set_active_pane(adj.value());
+            std::cout << "\033[38;2;0;229;255m▼\033[0m Focused pane DOWN [ID: " << adj.value() << "] [Alt+Down]\n";
+        } else {
+            std::cout << "\033[38;2;140;150;170mℹ No adjacent pane below current active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+        }
+        return 0;
+    }
+    if (sub == "left" || sub == "h") {
+        auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Left);
+        if (adj.has_value()) {
+            tree.set_active_pane(adj.value());
+            std::cout << "\033[38;2;0;229;255m◀\033[0m Focused pane LEFT [ID: " << adj.value() << "] [Alt+Left]\n";
+        } else {
+            std::cout << "\033[38;2;140;150;170mℹ No adjacent pane to the left of active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+        }
+        return 0;
+    }
+    if (sub == "right" || sub == "l") {
+        auto adj = tree.find_adjacent_pane(tree.active_pane_id(), workspace::NavigationDirection::Right);
+        if (adj.has_value()) {
+            tree.set_active_pane(adj.value());
+            std::cout << "\033[38;2;0;229;255m▶\033[0m Focused pane RIGHT [ID: " << adj.value() << "] [Alt+Right]\n";
+        } else {
+            std::cout << "\033[38;2;140;150;170mℹ No adjacent pane to the right of active pane (ID: " << tree.active_pane_id() << ")\033[0m\n";
+        }
+        return 0;
+    }
+    if (sub == "close" || sub == "x") {
+        if (tree.close_pane(tree.active_pane_id())) {
+            std::cout << "\033[38;2;34;197;94m✔\033[0m Closed pane. Active pane is now " << tree.active_pane_id() << "\n";
+        } else {
+            std::cout << "Cannot close last remaining pane.\n";
+        }
+        return 0;
+    }
+
+    std::cout << "Usage: pane [list|zoom|up|down|left|right|close]\n";
     return 0;
 }
 
@@ -445,6 +535,8 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "palette") return builtin_palette(argv);
     if (name == "search") return builtin_search(argv, ctx);
     if (name == "split") return builtin_split(argv);
+    if (name == "zoom") return builtin_zoom();
+    if (name == "pane") return builtin_pane(argv);
     if (name == "monitor") return builtin_monitor();
     if (name == "git") return builtin_git();
     if (name == "files") return builtin_files(argv);

@@ -108,5 +108,8 @@ private:
     void layout_recursive(const PaneNode* node, const PaneRect& rect, std::vector<PaneLayoutItem>& out) const;
 };
 
+// Global session pane tree instance shared across the interactive shell and builtins
+PaneTree& get_session_pane_tree();
+
 } // namespace meridian::workspace
 
