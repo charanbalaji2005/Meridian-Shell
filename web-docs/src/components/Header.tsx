@@ -29,9 +29,15 @@ export const Header: React.FC<HeaderProps> = ({
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        <a href="#intro" className="brand-logo">
+        <a href="#intro" className="brand-logo" title="Meridian Documentation">
           <div className="logo-badge">
-            <Terminal size={18} className="logo-icon" />
+            <svg viewBox="0 0 256 256" width="20" height="20" className="logo-svg">
+              <g fill="none" stroke="currentColor" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="44,72 108,128 44,184" />
+                <path d="M 84 24 A 64 104 0 0 1 84 232" />
+                <line x1="172" y1="184" x2="212" y2="184" />
+              </g>
+            </svg>
           </div>
           <div className="brand-text">
             <span className="brand-title">DOCS</span>
