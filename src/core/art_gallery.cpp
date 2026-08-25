@@ -16,7 +16,7 @@ namespace meridian::core {
 
 namespace {
 
-RgbColor blend(RgbColor c1, RgbColor c2, float t) {
+inline RgbColor blend(RgbColor c1, RgbColor c2, float t) {
     t = std::clamp(t, 0.0f, 1.0f);
     uint8_t r = static_cast<uint8_t>(c1.r * (1.0f - t) + c2.r * t);
     uint8_t g = static_cast<uint8_t>(c1.g * (1.0f - t) + c2.g * t);
@@ -24,7 +24,330 @@ RgbColor blend(RgbColor c1, RgbColor c2, float t) {
     return RgbColor{r, g, b, 255};
 }
 
-// 1. Chainsaw Man: Power & Denji Crimson Slash
+// -----------------------------------------------------------------------------
+// 1. ITACHI UCHIHA: MANGEKYŌ SHARINGAN & TSUKUYOMI BLOOD MOON
+// -----------------------------------------------------------------------------
+TerminalImage make_itachi_sharingan_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Deep Obsidian void with subtle crimson ambient fog
+            RgbColor col{static_cast<uint8_t>(12 + ny * 6), 4, static_cast<uint8_t>(8 + ny * 4), 255};
+
+            // Sharingan Eye Center
+            float cx = (nx - 0.50f) * 1.3f;
+            float cy = (ny - 0.50f);
+            float dist = std::sqrt(cx * cx + cy * cy);
+            float angle = std::atan2(cy, cx);
+
+            // Outer Sclera / Red Glow
+            if (dist < 0.46f) {
+                float glow = (0.46f - dist) / 0.46f;
+                col = blend(col, RgbColor{160, 10, 20, 255}, glow * 0.5f);
+            }
+
+            // Iris Outer Ring (Crimson Red)
+            if (dist < 0.38f) {
+                float iris_t = (0.38f - dist) / 0.38f;
+                RgbColor iris_col = blend(RgbColor{190, 15, 25, 255}, RgbColor{255, 45, 55, 255}, iris_t);
+                col = iris_col;
+
+                // Black Outer Iris Border
+                if (dist > 0.35f) {
+                    col = RgbColor{20, 2, 5, 255};
+                }
+
+                // Inner Pinwheel Blade (Itachi's 3-curved Mangekyō Blades)
+                float blade_angle = std::fmod(angle + 3.14159f * 2.0f, 3.14159f * 2.0f / 3.0f) - (3.14159f / 3.0f);
+                float blade_dist = dist * 2.2f;
+                float curve = std::sin(blade_dist * 3.14159f) * 0.35f;
+
+                if (dist > 0.08f && std::abs(blade_angle - curve) < 0.30f && dist < 0.33f) {
+                    col = RgbColor{10, 2, 4, 255}; // Black Pinwheel Blade
+                }
+
+                // Center Pupil (Jet Black)
+                if (dist < 0.09f) {
+                    col = RgbColor{5, 1, 2, 255};
+                }
+                // Central Ring Highlight
+                else if (dist > 0.18f && dist < 0.21f) {
+                    col = blend(col, RgbColor{255, 100, 110, 255}, 0.5f);
+                }
+            }
+
+            // Flying Tsukuyomi Crow Silhouettes (top-left and top-right)
+            float cr1_x = nx - 0.18f; float cr1_y = ny - 0.22f;
+            float cr2_x = nx - 0.82f; float cr2_y = ny - 0.28f;
+            if ((std::abs(cr1_x * 2.0f + cr1_y) < 0.04f && std::abs(cr1_y) < 0.05f) ||
+                (std::abs(cr2_x * 2.0f - cr2_y) < 0.04f && std::abs(cr2_y) < 0.05f)) {
+                col = RgbColor{0, 0, 0, 255};
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 2. JUJUTSU KAISEN: GOJO SATORU — INFINITE VOID & HOLLOW PURPLE
+// -----------------------------------------------------------------------------
+TerminalImage make_gojo_hollow_purple_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Infinite Void Space Background (Deep Midnight Navy)
+            RgbColor col{8, 6, 24, 255};
+
+            // Space Distortion Waves
+            float wave = std::sin(nx * 12.0f + ny * 8.0f) * 0.05f;
+
+            // Hollow Purple Singularity Sphere (Center)
+            float px = (nx - 0.50f) * 1.3f;
+            float py = (ny - 0.50f);
+            float pdist = std::sqrt(px * px + py * py) + wave;
+
+            // Reversal Red (Left side energy)
+            float rx = (nx - 0.35f) * 1.3f;
+            float rdist = std::sqrt(rx * rx + py * py);
+            if (rdist < 0.28f) {
+                float r_int = (0.28f - rdist) / 0.28f;
+                col = blend(col, RgbColor{239, 68, 68, 255}, r_int * 0.75f);
+            }
+
+            // Lapse Blue (Right side energy)
+            float bx = (nx - 0.65f) * 1.3f;
+            float bdist = std::sqrt(bx * bx + py * py);
+            if (bdist < 0.28f) {
+                float b_int = (0.28f - bdist) / 0.28f;
+                col = blend(col, RgbColor{56, 189, 248, 255}, b_int * 0.75f);
+            }
+
+            // Purple Collision Singularity Core
+            if (pdist < 0.24f) {
+                float p_int = (0.24f - pdist) / 0.24f;
+                RgbColor purple_edge{168, 85, 247, 255};
+                RgbColor purple_core{245, 230, 255, 255}; // Blinding White Core
+                col = blend(purple_edge, purple_core, p_int * p_int);
+            }
+
+            // Gojo's Snow White Spiky Hair (Top Horizon)
+            if (ny < 0.25f) {
+                float hair_spike = std::sin(nx * 30.0f) * 0.06f;
+                if (ny < (0.16f + hair_spike)) {
+                    col = blend(RgbColor{240, 248, 255, 255}, RgbColor{186, 230, 253, 255}, ny * 4.0f);
+                }
+            }
+
+            // Six-Eyes Cerulean Sparkle (top center)
+            float ex = nx - 0.50f; float ey = ny - 0.26f;
+            if (std::sqrt(ex * ex * 2.0f + ey * ey * 4.0f) < 0.04f) {
+                col = RgbColor{14, 165, 233, 255};
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 3. JUJUTSU KAISEN: RYOMEN SUKUNA — MALEVOLENT SHRINE & CURSED FLAMES
+// -----------------------------------------------------------------------------
+TerminalImage make_sukuna_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Blood Red & Charcoal Sky
+            RgbColor col = blend(RgbColor{55, 10, 15, 255}, RgbColor{15, 5, 8, 255}, ny);
+
+            // Malevolent Shrine Roof Silhouette (Bottom horizon)
+            float sx = std::abs(nx - 0.5f) * 2.0f;
+            float shrine_curve = 0.65f + std::pow(sx, 1.8f) * 0.25f;
+            if (ny > shrine_curve) {
+                col = RgbColor{10, 2, 4, 255}; // Deep Black Shrine Roof
+            }
+
+            // Sukuna's Cursed Tattoo Lines (Face Markings)
+            float tx = std::abs(nx - 0.5f);
+            if ((std::abs(tx - 0.18f) < 0.025f && ny > 0.25f && ny < 0.65f) ||
+                (std::abs(ny - 0.38f) < 0.025f && tx < 0.32f)) {
+                col = RgbColor{15, 5, 8, 255}; // Black Tattoo Ink
+            }
+
+            // Sukuna's 4 Demonic Glowing Crimson Eyes
+            bool eye1 = (std::abs(nx - 0.40f) < 0.03f && std::abs(ny - 0.34f) < 0.02f);
+            bool eye2 = (std::abs(nx - 0.60f) < 0.03f && std::abs(ny - 0.34f) < 0.02f);
+            bool eye3 = (std::abs(nx - 0.38f) < 0.028f && std::abs(ny - 0.42f) < 0.018f);
+            bool eye4 = (std::abs(nx - 0.62f) < 0.028f && std::abs(ny - 0.42f) < 0.018f);
+
+            if (eye1 || eye2 || eye3 || eye4) {
+                col = RgbColor{255, 30, 45, 255}; // Intense Demon Red
+            }
+
+            // Divine Flame "Fuga" Embers rising
+            if ((x * 23 + y * 47) % 31 == 0 && ny < 0.65f) {
+                col = RgbColor{255, 165, 0, 255}; // Golden Fire Ember
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 4. NARUTO: SAGE MODE & KURAMA RASENGAN
+// -----------------------------------------------------------------------------
+TerminalImage make_naruto_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Dark Leaf Village Night Sky
+            RgbColor col{12, 14, 28, 255};
+
+            // Nine-Tails (Kurama) Golden-Orange Chakra Aura
+            float k_dist = std::abs((nx - 0.5f) * 1.5f + (ny - 0.5f));
+            if (k_dist < 0.60f) {
+                float k_glow = (0.60f - k_dist) / 0.60f;
+                RgbColor kurama_col = blend(RgbColor{255, 120, 0, 255}, RgbColor{255, 210, 0, 255}, k_glow);
+                col = blend(col, kurama_col, k_glow * 0.55f);
+            }
+
+            // Swirling Rasengan Chakra Sphere (Center)
+            float rx = (nx - 0.50f) * 1.3f;
+            float ry = (ny - 0.50f);
+            float rdist = std::sqrt(rx * rx + ry * ry);
+            float r_angle = std::atan2(ry, rx);
+
+            if (rdist < 0.28f) {
+                // Spiral Chakra Vortex Lines
+                float spiral = std::sin(r_angle * 4.0f + rdist * 25.0f);
+                float r_int = (0.28f - rdist) / 0.28f;
+
+                RgbColor cyan_edge{0, 180, 255, 255};
+                RgbColor white_core{230, 250, 255, 255};
+                RgbColor base_rasengan = blend(cyan_edge, white_core, r_int * r_int);
+
+                if (spiral > 0.3f) {
+                    base_rasengan = blend(base_rasengan, RgbColor{255, 255, 255, 255}, 0.6f);
+                }
+                col = base_rasengan;
+            }
+
+            // Sage Mode Orange Pigmentation & Frog Eyes (Top)
+            if (std::abs(ny - 0.24f) < 0.035f && (std::abs(nx - 0.38f) < 0.06f || std::abs(nx - 0.62f) < 0.06f)) {
+                col = RgbColor{255, 140, 0, 255}; // Sage Orange Eyeliner
+                // Horizontal bar frog pupil
+                if (std::abs(ny - 0.24f) < 0.012f && (std::abs(nx - 0.38f) < 0.035f || std::abs(nx - 0.62f) < 0.035f)) {
+                    col = RgbColor{10, 5, 2, 255};
+                }
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 5. DEMON SLAYER: RENGOKU — SUN BREATHING FLAME TIGER
+// -----------------------------------------------------------------------------
+TerminalImage make_rengoku_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Midnight Black & Crimson Smoke
+            RgbColor col = blend(RgbColor{10, 4, 8, 255}, RgbColor{40, 8, 12, 255}, ny);
+
+            // Blazing Sun Breathing Flame Waves
+            float flame_wave = std::sin(nx * 10.0f + ny * 6.0f) * 0.12f;
+            float f_dist = std::abs((nx * 1.1f - ny * 0.9f) - 0.1f) + flame_wave;
+
+            if (f_dist < 0.32f) {
+                float intensity = (0.32f - f_dist) / 0.32f;
+                RgbColor flame_col = blend(RgbColor{220, 20, 20, 255}, RgbColor{255, 215, 0, 255}, intensity);
+                col = blend(col, flame_col, intensity * 0.90f);
+            }
+
+            // Nichirin Katana Black Blade with Glowing Red Edge
+            float blade_dist = std::abs((nx * 0.85f + ny * 1.0f) - 0.70f);
+            if (blade_dist < 0.035f && ny > 0.25f) {
+                col = (blade_dist < 0.015f) ? RgbColor{15, 12, 15, 255} : RgbColor{255, 60, 40, 255};
+            }
+
+            // Floating Golden Embers
+            if ((x * 19 + y * 29) % 23 == 0) {
+                col = RgbColor{255, 220, 50, 255};
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 6. DRAGON BALL: ULTRA INSTINCT GOKU SILVER AURA
+// -----------------------------------------------------------------------------
+TerminalImage make_ultra_instinct_art(int w, int h) {
+    TerminalImage img(w, h);
+    for (int y = 0; y < h; ++y) {
+        float ny = static_cast<float>(y) / (h - 1);
+        for (int x = 0; x < w; ++x) {
+            float nx = static_cast<float>(x) / (w - 1);
+
+            // Deep Cobalt Space Background
+            RgbColor col{6, 10, 25, 255};
+
+            // Ultra Instinct Divine Silver-Blue Aura Pillar
+            float ax = std::abs(nx - 0.50f);
+            float aura_wave = std::sin(ny * 16.0f + nx * 8.0f) * 0.04f;
+            float adist = ax + aura_wave;
+
+            if (adist < 0.38f) {
+                float a_int = (0.38f - adist) / 0.38f;
+                RgbColor aura_blue{56, 189, 248, 255};
+                RgbColor aura_silver{240, 245, 255, 255};
+                RgbColor aura_col = blend(aura_blue, aura_silver, a_int);
+                col = blend(col, aura_col, a_int * 0.85f);
+            }
+
+            // Ultra Instinct Silver Gaze (Eyes)
+            if (std::abs(ny - 0.44f) < 0.022f && (std::abs(nx - 0.42f) < 0.035f || std::abs(nx - 0.58f) < 0.035f)) {
+                col = RgbColor{245, 245, 255, 255}; // Pure Silver Iris
+            }
+
+            // Divine Aura Particles
+            if ((x * 31 + y * 13) % 27 == 0) {
+                col = RgbColor{220, 240, 255, 255};
+            }
+
+            img.set_pixel(x, y, col);
+        }
+    }
+    return img;
+}
+
+// -----------------------------------------------------------------------------
+// 7. CHAINSAW MAN: POWER & DENJI
+// -----------------------------------------------------------------------------
 TerminalImage make_chainsaw_man_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
@@ -32,10 +355,8 @@ TerminalImage make_chainsaw_man_art(int w, int h) {
         for (int x = 0; x < w; ++x) {
             float nx = static_cast<float>(x) / (w - 1);
 
-            // Dark Charcoal background with subtle gradient
             RgbColor col{static_cast<uint8_t>(18 + ny * 10), static_cast<uint8_t>(20 + ny * 8), static_cast<uint8_t>(26 + ny * 12), 255};
 
-            // Crimson blood-energy slash diagonally across
             float slash_dist = std::abs((nx * 1.2f - ny * 0.9f) - 0.2f);
             if (slash_dist < 0.25f) {
                 float intensity = 1.0f - (slash_dist / 0.25f);
@@ -43,19 +364,16 @@ TerminalImage make_chainsaw_man_art(int w, int h) {
                 col = blend(col, slash_col, intensity * 0.85f);
             }
 
-            // Anime character face / silhouette (center-right)
             float cx = nx - 0.55f;
             float cy = ny - 0.45f;
             float dist_face = std::sqrt(cx * cx * 1.5f + cy * cy * 2.0f);
 
-            // Platinum / Blonde Hair
             if (dist_face < 0.38f && ny < 0.65f) {
                 float hair_spec = std::sin(nx * 20.0f + ny * 10.0f) * 0.15f;
                 RgbColor hair_col = blend(RgbColor{235, 220, 195, 255}, RgbColor{255, 245, 230, 255}, ny + hair_spec);
                 col = blend(col, hair_col, 0.90f);
             }
 
-            // Fiend Horns (Crimson Red)
             float h1_x = nx - 0.48f; float h1_y = ny - 0.22f;
             float h2_x = nx - 0.62f; float h2_y = ny - 0.20f;
             if ((std::abs(h1_x + h1_y * 0.4f) < 0.04f && h1_y < 0.12f && h1_y > -0.18f) ||
@@ -63,16 +381,9 @@ TerminalImage make_chainsaw_man_art(int w, int h) {
                 col = RgbColor{185, 28, 28, 255};
             }
 
-            // Glowing Amber Eyes
             if ((std::abs(nx - 0.50f) < 0.035f && std::abs(ny - 0.42f) < 0.025f) ||
                 (std::abs(nx - 0.60f) < 0.035f && std::abs(ny - 0.41f) < 0.025f)) {
                 col = RgbColor{255, 183, 3, 255};
-            }
-
-            // Katana Steel Glint
-            float blade_dist = std::abs((nx * 0.8f + ny * 1.1f) - 0.75f);
-            if (blade_dist < 0.03f && ny > 0.3f) {
-                col = RgbColor{240, 248, 255, 255};
             }
 
             img.set_pixel(x, y, col);
@@ -81,7 +392,9 @@ TerminalImage make_chainsaw_man_art(int w, int h) {
     return img;
 }
 
-// 2. Cyberpunk Edgerunners: Neon City Skyline
+// -----------------------------------------------------------------------------
+// 8. CYBERPUNK EDGERUNNERS: LUCY & NIGHT CITY
+// -----------------------------------------------------------------------------
 TerminalImage make_cyberpunk_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
@@ -89,31 +402,26 @@ TerminalImage make_cyberpunk_art(int w, int h) {
         for (int x = 0; x < w; ++x) {
             float nx = static_cast<float>(x) / (w - 1);
 
-            // Deep Violet to Cyan Sky gradient
             RgbColor sky_top{15, 10, 35, 255};
             RgbColor sky_bot{55, 20, 90, 255};
             RgbColor col = blend(sky_top, sky_bot, ny);
 
-            // Neon Megastructure Silhouettes
             int bldg_idx = static_cast<int>(nx * 8.0f);
             float bldg_h = 0.40f + ((bldg_idx * 7) % 5) * 0.09f;
             if (ny > (1.0f - bldg_h)) {
                 col = RgbColor{16, 12, 28, 255};
-
-                // Window lights (Neon Cyan & Electric Yellow)
                 if (((x % 3 == 0) && (y % 2 == 0)) && ny > (1.1f - bldg_h)) {
                     col = ((x + y) % 5 == 0) ? RgbColor{0, 240, 255, 255} : RgbColor{254, 228, 64, 255};
                 }
             }
 
-            // Holographic Moon / Cyber Ring
             float mx = nx - 0.72f;
             float my = ny - 0.30f;
             float mdist = std::sqrt(mx * mx + my * my);
             if (mdist < 0.16f) {
                 col = blend(col, RgbColor{0, 240, 255, 255}, 0.85f);
             } else if (std::abs(mdist - 0.22f) < 0.02f) {
-                col = RgbColor{255, 0, 128, 255}; // Neon Pink Ring
+                col = RgbColor{255, 0, 128, 255};
             }
 
             img.set_pixel(x, y, col);
@@ -122,7 +430,9 @@ TerminalImage make_cyberpunk_art(int w, int h) {
     return img;
 }
 
-// 3. Synthwave Sunset: Glowing Sun & Horizon Grid
+// -----------------------------------------------------------------------------
+// 9. SYNTHWAVE SUNSET & HORIZON
+// -----------------------------------------------------------------------------
 TerminalImage make_synthwave_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
@@ -130,12 +440,10 @@ TerminalImage make_synthwave_art(int w, int h) {
         for (int x = 0; x < w; ++x) {
             float nx = static_cast<float>(x) / (w - 1);
 
-            // Sunset Gradient (Deep Purple -> Hot Pink)
             RgbColor sky_top{38, 12, 60, 255};
             RgbColor sky_bot{180, 25, 110, 255};
             RgbColor col = blend(sky_top, sky_bot, ny * 1.5f);
 
-            // Giant Neon Sun with horizontal slice lines
             float sx = nx - 0.5f;
             float sy = ny - 0.45f;
             float sdist = std::sqrt(sx * sx + sy * sy);
@@ -147,12 +455,9 @@ TerminalImage make_synthwave_art(int w, int h) {
                 }
             }
 
-            // Retro Horizon Grid
             if (ny >= 0.65f) {
                 float grid_y = (ny - 0.65f) / 0.35f;
                 col = blend(RgbColor{20, 10, 35, 255}, RgbColor{5, 2, 15, 255}, grid_y);
-
-                // Perspective Grid Lines (Neon Cyan)
                 float persp_x = (nx - 0.5f) / (grid_y + 0.15f);
                 bool v_line = std::abs(std::fmod(persp_x * 4.0f + 10.0f, 1.0f) - 0.5f) < 0.08f;
                 bool h_line = (y == static_cast<int>(h * 0.68f) || y == static_cast<int>(h * 0.74f) ||
@@ -169,7 +474,9 @@ TerminalImage make_synthwave_art(int w, int h) {
     return img;
 }
 
-// 4. Studio Ghibli: Anime Meadow & Azure Sky
+// -----------------------------------------------------------------------------
+// 10. STUDIO GHIBLI: ANIME MEADOW & AZURE SKY
+// -----------------------------------------------------------------------------
 TerminalImage make_ghibli_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
@@ -177,25 +484,21 @@ TerminalImage make_ghibli_art(int w, int h) {
         for (int x = 0; x < w; ++x) {
             float nx = static_cast<float>(x) / (w - 1);
 
-            // Azure Sky Gradient
             RgbColor sky_top{50, 130, 220, 255};
             RgbColor sky_bot{170, 225, 250, 255};
             RgbColor col = blend(sky_top, sky_bot, ny * 1.6f);
 
-            // Fluffy White Clouds
             float cloud1 = std::sqrt(std::pow(nx - 0.35f, 2) + std::pow((ny - 0.28f) * 1.8f, 2));
             float cloud2 = std::sqrt(std::pow(nx - 0.55f, 2) + std::pow((ny - 0.22f) * 1.8f, 2));
             if (cloud1 < 0.20f || cloud2 < 0.22f) {
                 col = blend(col, RgbColor{255, 255, 255, 255}, 0.92f);
             }
 
-            // Rolling Emerald Grass Hills
             float hill1 = 0.60f + std::sin(nx * 4.0f) * 0.08f;
             float hill2 = 0.72f + std::cos(nx * 5.0f) * 0.06f;
 
             if (ny >= hill2) {
                 col = blend(RgbColor{45, 160, 80, 255}, RgbColor{30, 110, 50, 255}, (ny - hill2) * 2.5f);
-                // Wildflower sparkles (Pink & Yellow)
                 if ((x * 13 + y * 7) % 19 == 0) col = RgbColor{255, 105, 180, 255};
             } else if (ny >= hill1) {
                 col = blend(RgbColor{80, 190, 100, 255}, RgbColor{50, 140, 70, 255}, (ny - hill1) * 3.0f);
@@ -207,54 +510,13 @@ TerminalImage make_ghibli_art(int w, int h) {
     return img;
 }
 
-// 5. Deep Space Astronaut & Crescent Galaxy
-TerminalImage make_space_art(int w, int h) {
-    TerminalImage img(w, h);
-    for (int y = 0; y < h; ++y) {
-        float ny = static_cast<float>(y) / (h - 1);
-        for (int x = 0; x < w; ++x) {
-            float nx = static_cast<float>(x) / (w - 1);
-
-            // Deep Obsidian Void
-            RgbColor col{10, 8, 20, 255};
-
-            // Cosmic Nebula Swirl (Magenta & Indigo)
-            float swirl = std::sin(nx * 3.5f + ny * 2.5f);
-            if (swirl > 0.0f) {
-                RgbColor neb = blend(RgbColor{120, 30, 180, 255}, RgbColor{240, 60, 140, 255}, swirl);
-                col = blend(col, neb, swirl * 0.45f);
-            }
-
-            // Glistening Stars
-            if ((x * 17 + y * 31) % 43 == 0) {
-                col = RgbColor{255, 255, 255, 255};
-            }
-
-            // Astronaut Helmet Visor (Gold Reflection)
-            float vx = nx - 0.50f;
-            float vy = ny - 0.52f;
-            float vdist = std::sqrt(vx * vx * 1.2f + vy * vy * 1.6f);
-            if (vdist < 0.24f) {
-                float spec = std::clamp((0.24f - vdist) / 0.24f, 0.0f, 1.0f);
-                col = blend(RgbColor{245, 180, 25, 255}, RgbColor{255, 235, 140, 255}, spec);
-            } else if (vdist < 0.30f) {
-                col = RgbColor{220, 225, 235, 255}; // Suit White
-            }
-
-            img.set_pixel(x, y, col);
-        }
-    }
-    return img;
-}
-
 } // namespace
 
 size_t ArtGallery::theme_count() {
-    return 5;
+    return 10;
 }
 
 ArtworkTheme ArtGallery::get_artwork_by_index(size_t index, int width, int height) {
-    // 1. First check if user configured a custom single artwork
     const char* env_art = std::getenv("MERIDIAN_ARTWORK");
     if (env_art && access(env_art, R_OK) == 0) {
         TerminalImage custom_img;
@@ -273,20 +535,23 @@ ArtworkTheme ArtGallery::get_artwork_by_index(size_t index, int width, int heigh
         }
     }
 
-    // 2. Select from curated artwork gallery
     size_t theme_id = index % theme_count();
 
     switch (theme_id) {
-        case 0: return ArtworkTheme{"chainsaw_man", "Chainsaw Man", make_chainsaw_man_art(width, height)};
-        case 1: return ArtworkTheme{"cyberpunk", "Cyberpunk Night", make_cyberpunk_art(width, height)};
-        case 2: return ArtworkTheme{"synthwave", "Synthwave Horizon", make_synthwave_art(width, height)};
-        case 3: return ArtworkTheme{"ghibli", "Anime Meadow", make_ghibli_art(width, height)};
-        case 4: default: return ArtworkTheme{"space", "Cosmic Voyage", make_space_art(width, height)};
+        case 0: return ArtworkTheme{"itachi_sharingan", "Itachi Mangekyō Sharingan", make_itachi_sharingan_art(width, height)};
+        case 1: return ArtworkTheme{"gojo_purple", "Gojo: Hollow Purple", make_gojo_hollow_purple_art(width, height)};
+        case 2: return ArtworkTheme{"sukuna_shrine", "Sukuna: Malevolent Shrine", make_sukuna_art(width, height)};
+        case 3: return ArtworkTheme{"naruto_rasengan", "Naruto: Kurama Rasengan", make_naruto_art(width, height)};
+        case 4: return ArtworkTheme{"rengoku_flames", "Rengoku: Sun Breathing", make_rengoku_art(width, height)};
+        case 5: return ArtworkTheme{"ultra_instinct", "Goku: Ultra Instinct", make_ultra_instinct_art(width, height)};
+        case 6: return ArtworkTheme{"chainsaw_man", "Chainsaw Man", make_chainsaw_man_art(width, height)};
+        case 7: return ArtworkTheme{"cyberpunk", "Cyberpunk Night", make_cyberpunk_art(width, height)};
+        case 8: return ArtworkTheme{"synthwave", "Synthwave Horizon", make_synthwave_art(width, height)};
+        case 9: default: return ArtworkTheme{"ghibli", "Anime Meadow", make_ghibli_art(width, height)};
     }
 }
 
 ArtworkTheme ArtGallery::get_next_artwork(int width, int height) {
-    // Use session/time-based random seed to rotate artwork on each terminal open
     static size_t session_counter = 0;
     auto now = std::chrono::steady_clock::now().time_since_epoch().count();
     size_t pick = (static_cast<size_t>(now) + getpid() + (session_counter++)) % theme_count();
@@ -302,6 +567,7 @@ std::vector<std::string> ArtGallery::render_artwork_lines(const TerminalImage& i
     for (int r = 0; r < target_rows; ++r) {
         std::ostringstream ss;
         for (int c = 0; c < target_cols; ++c) {
+            // High-precision subpixel sampling
             float u = static_cast<float>(c) / std::max(1, target_cols - 1);
             float v_top = static_cast<float>(r * 2) / std::max(1, target_rows * 2 - 1);
             float v_bot = static_cast<float>(r * 2 + 1) / std::max(1, target_rows * 2 - 1);
