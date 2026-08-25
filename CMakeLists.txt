@@ -71,7 +71,11 @@ add_library(meridian-shell-lib STATIC
 target_include_directories(meridian-shell-lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_link_libraries(meridian-shell-lib PUBLIC util meridian-core meridian-ai-lib meridian-dev-lib)
+target_link_libraries(meridian-shell-lib PUBLIC meridian-core meridian-ai-lib meridian-dev-lib)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT (APPLE OR WIN32))
+    target_link_libraries(meridian-shell-lib PUBLIC util)
+endif()
+
 # ---- meridian-workspace-lib: multiplexer panes + persistent workspaces ---
 add_library(meridian-workspace-lib STATIC
     src/workspace/pane_tree.cpp
@@ -136,6 +140,18 @@ add_executable(meridian
     src/app/meridian_gui.cpp
     src/app/meridian_main.cpp
 )
+target_link_libraries(meridian PRIVATE
+    meridian-core
+    meridian-shell-lib
+    meridian-ai-lib
+    meridian-workspace-lib
+    meridian-dev-lib
+    meridian-config-lib
+    meridian-security-lib
+)
+
+# ---- meridian: unified developer CLI & terminal engine ---------------------
+add_executable(meridian src/app/meridian_main.cpp src/app/meridian_gui.cpp)
 target_link_libraries(meridian PRIVATE
     meridian-core
     meridian-shell-lib

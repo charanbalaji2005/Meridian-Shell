@@ -10,6 +10,13 @@
 #include <vector>
 #include <cstdint>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#else
+#include <sys/types.h>
+#endif
+
 namespace meridian::platform {
 
 enum class PlatformOS {

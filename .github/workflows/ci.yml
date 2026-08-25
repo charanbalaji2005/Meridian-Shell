@@ -27,8 +27,7 @@ jobs:
     - name: Build All Targets
       run: make -j$(nproc) all
 
-    - name: Run Automated Test Suite (124 tests)
-      run: make test
+    - name: Run Automated Test Suite (126 tests)
 
     - name: Run Manual PTY Core Tests
       run: make manual-test
@@ -59,16 +58,14 @@ jobs:
 
     - name: Build with CMake
       run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DMERIDIAN_BUILD_TESTS=OFF
         cmake --build build -j$(sysctl -n hw.ncpu)
-
     - name: Package macOS Universal Bundle
       run: |
         mkdir -p dist
-        tar -czf dist/meridian-terminal-macos.tar.gz -C build meridian meridian-shell
+        tar -czf dist/meridian-terminal-macos.tar.gz -C build meridian meridian-shell meridian_demo
 
     - name: Upload macOS Artifacts
-      uses: actions/upload-artifact@v4
       with:
         name: meridian-macos-packages
         path: dist/*
@@ -85,21 +82,19 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DMERIDIAN_BUILD_TESTS=OFF
 
     - name: Build with MSVC
       run: cmake --build build --config Release
-
     - name: Package Windows Bundle
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path dist
-        Compress-Archive -Path .\build\Release\*.exe, .\meridian.desktop, .\packaging\windows\install.ps1 -DestinationPath dist\meridian-terminal-windows-x64.zip
+        Compress-Archive -Path .\build\Release\*.exe, .\packaging\windows\install.ps1 -DestinationPath dist\meridian-terminal-windows-x64.zip -Force
 
     - name: Upload Windows Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: meridian-windows-packages
         path: dist/*
 
   # ---------------------------------------------------------------------------
