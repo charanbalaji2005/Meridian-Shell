@@ -66,6 +66,37 @@ std::string format_cwd(const std::string& cwd) {
     return dir;
 }
 
+static std::string get_directory_icon(const std::string& formatted_dir, bool is_git_repo) {
+    if (formatted_dir == "~") return " ";
+    std::string lower = formatted_dir;
+    for (auto& c : lower) c = std::tolower(c);
+
+    if (lower.find("download") != std::string::npos) return " ";
+    if (lower.find("document") != std::string::npos) return "󰈙 ";
+    if (lower.find("desktop") != std::string::npos) return " ";
+    if (lower.find("picture") != std::string::npos || lower.find("photo") != std::string::npos) return " ";
+    if (lower.find("video") != std::string::npos || lower.find("movie") != std::string::npos) return " ";
+    if (lower.find("music") != std::string::npos) return " ";
+    if (lower.find("project") != std::string::npos || lower.find("workspace") != std::string::npos || lower.find("src") != std::string::npos || lower.find("repo") != std::string::npos) return " ";
+    if (lower.find("build") != std::string::npos || lower.find("target") != std::string::npos || lower.find("out") != std::string::npos) return " ";
+    if (lower.find(".config") != std::string::npos || lower.find("/etc") != std::string::npos) return " ";
+    if (is_git_repo) return " ";
+    return " ";
+}
+
+static std::string detect_project_language(const std::string& dir) {
+    std::string d = dir.empty() ? "." : dir;
+    if (access((d + "/CMakeLists.txt").c_str(), F_OK) == 0 || access((d + "/Makefile").c_str(), F_OK) == 0) return "󰙲";
+    if (access((d + "/Cargo.toml").c_str(), F_OK) == 0) return "";
+    if (access((d + "/pyproject.toml").c_str(), F_OK) == 0 || access((d + "/requirements.txt").c_str(), F_OK) == 0 || access((d + "/setup.py").c_str(), F_OK) == 0) return "";
+    if (access((d + "/package.json").c_str(), F_OK) == 0 || access((d + "/tsconfig.json").c_str(), F_OK) == 0) return "";
+    if (access((d + "/go.mod").c_str(), F_OK) == 0) return "";
+    if (access((d + "/pom.xml").c_str(), F_OK) == 0 || access((d + "/build.gradle").c_str(), F_OK) == 0) return "";
+    if (access((d + "/Dockerfile").c_str(), F_OK) == 0 || access((d + "/compose.yaml").c_str(), F_OK) == 0) return "󰡨";
+    if (access((d + "/flake.nix").c_str(), F_OK) == 0) return "";
+    return "";
+}
+
 } // namespace
 
 bool LineEditor::is_terminal_interactive() {
@@ -81,19 +112,44 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
     char time_buf[64];
     std::strftime(time_buf, sizeof(time_buf), "%a %d %b  -  %H:%M", local_tm);
 
-    std::ostringstream ss;
-    // Badge 1: Vibrant Cobalt Blue Date/Time Badge
-    ss << "  \033[48;2;26;108;218;38;2;255;255;255;1m " << time_buf << " "
-    // Arrow from Cobalt Blue to Ocean Cyan
-       << "\033[48;2;24;156;184;38;2;26;108;218m"
-    // Badge 2: Vibrant Ocean Cyan Directory Badge
-       << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir << " ";
-
-    // Live Git Repo Status
+    // Inspect Git Status & Context
     auto git_status = dev::GitIntel::inspect_directory(cwd.empty() ? "." : cwd);
+    std::string dir_icon = get_directory_icon(dir, git_status.is_git_repo);
+    std::string lang_icon = detect_project_language(cwd);
+
+    std::ostringstream ss;
+
+    // Segment 1: Date/Time or Remote SSH Host
+    const char* ssh_conn = std::getenv("SSH_CONNECTION");
+    const char* ssh_client = std::getenv("SSH_CLIENT");
+    bool is_ssh = (ssh_conn != nullptr || ssh_client != nullptr);
+
+    if (is_ssh) {
+        char hname[256] = "remote";
+        gethostname(hname, sizeof(hname));
+        std::string u = "user";
+        struct passwd* pw = getpwuid(geteuid());
+        if (pw && pw->pw_name) u = pw->pw_name;
+
+        ss << "  \033[48;2;124;58;237;38;2;255;255;255;1m  " << u << "@" << hname << " "
+           << "\033[48;2;24;156;184;38;2;124;58;237m";
+    } else {
+        ss << "  \033[48;2;26;108;218;38;2;255;255;255;1m  " << time_buf << " "
+           << "\033[48;2;24;156;184;38;2;26;108;218m";
+    }
+
+    // Segment 2: Context-Aware Directory + Project Language
+    ss << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir_icon << dir;
+    if (!lang_icon.empty()) {
+        ss << " " << lang_icon;
+    }
+    ss << " ";
+
+    // Segment 3: Intelligent Git Segment
     if (git_status.is_git_repo && !git_status.branch_name.empty()) {
         std::string branch = git_status.branch_name;
-        int unstaged = git_status.unstaged_count + git_status.untracked_count;
+        int unstaged = git_status.unstaged_count;
+        int untracked = git_status.untracked_count;
         int staged = git_status.staged_count;
         int ahead = git_status.ahead_count;
         int behind = git_status.behind_count;
@@ -101,18 +157,15 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
         std::string git_extra;
         if (ahead > 0) git_extra += " ↑" + std::to_string(ahead);
         if (behind > 0) git_extra += " ↓" + std::to_string(behind);
-        if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✸";
+        if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✗";
+        if (untracked > 0) git_extra += " " + std::to_string(untracked) + "?";
         if (staged > 0) git_extra += " " + std::to_string(staged) + "●";
-        if (git_status.is_clean) git_extra += " ✔";
+        if (git_status.is_clean && ahead == 0 && behind == 0) git_extra += " ✔";
 
-        // Arrow from Ocean Cyan to Emerald Green
         ss << "\033[48;2;16;185;129;38;2;24;156;184m"
-        // Badge 3: Vibrant Emerald Green Git Badge (matching user reference)
-           << "\033[48;2;16;185;129;38;2;20;35;28;1m 󰘬 origin ☊ " << branch << git_extra << " "
-        // Ending Arrow from Emerald Green to Terminal Default
+           << "\033[48;2;16;185;129;38;2;20;35;28;1m  " << branch << git_extra << " "
            << "\033[0;38;2;16;185;129m\033[0m";
     } else {
-        // Ending Arrow from Ocean Cyan to Terminal Default
         ss << "\033[0;38;2;24;156;184m\033[0m";
     }
 
@@ -120,15 +173,22 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
 }
 
 std::string LineEditor::build_powerline_prompt(const std::string& /*cwd*/) {
-    // Detect username
-    std::string user = "charanbalaji";
-    struct passwd* pw = getpwuid(geteuid());
+    // Detect username & privilege level
+    std::string user = "user";
+    uid_t uid = geteuid();
+    struct passwd* pw = getpwuid(uid);
     if (pw && pw->pw_name) user = pw->pw_name;
 
     std::ostringstream ss;
-    // Single-line prompt: Vibrant Golden Yellow badge with purple/dark text (@username )
-    ss << "  \033[48;2;212;180;27;38;2;85;35;110;1m @" << user << " "
-       << "\033[0;38;2;212;180;27m\033[0m ";
+    if (uid == 0) {
+        // Elevated Root Prompt in Crimson Red
+        ss << "  \033[48;2;220;38;38;38;2;255;255;255;1m ⚡ root "
+           << "\033[0;38;2;220;38;38m\033[0m \033[1;31m❯\033[0m ";
+    } else {
+        // Standard User Prompt: Vibrant Golden Yellow badge with purple/dark text (@username  ❯)
+        ss << "  \033[48;2;212;180;27;38;2;85;35;110;1m  @" << user << " "
+           << "\033[0;38;2;212;180;27m\033[0m \033[1;33m❯\033[0m ";
+    }
     return ss.str();
 }
 

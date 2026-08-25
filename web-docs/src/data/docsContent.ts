@@ -803,23 +803,28 @@ export const DOCS_ARTICLES: Record<string, DocArticle> = {
     "lastUpdated": "August 25, 2026",
     "headings": [
       {
-        "id": "powerline-badges",
-        "text": "Powerline Status Badges",
+        "id": "context-aware-prompt",
+        "text": "Intelligent Context-Aware Powerline Prompt",
         "level": 2
       },
       {
-        "id": "git-status-segment",
-        "text": "Real-time Git Status Segment",
+        "id": "directory-language-icons",
+        "text": "Directory & Project Language Icons",
         "level": 2
       },
       {
-        "id": "custom-segments",
-        "text": "Configuring Custom Segments",
+        "id": "rich-git-segment",
+        "text": "Rich Git Status & Divergence Segment",
+        "level": 2
+      },
+      {
+        "id": "ssh-and-root",
+        "text": "Remote SSH & Elevated Root State",
         "level": 2
       }
     ],
-    "summary": "High-contrast Powerline status badges with Git branch detection.",
-    "body": "<h2 id=\"powerline-badges\">Powerline Status Badges</h2>\n<p>Meridian renders hardware-accelerated Powerline glyphs (, , , 󰌽) showing time, OS icon, current working directory, and exit codes.</p>\n\n<h2 id=\"git-status-segment\">Real-time Git Status Segment</h2>\n<p><code>dev::GitIntel</code> polls the nearest <code>.git</code> repository, displaying branch name ( main), ahead/behind status (↑1 ↓0), and dirty state (●).</p>\n\n<h2 id=\"custom-segments\">Configuring Custom Segments</h2>\n<p>Enable or disable segments in <code>~/.config/meridian/config.json</code> under the <code>\"powerline\"</code> section (e.g. <code>\"show_time\": true</code>, <code>\"show_git\": true</code>, <code>\"show_exit_code\": true</code>).</p>"
+    "summary": "Intelligent context-aware Powerline status prompt with directory icons, project language detection, and rich Git intelligence.",
+    "body": "<h2 id=\"context-aware-prompt\">Intelligent Context-Aware Powerline Prompt</h2>\n<p>Meridian renders a compact, two-line Powerline prompt with high-contrast color segments and context-aware Nerd Font glyphs:</p>\n\n<div class=\"code-block-wrapper\">\n  <div class=\"code-header\"><span>Meridian Context-Aware Powerline Prompt</span></div>\n  <pre><code class=\"language-text\">   Tue 25 Aug - 23:43   ~/Downloads/meridian-terminal 󰙲   main ↑2 3✗ 2? \n   @charanbalaji  ❯ </code></pre>\n</div>\n\n<h2 id=\"directory-language-icons\">Directory & Project Language Icons</h2>\n<ul>\n  <li><strong>Home:</strong> <code> ~</code></li>\n  <li><strong>Downloads:</strong> <code> ~/Downloads</code></li>\n  <li><strong>Documents:</strong> <code>󰈙 ~/Documents</code></li>\n  <li><strong>Desktop:</strong> <code> ~/Desktop</code></li>\n  <li><strong>Pictures & Photos:</strong> <code> ~/Pictures</code></li>\n  <li><strong>Projects / Code:</strong> <code> ~/Projects</code></li>\n  <li><strong>C++ Project:</strong> <code>󰙲</code> (CMakeLists.txt, Makefile)</li>\n  <li><strong>Python Project:</strong> <code></code> (pyproject.toml, requirements.txt)</li>\n  <li><strong>Rust Project:</strong> <code></code> (Cargo.toml)</li>\n  <li><strong>Node / TypeScript:</strong> <code></code> (package.json)</li>\n  <li><strong>Go Project:</strong> <code></code> (go.mod)</li>\n  <li><strong>Docker Project:</strong> <code>󰡨</code> (Dockerfile, compose.yaml)</li>\n</ul>\n\n<h2 id=\"rich-git-segment\">Rich Git Status & Divergence Segment</h2>\n<p>Displays live repository divergence without running slow subprocesses on every keypress:</p>\n<ul>\n  <li><code> main ✔</code> &mdash; Clean working tree on <code>main</code></li>\n  <li><code> main ↑2</code> &mdash; 2 commits ahead of upstream remote</li>\n  <li><code> main ↓1</code> &mdash; 1 commit behind upstream remote</li>\n  <li><code> main 3✗ 2?</code> &mdash; 3 modified files, 2 untracked files</li>\n  <li><code> main ↑2 ↓1 3✗ 2?</code> &mdash; Full upstream and worktree status</li>\n</ul>\n\n<h2 id=\"ssh-and-root\">Remote SSH & Elevated Root State</h2>\n<ul>\n  <li><strong>Remote SSH:</strong> Displays purple badge <code> user@hostname </code> when connected over SSH.</li>\n  <li><strong>Elevated Root / Sudo:</strong> Dynamically detects <code>geteuid() == 0</code> and renders crimson prompt <code>⚡ root  ❯</code>.</li>\n</ul>"
   },
   "dev-architecture": {
     "id": "dev-architecture",
