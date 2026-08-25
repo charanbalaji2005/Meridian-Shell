@@ -1340,29 +1340,59 @@ export const DOCS_ARTICLES: Record<string, DocArticle> = {
   },
   "development-testing": {
     "id": "development-testing",
-    "title": "Testing",
+    "title": "Testing & Verification Guide",
     "category": "DEVELOPMENT",
     "status": "implemented",
     "lastUpdated": "August 25, 2026",
     "headings": [
       {
-        "id": "mini-test-framework",
-        "text": "MiniTest Dependency-Free Test Harness",
+        "id": "automated-test-suite",
+        "text": "1. Automated Test Suite (133 Tests)",
         "level": 2
       },
       {
-        "id": "test-coverage-spec",
-        "text": "Test Coverage Breakdown (133 Tests)",
+        "id": "interactive-terminal",
+        "text": "2. Interactive Terminal & Shell Launch",
         "level": 2
       },
       {
-        "id": "writing-tests",
-        "text": "Authoring New Test Cases",
+        "id": "shell-pipelines",
+        "text": "3. Shell Pipelines & Command Execution",
+        "level": 2
+      },
+      {
+        "id": "signals-job-control",
+        "text": "4. Signals & Job Control (Ctrl+C / Ctrl+Z)",
+        "level": 2
+      },
+      {
+        "id": "splits-navigation-zoom",
+        "text": "5. Window Splits, Directional Navigation & Zoom",
+        "level": 2
+      },
+      {
+        "id": "raster-image-testing",
+        "text": "6. Direct Raster Image Protocol (pic)",
+        "level": 2
+      },
+      {
+        "id": "dev-intelligence-tools",
+        "text": "7. Developer Intelligence Tools (monitor, git, files, ssh, perf)",
+        "level": 2
+      },
+      {
+        "id": "palette-and-search",
+        "text": "8. Command Palette & Universal Search",
+        "level": 2
+      },
+      {
+        "id": "ai-engine-testing",
+        "text": "9. Local AI Engine & Error Diagnostics",
         "level": 2
       }
     ],
-    "summary": "Automated test suites covering PTY, VT parser, AST executor, and protocols.",
-    "body": "<h2 id=\"mini-test-framework\">MiniTest Dependency-Free Test Harness</h2>\n<p>Meridian uses an internal, dependency-free C++20 test runner (<code>tests/mini_test.hpp</code>) providing clear colorized assertion reporting.</p>\n\n<h2 id=\"test-coverage-spec\">Test Coverage Breakdown (133 Tests)</h2>\n<ul>\n  <li><code>test_screen_buffer.cpp</code>: Cell matrix, cursor movement, wrap-around.</li>\n  <li><code>test_ansi_parser.cpp</code>: ANSI/VT escape sequences, SGR colors, alternate buffer.</li>\n  <li><code>test_pty_manager.cpp</code>: POSIX openpty fork, signal propagation.</li>\n  <li><code>test_shell_executor.cpp</code>: AST execution, pipelines, job control.</li>\n  <li><code>test_advanced_protocols.cpp</code>: OSC 8 hyperlinks, OSC 52 clipboard, OSC 7 CWD, OSC 133 prompts.</li>\n</ul>\n\n<h2 id=\"writing-tests\">Authoring New Test Cases</h2>\n<pre><code class=\"language-cpp\">TEST_CASE(\"OSC 8 Hyperlink Parsing\") {\n    vt::ScreenBuffer buffer(80, 24);\n    vt::ANSIParser parser(buffer);\n    parser.feed(\"\\033]8;;https://meridian-shell.org\\033\\\\Link\\033]8;;\\033\\\\\");\n    ASSERT_TRUE(buffer.get_cell(0, 0).attrs.hyperlink_id != 0);\n}</code></pre>"
+    "summary": "Comprehensive step-by-step guide and commands to verify PTY multiplexing, signals, splits, graphics, developer tools, and AI.",
+    "body": "<p>This step-by-step guide provides copy-pasteable commands and verification procedures to test every core subsystem of Meridian Terminal.</p>\n\n<h2 id=\"automated-test-suite\">1. Automated Test Suite (133 Tests)</h2>\n<p>Run the automated test runner to verify core engine correctness, PTY multiplexing, VT parsing, AST execution, and security:</p>\n<pre><code class=\"language-bash\"># Run all 133 automated unit and integration tests\nmake test\n\n# Or run test binary directly\n./build/meridian_tests</code></pre>\n\n<h2 id=\"interactive-terminal\">2. Interactive Terminal & Shell Launch</h2>\n<p>Launch the interactive terminal session or standalone shell engine:</p>\n<pre><code class=\"language-bash\"># Launch interactive terminal emulator\nmeridian\n\n# Launch standalone shell engine directly\nmeridian-shell</code></pre>\n\n<h2 id=\"shell-pipelines\">3. Shell Pipelines & Command Execution</h2>\n<p>Verify command pipelines, environment variable expansion, and command substitution engines:</p>\n<pre><code class=\"language-bash\"># Test pipelines & coreutils\nps aux | grep -i meridian | head -n 5\n\n# Test variable export and expansion\nexport PROJECT_NAME=\"Meridian\" && echo \"Running $PROJECT_NAME on $SHELL\"\n\n# Test command substitution engine\necho \"Kernel: $(uname -r) | Current Time: $(date +%T)\"</code></pre>\n\n<h2 id=\"signals-job-control\">4. Signals & Job Control (Ctrl+C / Ctrl+Z)</h2>\n<p>Verify that POSIX signals are routed strictly to the foreground process group without killing Meridian:</p>\n<pre><code class=\"language-bash\"># 1. Start a long running command and cancel it with Ctrl+C:\nsleep 10\n# Press: Ctrl+C  -> Cancels sleep immediately and returns to prompt\n\n# 2. Test job suspension and resumption:\nsleep 50\n# Press: Ctrl+Z  -> Suspends job\njobs            # Lists running and stopped background jobs\nfg              # Brings suspended job back to foreground</code></pre>\n\n<h2 id=\"splits-navigation-zoom\">5. Window Splits, Directional Navigation & Zoom</h2>\n<p>Test the persistent binary space partitioning (BSP) pane tree and keyboard navigation:</p>\n<table class=\"doc-table\">\n  <thead><tr><th>Keyboard Shortcut</th><th>Action</th><th>Shell Built-in Equivalent</th></tr></thead>\n  <tbody>\n    <tr><td><code>Ctrl+Shift+D</code></td><td>Split active pane vertically</td><td><code>split v</code></td></tr>\n    <tr><td><code>Ctrl+Shift+E</code></td><td>Split active pane horizontally</td><td><code>split h</code></td></tr>\n    <tr><td><code>Ctrl+Shift+Z</code></td><td>Toggle zoom on active pane</td><td><code>zoom</code></td></tr>\n    <tr><td><code>Alt+Up</code></td><td>Navigate focus to pane above</td><td><code>pane up</code></td></tr>\n    <tr><td><code>Alt+Down</code></td><td>Navigate focus to pane below</td><td><code>pane down</code></td></tr>\n    <tr><td><code>Alt+Left</code></td><td>Navigate focus to pane on left</td><td><code>pane left</code></td></tr>\n    <tr><td><code>Alt+Right</code></td><td>Navigate focus to pane on right</td><td><code>pane right</code></td></tr>\n    <tr><td>—</td><td>Inspect active pane matrix</td><td><code>pane list</code></td></tr>\n  </tbody>\n</table>\n\n<h2 id=\"raster-image-testing\">6. Direct Raster Image Protocol (pic)</h2>\n<p>Test inline 32-bit RGBA hardware-blitted raster images:</p>\n<pre><code class=\"language-bash\"># Render direct inline image:\npic ~/.config/meridian/gallery/sharingan_eye.png\n\n# Set startup anime artwork theme:\npic set 1\n\n# Enable random artwork on every startup:\npic set random</code></pre>\n\n<h2 id=\"dev-intelligence-tools\">7. Developer Intelligence Tools (monitor, git, files, ssh, perf)</h2>\n<p>Test Meridian's integrated developer productivity suite:</p>\n<pre><code class=\"language-bash\"># Real-time system monitor (CPU, RAM, Disk, Process metrics):\nmeridian monitor\n\n# Visual Git branch divergence and staged/unstaged inspector:\nmeridian git\n\n# Interactive tree file explorer with git badges:\nmeridian files\n\n# SSH connection manager (~/.ssh/config):\nmeridian ssh\n\n# Live GPU framerate & PTY latency profiler:\nmeridian perf</code></pre>\n\n<h2 id=\"palette-and-search\">8. Command Palette & Universal Search</h2>\n<p>Launch quick actions and search across history:</p>\n<pre><code class=\"language-bash\"># Open fuzzy Command Palette:\npalette\n# (Or press Ctrl+Shift+P / Ctrl+P anytime)\n\n# Universal search across screen buffers and rich history:\nsearch \"git\"\n# (Or press Ctrl+Shift+F anytime)\n\n# View rich SQLite history database with execution durations:\nmeridian history</code></pre>\n\n<h2 id=\"ai-engine-testing\">9. Local AI Engine & Error Diagnostics</h2>\n<p>Test offline privacy-preserving developer AI:</p>\n<pre><code class=\"language-bash\"># Natural language to safe shell command translation:\nmeridian ask \"find all files modified in the last 24 hours\"\n\n# Error diagnostics engine:\nmeridian diag \"Segmentation fault (core dumped)\"\n\n# Inspect AI privacy mode and risk classifier:\nmeridian ai status</code></pre>"
   },
   "development-debugging": {
     "id": "development-debugging",
