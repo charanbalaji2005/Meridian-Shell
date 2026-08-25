@@ -28,9 +28,11 @@ multi-pane multiplexing, and in-terminal command preview.
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/meridian/images/gallery
 install -m 755 build/meridian-shell $RPM_BUILD_ROOT%{_bindir}/meridian-shell
 install -m 755 build/meridian $RPM_BUILD_ROOT%{_bindir}/meridian
 install -m 644 meridian.desktop $RPM_BUILD_ROOT%{_datadir}/applications/meridian.desktop
+cp -rf resources/images/gallery/* $RPM_BUILD_ROOT%{_datadir}/meridian/images/gallery/
 
 %files
 %license LICENSE
@@ -38,6 +40,7 @@ install -m 644 meridian.desktop $RPM_BUILD_ROOT%{_datadir}/applications/meridian
 %{_bindir}/meridian-shell
 %{_bindir}/meridian
 %{_datadir}/applications/meridian.desktop
+%{_datadir}/meridian
 
 %changelog
 * Tue Aug 25 2026 Charan Balaji <charanbalaji@fedora> - 2.0.0-1
