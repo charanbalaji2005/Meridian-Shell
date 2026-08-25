@@ -287,7 +287,7 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "pic") return builtin_pic(argv);
     if (name == "ai") return builtin_ai(argv);
     if (name == "help") return builtin_help();
-    if (name == "clear") { std::cout << "\x1b[2J\x1b[H"; return 0; }
+    if (name == "clear") { std::cout << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\"; return 0; }
     if (name == "alias") return 0;
     if (name == "exit") {
         int code = 0;

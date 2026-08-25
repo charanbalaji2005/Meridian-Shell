@@ -244,21 +244,25 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Ctrl+P / Ctrl+Shift+P: Terminal Pic Upload & Selector
+        // Ctrl+L: Clear screen completely (removes header, images and scrollback)
+        if (c == 12) {
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
+            }
+            out << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\";
+            out.flush();
+            refresh_prompt();
+            continue;
+        }
+
+        // Ctrl+P / Ctrl+Shift+P: Terminal Pic Command
         if (c == 16) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);
                 preview_lines_drawn = 0;
             }
-            out << "\n\033[1;36m┌─── PIC UPLOAD / SELECTOR (Ctrl+Shift+P) ──────────────────────┐\033[0m\n"
-                << "\033[1;36m│ \033[1;32m[1]\033[0m Reference Moon & Mountain Artwork (Default)                 \033[1;36m│\033[0m\n"
-                << "\033[1;36m│ \033[1;32m[2]\033[0m Render as ASCII Density Art                                \033[1;36m│\033[0m\n"
-                << "\033[1;36m│ \033[1;32m[3]\033[0m Render as TrueColor Colored ASCII                          \033[1;36m│\033[0m\n"
-                << "\033[1;36m│ \033[1;32m[4]\033[0m Render as Hybrid Mode                                      \033[1;36m│\033[0m\n"
-                << "\033[1;36m│ \033[0;37mTip: Use 'pic <filepath> [--ascii|--color-ascii|--hybrid]'     \033[1;36m│\033[0m\n"
-                << "\033[1;36m└───────────────────────────────────────────────────────────────┘\033[0m\n";
-            out.flush();
-            current_line = "pic --default";
+            current_line = "pic ";
             cursor_pos = static_cast<int>(current_line.size());
             refresh_prompt();
             continue;

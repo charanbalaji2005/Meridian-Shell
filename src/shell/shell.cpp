@@ -167,10 +167,10 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
             if (!std::getline(in, line)) break;
         }
 
-        // Handle clear builtin re-rendering reference header
+        // Handle clear builtin (wipe screen, image and scrollback)
         if (line == "clear" && is_real_interactive) {
-            out << "\x1b[2J\x1b[H";
-            render_reference_layout_header(out);
+            out << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\";
+            out.flush();
             continue;
         }
 
