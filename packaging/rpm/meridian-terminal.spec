@@ -12,6 +12,9 @@ BuildRequires:  make
 BuildRequires:  cmake >= 3.20
 BuildRequires:  libutil-devel
 
+Provides:       meridian-shell = %{version}-%{release}
+Provides:       meridian = %{version}-%{release}
+
 %description
 Meridian Terminal is a fast Linux terminal emulator, developer environment,
 and AI agent platform with native TrueColor graphics, live Git intelligence,
