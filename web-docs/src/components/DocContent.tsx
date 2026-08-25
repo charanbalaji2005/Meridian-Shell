@@ -42,9 +42,45 @@ export const DocContent: React.FC<DocContentProps> = ({
   };
 
   useEffect(() => {
-    // Enhance code blocks with copy button
+    // 1. Enhance code-block-wrapper headers with copy button
+    const wrappers = document.querySelectorAll('.doc-body-content .code-block-wrapper');
+    wrappers.forEach((wrapper) => {
+      const header = wrapper.querySelector('.code-header');
+      const codeEl = wrapper.querySelector('code');
+      const preEl = wrapper.querySelector('pre');
+      if (header && !header.querySelector('.code-copy-btn')) {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'code-copy-btn';
+        copyBtn.setAttribute('aria-label', 'Copy command');
+        copyBtn.innerHTML = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span>${t.copy}</span>
+        `;
+
+        copyBtn.addEventListener('click', () => {
+          const text = codeEl?.innerText || preEl?.textContent || '';
+          navigator.clipboard.writeText(text.trim());
+          copyBtn.innerHTML = `
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00A8B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="color: #00A8B5; font-weight: 500;">${t.copied}</span>
+          `;
+          setTimeout(() => {
+            copyBtn.innerHTML = `
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>${t.copy}</span>
+            `;
+          }, 2000);
+        });
+
+        header.appendChild(copyBtn);
+      }
+    });
+
+    // 2. Enhance all standalone <pre> blocks with Claude-style header bar and copy button
     const preBlocks = document.querySelectorAll('.doc-body-content pre');
     preBlocks.forEach((pre) => {
+      // Skip if inside a wrapper that already has a code-header
+      if (pre.closest('.code-block-wrapper')) return;
       if (pre.querySelector('.code-header-bar')) return;
 
       const codeEl = pre.querySelector('code');
