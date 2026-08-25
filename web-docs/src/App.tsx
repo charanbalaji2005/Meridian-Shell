@@ -121,20 +121,24 @@ export const App: React.FC = () => {
           onSelect={handleSelectArticle}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
+          language={language}
         />
 
         <main className="claude-main-area">
           <div className="claude-article-wrapper">
             <Breadcrumbs
+              articleId={activeId}
               category={currentArticle.category}
               title={currentArticle.title}
               onNavigateHome={() => handleSelectArticle('intro')}
+              language={language}
               t={t}
             />
 
             <DocContent
               article={currentArticle}
               onNavigate={handleSelectArticle}
+              language={language}
               t={t}
             />
           </div>
@@ -176,6 +180,7 @@ export const App: React.FC = () => {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectArticle={handleSelectArticle}
+        language={language}
         t={t}
       />
 

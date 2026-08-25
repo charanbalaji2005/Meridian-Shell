@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ChevronRight, FileText } from 'lucide-react';
 import { DOCS_ARTICLES, DocArticle } from '../data/docsContent';
-import { TranslationStrings } from '../i18n/translations';
+import { SupportedLanguage, TranslationStrings } from '../i18n/translations';
+import { getLocalizedArticleTitle, getLocalizedCategoryTitle } from '../i18n/articleTranslations';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectArticle: (id: string) => void;
+  language: SupportedLanguage;
   t: TranslationStrings;
 }
 
@@ -14,6 +16,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   onSelectArticle,
+  language,
   t,
 }) => {
   const [query, setQuery] = useState('');
@@ -34,7 +37,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     .filter((art) => {
       if (!query.trim()) return true;
       const q = query.toLowerCase();
+      const localizedTitle = getLocalizedArticleTitle(art.id, art.title, language).toLowerCase();
       return (
+        localizedTitle.includes(q) ||
         art.title.toLowerCase().includes(q) ||
         art.category.toLowerCase().includes(q) ||
         art.summary.toLowerCase().includes(q) ||
@@ -116,8 +121,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   <FileText size={16} className="row-icon" />
                   <div className="row-details">
                     <div className="row-title-bar">
-                      <span className="row-title">{article.title}</span>
-                      <span className="row-badge">{article.category}</span>
+                      <span className="row-title">{getLocalizedArticleTitle(article.id, article.title, language)}</span>
+                      <span className="row-badge">{getLocalizedCategoryTitle(article.category.toUpperCase(), language)}</span>
                     </div>
                     <p className="row-snippet">{matchText}</p>
                   </div>

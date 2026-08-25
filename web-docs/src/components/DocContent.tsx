@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { DocArticle } from '../data/docsContent';
 import { NAV_STRUCTURE } from '../data/docsNav';
-import { Copy, Check, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
-import { TranslationStrings } from '../i18n/translations';
+import { Copy, Check, ArrowLeft, ArrowRight } from 'lucide-react';
+import { SupportedLanguage, TranslationStrings } from '../i18n/translations';
+import { getLocalizedArticleTitle } from '../i18n/articleTranslations';
 
 interface DocContentProps {
   article: DocArticle;
   onNavigate: (id: string) => void;
+  language: SupportedLanguage;
   t: TranslationStrings;
 }
 
-export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }) => {
-  const [copiedLLM, setCopiedLLM] = useState(false);
+export const DocContent: React.FC<DocContentProps> = ({
+  article,
+  onNavigate,
+  language,
+  t,
+}) => {
+  const [copiedPage, setCopiedPage] = useState(false);
 
   // Flatten navigation items to calculate previous & next article
   const allNavItems: { id: string; title: string }[] = [];
@@ -25,16 +32,17 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }
   const prevItem = currentIndex > 0 ? allNavItems[currentIndex - 1] : null;
   const nextItem = currentIndex < allNavItems.length - 1 ? allNavItems[currentIndex + 1] : null;
 
-  const handleCopyForLLM = () => {
-    const rawContent = `${article.title}\nCategory: ${article.category}\nDate: ${article.lastUpdated}\n\n${article.summary}\n\n` +
-      article.body.replace(/<[^>]*>?/gm, '');
+  // Copy entire page content to clipboard
+  const handleCopyPage = () => {
+    const rawContent = `# ${localizedTitle}\nCategory: ${article.category}\nLast Updated: ${article.lastUpdated}\n\n${article.summary}\n\n` +
+      article.body.replace(/<[^>]*>?/gm, '').replace(/\n{3,}/g, '\n\n');
     navigator.clipboard.writeText(rawContent.trim());
-    setCopiedLLM(true);
-    setTimeout(() => setCopiedLLM(false), 2000);
+    setCopiedPage(true);
+    setTimeout(() => setCopiedPage(false), 2000);
   };
 
   useEffect(() => {
-    // Enhance code blocks with Claude-style header and copy button
+    // Enhance code blocks with copy button
     const preBlocks = document.querySelectorAll('.doc-body-content pre');
     preBlocks.forEach((pre) => {
       if (pre.querySelector('.code-header-bar')) return;
@@ -79,15 +87,16 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }
     });
   }, [article, t]);
 
+  const localizedTitle = getLocalizedArticleTitle(article.id, article.title, language);
+
   return (
     <article className="claude-article">
       <header className="article-title-header">
         <div className="title-row">
-          <h1 className="article-serif-title">{article.title}</h1>
-          <button onClick={handleCopyForLLM} className="copy-llm-btn" aria-label="Copy for LLM">
-            {copiedLLM ? <Check size={14} className="copied-icon" /> : <Copy size={14} />}
-            <span>{copiedLLM ? t.copiedForLLM : t.copyForLLM}</span>
-            <ChevronDown size={12} className="chevron-icon" />
+          <h1 className="article-serif-title">{localizedTitle}</h1>
+          <button onClick={handleCopyPage} className="copy-llm-btn" aria-label="Copy page content">
+            {copiedPage ? <Check size={14} className="copied-icon" /> : <Copy size={14} />}
+            <span>{copiedPage ? t.copiedPage : t.copyPage}</span>
           </button>
         </div>
         <p className="article-publish-date">{article.lastUpdated}</p>
@@ -112,7 +121,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }
               <ArrowLeft size={16} className="pager-arrow" />
               <div className="pager-meta">
                 <span className="pager-label">{t.previous}</span>
-                <span className="pager-title">{prevItem.title}</span>
+                <span className="pager-title">{getLocalizedArticleTitle(prevItem.id, prevItem.title, language)}</span>
               </div>
             </button>
           ) : <div className="pager-spacer" />}
@@ -124,7 +133,7 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate, t }
             >
               <div className="pager-meta text-right">
                 <span className="pager-label">{t.next}</span>
-                <span className="pager-title">{nextItem.title}</span>
+                <span className="pager-title">{getLocalizedArticleTitle(nextItem.id, nextItem.title, language)}</span>
               </div>
               <ArrowRight size={16} className="pager-arrow" />
             </button>

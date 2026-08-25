@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { NAV_STRUCTURE } from '../data/docsNav';
+import { SupportedLanguage } from '../i18n/translations';
+import { getLocalizedCategoryTitle, getLocalizedArticleTitle } from '../i18n/articleTranslations';
 import {
   ChevronDown,
   ChevronUp,
@@ -26,7 +28,6 @@ import {
   Settings,
   Package,
   Code,
-  BookOpen,
   FileText,
   X
 } from 'lucide-react';
@@ -36,6 +37,7 @@ interface SidebarProps {
   onSelect: (id: string) => void;
   isOpen: boolean;
   onClose?: () => void;
+  language: SupportedLanguage;
 }
 
 const itemIconMap: Record<string, React.ReactNode> = {
@@ -112,8 +114,13 @@ const itemIconMap: Record<string, React.ReactNode> = {
   'proj-contributing': <FileText size={15} />,
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, onClose }) => {
-  // All categories open by default
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeId,
+  onSelect,
+  isOpen,
+  onClose,
+  language,
+}) => {
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     'MERIDIAN SHELL': true,
     'TERMINAL': true,
@@ -148,6 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
       <nav className="sidebar-scroll-nav">
         {NAV_STRUCTURE.map((category) => {
           const isCategoryOpen = openCategories[category.title] ?? true;
+          const localizedCategory = getLocalizedCategoryTitle(category.title, language);
 
           return (
             <div key={category.title} className="sidebar-group">
@@ -155,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
                 className="sidebar-group-header"
                 onClick={() => toggleCategory(category.title)}
               >
-                <span className="group-title">{category.title}</span>
+                <span className="group-title">{localizedCategory}</span>
                 <span className="group-chevron">
                   {isCategoryOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </span>
@@ -166,6 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
                   {category.items.map((item) => {
                     const isActive = item.id === activeId;
                     const icon = itemIconMap[item.id] || <FileText size={15} />;
+                    const localizedTitle = getLocalizedArticleTitle(item.id, item.title, language);
 
                     return (
                       <li key={item.id}>
@@ -177,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
                           }}
                         >
                           <span className="link-icon">{icon}</span>
-                          <span className="link-text">{item.title}</span>
+                          <span className="link-text">{localizedTitle}</span>
                         </button>
                       </li>
                     );
