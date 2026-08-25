@@ -65,6 +65,18 @@ else
 fi
 rm -rf "${DEB_ROOT}"
 
+echo "-> 4. Building Fedora / RHEL RPM Package (.rpm)..."
+if command -v rpmbuild >/dev/null 2>&1; then
+    RPM_BUILD_DIR="$(mktemp -d /tmp/meridian-rpm-XXXXXX)"
+    mkdir -p "${RPM_BUILD_DIR}"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+    tar -czf "${RPM_BUILD_DIR}/SOURCES/meridian-terminal-${VERSION}.tar.gz" --transform "s,^,meridian-terminal-${VERSION}/," --exclude='.git' --exclude='build' --exclude='dist' .
+    rpmbuild --define "_topdir ${RPM_BUILD_DIR}" -ba packaging/rpm/meridian-terminal.spec >/dev/null 2>&1 || true
+    cp -f "${RPM_BUILD_DIR}"/RPMS/*/*.rpm "${DIST_DIR}/" 2>/dev/null || true
+    cp -f "${RPM_BUILD_DIR}"/SRPMS/*.src.rpm "${DIST_DIR}/" 2>/dev/null || true
+    rm -rf "${RPM_BUILD_DIR}"
+    echo "   [✓] Generated Fedora RPM packages in ${DIST_DIR}/"
+fi
+
 echo ""
 echo "=============================================="
 echo " Packaging complete! Offline packages saved in: "

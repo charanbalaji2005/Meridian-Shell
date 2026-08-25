@@ -7,10 +7,8 @@ License:        GPL-3.0-or-later
 URL:            https://github.com/charanbalaji2005/Meridian-Shell
 Source0:        %{name}-%{version}.tar.gz
 
-BuildRequires:  gcc-c++ >= 11
+BuildRequires:  gcc-c++ >= 10
 BuildRequires:  make
-BuildRequires:  cmake >= 3.20
-BuildRequires:  libutil-devel
 
 Provides:       meridian-shell = %{version}-%{release}
 Provides:       meridian = %{version}-%{release}
