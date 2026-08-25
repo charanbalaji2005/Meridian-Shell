@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface BreadcrumbsProps {
   category: string;
@@ -12,15 +12,26 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   title,
   onNavigateHome,
 }) => {
+  // Format category to Title Case if uppercase
+  const formattedCategory = category
+    .toLowerCase()
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
   return (
-    <nav className="fedora-breadcrumbs" aria-label="Breadcrumbs">
-      <button onClick={onNavigateHome} className="breadcrumb-home" title="Documentation Home">
-        <Home size={14} />
+    <nav className="claude-breadcrumbs" aria-label="Breadcrumbs">
+      <button onClick={onNavigateHome} className="breadcrumb-link">
+        All Collections
       </button>
-      <ChevronRight size={12} className="breadcrumb-separator" />
-      <span className="breadcrumb-item breadcrumb-cat">{category}</span>
-      <ChevronRight size={12} className="breadcrumb-separator" />
-      <span className="breadcrumb-item breadcrumb-current">{title}</span>
+      <ChevronRight size={13} className="breadcrumb-separator" />
+      <button onClick={onNavigateHome} className="breadcrumb-link">
+        Meridian Shell
+      </button>
+      <ChevronRight size={13} className="breadcrumb-separator" />
+      <span className="breadcrumb-link">{formattedCategory}</span>
+      <ChevronRight size={13} className="breadcrumb-separator" />
+      <span className="breadcrumb-current">{title}</span>
     </nav>
   );
 };

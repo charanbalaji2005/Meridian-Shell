@@ -69,18 +69,18 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   };
 
   return (
-    <div className="search-modal-backdrop" onClick={onClose}>
+    <div className="claude-search-backdrop" onClick={onClose}>
       <div
-        className="search-modal-container"
+        className="claude-search-modal"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="search-modal-header">
-          <Search size={18} className="search-modal-icon" />
+        <div className="search-header-row">
+          <Search size={18} className="search-input-icon" />
           <input
             ref={inputRef}
             type="text"
-            className="search-modal-input"
+            className="search-text-input"
             placeholder="Search documentation, commands, APIs, architecture..."
             value={query}
             onChange={(e) => {
@@ -88,14 +88,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               setSelectedIndex(0);
             }}
           />
-          <button className="search-modal-close" onClick={onClose}>
+          <button className="search-close-btn" onClick={onClose} aria-label="Close search">
             <X size={18} />
           </button>
         </div>
 
-        <div className="search-modal-body">
+        <div className="search-results-container">
           {results.length === 0 ? (
-            <div className="search-empty">
+            <div className="search-empty-state">
               <p>No documentation found matching &ldquo;{query}&rdquo;</p>
             </div>
           ) : (
@@ -103,32 +103,32 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               {results.map(({ article, matchText }, i) => (
                 <li
                   key={article.id}
-                  className={`search-result-item ${i === selectedIndex ? 'selected' : ''}`}
+                  className={`search-result-row ${i === selectedIndex ? 'selected' : ''}`}
                   onClick={() => {
                     onSelectArticle(article.id);
                     onClose();
                   }}
                   onMouseEnter={() => setSelectedIndex(i)}
                 >
-                  <FileText size={16} className="result-icon" />
-                  <div className="result-info">
-                    <div className="result-title-row">
-                      <span className="result-title">{article.title}</span>
-                      <span className="result-category">{article.category}</span>
+                  <FileText size={16} className="row-icon" />
+                  <div className="row-details">
+                    <div className="row-title-bar">
+                      <span className="row-title">{article.title}</span>
+                      <span className="row-badge">{article.category}</span>
                     </div>
-                    <p className="result-snippet">{matchText}</p>
+                    <p className="row-snippet">{matchText}</p>
                   </div>
-                  <ChevronRight size={14} className="result-arrow" />
+                  <ChevronRight size={14} className="row-arrow" />
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="search-modal-footer">
-          <span className="search-hint"><span>↑</span> <span>↓</span> Navigate</span>
-          <span className="search-hint"><span>↵</span> Select</span>
-          <span className="search-hint"><span>ESC</span> Close</span>
+        <div className="search-footer-hints">
+          <span className="hint-pill"><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span>
+          <span className="hint-pill"><kbd>↵</kbd> Select</span>
+          <span className="hint-pill"><kbd>ESC</kbd> Close</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,35 @@
 import React, { useState } from 'react';
 import { NAV_STRUCTURE } from '../data/docsNav';
-import { ChevronDown, ChevronRight, Compass, Terminal, Image, Layout, Layers, Settings, Package, Code, BookOpen, Info, X } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Download,
+  Zap,
+  Sliders,
+  Terminal,
+  Cpu,
+  List,
+  Globe,
+  Keyboard,
+  Clipboard,
+  History,
+  Monitor,
+  CheckSquare,
+  FileImage,
+  Film,
+  Sparkles,
+  Grid,
+  Maximize2,
+  Layout,
+  Layers,
+  Settings,
+  Package,
+  Code,
+  BookOpen,
+  FileText,
+  X
+} from 'lucide-react';
 
 interface SidebarProps {
   activeId: string;
@@ -9,23 +38,84 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-  Compass: <Compass size={15} />,
-  Terminal: <Terminal size={15} />,
-  Image: <Image size={15} />,
-  Layout: <Layout size={15} />,
-  Layers: <Layers size={15} />,
-  Settings: <Settings size={15} />,
-  Package: <Package size={15} />,
-  Code: <Code size={15} />,
-  BookOpen: <BookOpen size={15} />,
-  Info: <Info size={15} />,
+const itemIconMap: Record<string, React.ReactNode> = {
+  'intro': <Info size={15} />,
+  'installation': <Download size={15} />,
+  'quickstart': <Zap size={15} />,
+  'first-run': <CheckSquare size={15} />,
+  'getting-started-config': <Sliders size={15} />,
+
+  'terminal-emulation': <Terminal size={15} />,
+  'terminal-shell': <Terminal size={15} />,
+  'terminal-pty': <Cpu size={15} />,
+  'terminal-commands': <List size={15} />,
+  'terminal-ssh': <Globe size={15} />,
+  'terminal-keybindings': <Keyboard size={15} />,
+  'terminal-clipboard': <Clipboard size={15} />,
+  'terminal-scrollback': <History size={15} />,
+
+  'graphics-gpu': <Monitor size={15} />,
+  'graphics-inline-images': <CheckSquare size={15} />,
+  'graphics-formats': <FileImage size={15} />,
+  'graphics-gif': <Film size={15} />,
+  'graphics-kitty': <Sparkles size={15} />,
+  'graphics-sixel': <Grid size={15} />,
+  'graphics-rendering': <Maximize2 size={15} />,
+
+  'interface-gui': <Layout size={15} />,
+  'interface-windows': <Layout size={15} />,
+  'interface-tabs': <Layers size={15} />,
+  'interface-panes': <Grid size={15} />,
+  'interface-themes': <Sliders size={15} />,
+  'interface-powerline': <Terminal size={15} />,
+
+  'dev-architecture': <Layers size={15} />,
+  'dev-pty-arch': <Cpu size={15} />,
+  'dev-screen-buffer': <Grid size={15} />,
+  'dev-renderer': <Monitor size={15} />,
+  'dev-graphics-engine': <FileImage size={15} />,
+  'dev-ai-engine': <Sparkles size={15} />,
+  'dev-security': <CheckSquare size={15} />,
+
+  'config-file': <FileText size={15} />,
+  'config-themes': <Sliders size={15} />,
+  'config-keybindings': <Keyboard size={15} />,
+  'config-profiles': <List size={15} />,
+  'config-env': <Sliders size={15} />,
+
+  'pkg-fedora': <Package size={15} />,
+  'pkg-debian': <Package size={15} />,
+  'pkg-arch': <Package size={15} />,
+  'pkg-opensuse': <Package size={15} />,
+  'pkg-appimage': <Package size={15} />,
+  'pkg-flatpak': <Package size={15} />,
+  'pkg-snap': <Package size={15} />,
+  'pkg-macos': <Package size={15} />,
+  'pkg-windows': <Package size={15} />,
+
+  'development-building': <Code size={15} />,
+  'development-testing': <CheckSquare size={15} />,
+  'development-debugging': <Settings size={15} />,
+  'development-contributing': <FileText size={15} />,
+  'development-release': <Package size={15} />,
+
+  'ref-cli': <Terminal size={15} />,
+  'ref-config': <Settings size={15} />,
+  'ref-shortcuts': <Keyboard size={15} />,
+  'ref-env': <Sliders size={15} />,
+  'ref-faq': <Info size={15} />,
+  'ref-troubleshooting': <Settings size={15} />,
+
+  'proj-github': <Globe size={15} />,
+  'proj-changelog': <History size={15} />,
+  'proj-license': <FileText size={15} />,
+  'proj-contributing': <FileText size={15} />,
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, onClose }) => {
-  // Open all categories by default
+  // All categories open by default
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
-    'GETTING STARTED': true,
+    'MERIDIAN SHELL': true,
     'TERMINAL': true,
     'GRAPHICS': true,
     'INTERFACE': true,
@@ -46,32 +136,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
 
   return (
     <aside className={`meridian-sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-brand-header">
-        <span className="sidebar-doc-label">Meridian Documentation</span>
-        {onClose && (
+      {onClose && (
+        <div className="sidebar-mobile-header">
+          <span className="sidebar-mobile-title">Documentation</span>
           <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
             <X size={18} />
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <nav className="sidebar-scroll-nav">
         {NAV_STRUCTURE.map((category) => {
           const isCategoryOpen = openCategories[category.title] ?? true;
-          const hasActiveItem = category.items.some((item) => item.id === activeId);
 
           return (
             <div key={category.title} className="sidebar-group">
               <button
-                className={`sidebar-group-header ${hasActiveItem ? 'group-active' : ''}`}
+                className="sidebar-group-header"
                 onClick={() => toggleCategory(category.title)}
               >
-                <span className="group-icon">
-                  {iconMap[category.icon] || <Compass size={15} />}
-                </span>
                 <span className="group-title">{category.title}</span>
                 <span className="group-chevron">
-                  {isCategoryOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                  {isCategoryOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </span>
               </button>
 
@@ -79,6 +165,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
                 <ul className="sidebar-items-list">
                   {category.items.map((item) => {
                     const isActive = item.id === activeId;
+                    const icon = itemIconMap[item.id] || <FileText size={15} />;
+
                     return (
                       <li key={item.id}>
                         <button
@@ -88,17 +176,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
                             if (onClose) onClose();
                           }}
                         >
-                          <span className="link-bullet"></span>
+                          <span className="link-icon">{icon}</span>
                           <span className="link-text">{item.title}</span>
-                          {item.status === 'development' && (
-                            <span className="badge-tag badge-dev">DEV</span>
-                          )}
-                          {item.status === 'experimental' && (
-                            <span className="badge-tag badge-exp">EXP</span>
-                          )}
-                          {item.status === 'planned' && (
-                            <span className="badge-tag badge-plan">PLAN</span>
-                          )}
                         </button>
                       </li>
                     );
@@ -109,17 +188,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, on
           );
         })}
       </nav>
-
-      <div className="sidebar-footer-panel">
-        <a
-          href="https://github.com/charanbalaji2005/Meridian-Shell"
-          target="_blank"
-          rel="noreferrer"
-          className="footer-repo-link"
-        >
-          <span>charanbalaji2005/Meridian-Shell</span>
-        </a>
-      </div>
     </aside>
   );
 };

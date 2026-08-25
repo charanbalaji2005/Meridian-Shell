@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Activity } from 'lucide-react';
+import { HelpCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface TableOfContentsProps {
   headings: { id: string; text: string; level: number }[];
-  onNavigateToContributing: () => void;
+  onNavigateToContributing?: () => void;
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({
   headings,
-  onNavigateToContributing,
 }) => {
   const [activeHeadingId, setActiveHeadingId] = useState<string>('');
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
     if (headings.length > 0) {
@@ -25,7 +25,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           }
         });
       },
-      { rootMargin: '-80px 0% -60% 0%' }
+      { rootMargin: '-70px 0% -60% 0%' }
     );
 
     headings.forEach((h) => {
@@ -39,7 +39,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   const scrollToHeading = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      const topOffset = 80;
+      const topOffset = 75;
       const elementPosition = el.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - topOffset;
 
@@ -52,13 +52,13 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   };
 
   return (
-    <aside className="meridian-toc">
-      <div className="toc-inner">
-        <h4 className="toc-title">Contents</h4>
+    <aside className="claude-toc">
+      <div className="toc-sticky-container">
+        <h4 className="toc-section-heading">ON THIS PAGE</h4>
         {headings.length === 0 ? (
           <p className="toc-empty">Overview</p>
         ) : (
-          <ul className="toc-list">
+          <ul className="toc-items-list">
             {headings.map((h) => {
               const isActive = activeHeadingId === h.id;
               return (
@@ -68,7 +68,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
                 >
                   <button
                     onClick={() => scrollToHeading(h.id)}
-                    className="toc-link"
+                    className="toc-link-btn"
                   >
                     {h.text}
                   </button>
@@ -78,55 +78,30 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           </ul>
         )}
 
-        {/* Project Status Panel matching specification */}
-        <div className="toc-status-panel">
-          <div className="status-panel-header">
-            <Activity size={13} className="status-panel-icon" />
-            <span className="status-panel-title">Subsystem Status</span>
+        {/* Was this helpful card matching Screenshot 2 */}
+        <div className="was-this-helpful-card">
+          <div className="helpful-title">
+            <HelpCircle size={14} className="helpful-icon" />
+            <span>Was this helpful?</span>
           </div>
-          
-          <div className="status-rows-list">
-            <div className="status-row">
-              <span className="status-row-name">PTY Engine</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">VT / Buffer</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">Shell / AST</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">GPU Raster</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">Dev Tools</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">AI Offline</span>
-              <span className="status-dot">Implemented</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">Windows</span>
-              <span className="status-dot">Development</span>
-            </div>
-            <div className="status-row">
-              <span className="status-row-name">macOS</span>
-              <span className="status-dot">Development</span>
-            </div>
+          <div className="helpful-actions">
+            <button
+              onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
+              className={`feedback-btn ${feedback === 'up' ? 'selected' : ''}`}
+              title="Yes, helpful"
+              aria-label="Yes, this was helpful"
+            >
+              <ThumbsUp size={14} />
+            </button>
+            <button
+              onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
+              className={`feedback-btn ${feedback === 'down' ? 'selected' : ''}`}
+              title="No, not helpful"
+              aria-label="No, this was not helpful"
+            >
+              <ThumbsDown size={14} />
+            </button>
           </div>
-        </div>
-
-        {/* Contributing Link */}
-        <div className="toc-contribute-box">
-          <button onClick={onNavigateToContributing} className="toc-contribute-btn">
-            <span>Contribute to Project</span>
-            <ChevronRight size={13} />
-          </button>
         </div>
       </div>
     </aside>

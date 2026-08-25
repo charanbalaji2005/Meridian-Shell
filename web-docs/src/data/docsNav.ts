@@ -12,11 +12,11 @@ export interface NavCategory {
 
 export const NAV_STRUCTURE: NavCategory[] = [
   {
-    title: 'GETTING STARTED',
+    title: 'MERIDIAN SHELL',
     icon: 'Compass',
     items: [
       { id: 'intro', title: 'Introduction', status: 'implemented' },
-      { id: 'installation', title: 'Installation & Build', status: 'implemented' },
+      { id: 'installation', title: 'Installation', status: 'implemented' },
       { id: 'quickstart', title: 'Quick Start', status: 'implemented' },
       { id: 'first-run', title: 'First Run', status: 'implemented' },
       { id: 'getting-started-config', title: 'Configuration', status: 'implemented' },

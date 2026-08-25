@@ -8,10 +8,10 @@ import { SearchModal } from './components/SearchModal';
 import { DOCS_ARTICLES } from './data/docsContent';
 
 export const App: React.FC = () => {
-  const [activeId, setActiveId] = useState<string>('intro');
+  const [activeId, setActiveId] = useState<string>('graphics-inline-images');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
   // Handle URL hash changes
   useEffect(() => {
@@ -41,7 +41,7 @@ export const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') ||
-        ((e.metaKey || e.ctrlKey) && e.key === 'k')
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')
       ) {
         e.preventDefault();
         setIsSearchOpen(true);
@@ -52,9 +52,9 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handle Theme
+  // Handle Theme: Default is LIGHT
   useEffect(() => {
-    const savedTheme = (localStorage.getItem('meridian_theme') as 'dark' | 'light') || 'dark';
+    const savedTheme = (localStorage.getItem('meridian_theme') as 'dark' | 'light') || 'light';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
@@ -75,23 +75,23 @@ export const App: React.FC = () => {
     }
   };
 
-  const currentArticle = DOCS_ARTICLES[activeId] || DOCS_ARTICLES['intro'];
+  const currentArticle = DOCS_ARTICLES[activeId] || DOCS_ARTICLES['graphics-inline-images'] || DOCS_ARTICLES['intro'];
 
   return (
-    <div className="meridian-docs-app">
+    <div className="claude-docs-app">
       <Header
         onOpenSearch={() => setIsSearchOpen(true)}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         isSidebarOpen={isSidebarOpen}
         theme={theme}
         onToggleTheme={toggleTheme}
-        currentSectionTitle={currentArticle.title}
+        onNavigate={handleSelectArticle}
       />
 
-      <div className="meridian-layout">
-        {/* Mobile Backdrop Overlay */}
+      <div className="claude-layout-container">
+        {/* Mobile Backdrop */}
         <div
-          className={`mobile-backdrop ${isSidebarOpen ? 'active' : ''}`}
+          className={`claude-backdrop ${isSidebarOpen ? 'active' : ''}`}
           onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -103,8 +103,8 @@ export const App: React.FC = () => {
           onClose={() => setIsSidebarOpen(false)}
         />
 
-        <main className="meridian-main-wrapper">
-          <div className="meridian-content-container">
+        <main className="claude-main-area">
+          <div className="claude-article-wrapper">
             <Breadcrumbs
               category={currentArticle.category}
               title={currentArticle.title}
@@ -123,6 +123,31 @@ export const App: React.FC = () => {
           />
         </main>
       </div>
+
+      <footer className="claude-footer">
+        <div className="footer-inner">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <svg viewBox="0 0 100 100" width="18" height="18">
+                <circle cx="50" cy="50" r="44" fill="none" stroke="#00A8B5" strokeWidth="6" />
+                <path d="M 28 68 L 28 34 L 50 56 L 72 34 L 72 68" fill="none" stroke="#00A8B5" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="footer-title">Meridian Shell</span>
+          </div>
+          <div className="footer-links">
+            <button onClick={() => handleSelectArticle('intro')} className="footer-link-btn">Documentation</button>
+            <a href="https://github.com/charanbalaji2005/Meridian-Shell" target="_blank" rel="noreferrer" className="footer-link">GitHub</a>
+            <button onClick={() => handleSelectArticle('proj-changelog')} className="footer-link-btn">Release Notes</button>
+            <button onClick={() => handleSelectArticle('proj-contributing')} className="footer-link-btn">Contributing</button>
+            <button onClick={() => handleSelectArticle('proj-license')} className="footer-link-btn">License</button>
+            <button onClick={() => handleSelectArticle('dev-security')} className="footer-link-btn">Security</button>
+          </div>
+          <div className="footer-copy">
+            GNU GPL v3 or later
+          </div>
+        </div>
+      </footer>
 
       <SearchModal
         isOpen={isSearchOpen}
