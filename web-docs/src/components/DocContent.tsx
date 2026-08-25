@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DocArticle } from '../data/docsContent';
 import { NAV_STRUCTURE } from '../data/docsNav';
-import { Clock, ArrowLeft, ArrowRight, ShieldCheck, Wrench, Sparkles, CircleDashed } from 'lucide-react';
+import { Clock, ArrowLeft, ArrowRight, ShieldCheck, Wrench, Sparkles, CircleDashed, List, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DocContentProps {
   article: DocArticle;
@@ -9,6 +9,8 @@ interface DocContentProps {
 }
 
 export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) => {
+  const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
+
   // Flatten navigation items to calculate previous & next article
   const allNavItems: { id: string; title: string }[] = [];
   NAV_STRUCTURE.forEach((cat) => {
@@ -22,6 +24,8 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
   const nextItem = currentIndex < allNavItems.length - 1 ? allNavItems[currentIndex + 1] : null;
 
   useEffect(() => {
+    setIsMobileTocOpen(false);
+
     // Add copy buttons to rendered pre blocks
     const preBlocks = document.querySelectorAll('.doc-body-content pre');
     preBlocks.forEach((pre) => {
@@ -41,6 +45,17 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
       pre.appendChild(btn);
     });
   }, [article]);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const topOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      setIsMobileTocOpen(false);
+    }
+  };
 
   return (
     <article className="meridian-article">
@@ -77,6 +92,37 @@ export const DocContent: React.FC<DocContentProps> = ({ article, onNavigate }) =
         <h1 className="article-main-title">{article.title}</h1>
         {article.summary && article.id !== 'intro' && (
           <p className="article-lead-summary">{article.summary}</p>
+        )}
+
+        {/* Mobile & Tablet Collapsible On This Page Accordion */}
+        {article.headings && article.headings.length > 0 && (
+          <div className="mobile-toc-accordion">
+            <button
+              className="mobile-toc-toggle-btn"
+              onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
+              aria-expanded={isMobileTocOpen}
+            >
+              <span className="mobile-toc-toggle-left">
+                <List size={14} className="mobile-toc-icon" />
+                <span>On this page ({article.headings.length} sections)</span>
+              </span>
+              {isMobileTocOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            </button>
+
+            {isMobileTocOpen && (
+              <div className="mobile-toc-dropdown">
+                <ul>
+                  {article.headings.map((h) => (
+                    <li key={h.id} className={`mobile-toc-item level-${h.level}`}>
+                      <button onClick={() => scrollToSection(h.id)}>
+                        {h.text}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </header>
 

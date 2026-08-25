@@ -27,6 +27,15 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen && window.innerWidth <= 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isSidebarOpen]);
+
   // Keyboard shortcut listener for search (press '/' or 'Ctrl+K')
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,15 +88,23 @@ export const App: React.FC = () => {
         currentSectionTitle={currentArticle.title}
       />
 
-      <div className="fedora-layout">
+      <div className="meridian-layout">
+        {/* Mobile Backdrop Overlay */}
+        <div
+          className={`mobile-backdrop ${isSidebarOpen ? 'active' : ''}`}
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+
         <Sidebar
           activeId={activeId}
           onSelect={handleSelectArticle}
           isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
-        <main className="fedora-main-wrapper">
-          <div className="fedora-content-container">
+        <main className="meridian-main-wrapper">
+          <div className="meridian-content-container">
             <Breadcrumbs
               category={currentArticle.category}
               title={currentArticle.title}
@@ -102,7 +119,7 @@ export const App: React.FC = () => {
 
           <TableOfContents
             headings={currentArticle.headings}
-            onNavigateToContributing={() => handleSelectArticle('contributing')}
+            onNavigateToContributing={() => handleSelectArticle('proj-contributing')}
           />
         </main>
       </div>

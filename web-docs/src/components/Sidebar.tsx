@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { NAV_STRUCTURE } from '../data/docsNav';
-import { ChevronDown, ChevronRight, Compass, Terminal, Image, Layout, Layers, Settings, Package, Code, BookOpen, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, Compass, Terminal, Image, Layout, Layers, Settings, Package, Code, BookOpen, Info, X } from 'lucide-react';
 
 interface SidebarProps {
   activeId: string;
   onSelect: (id: string) => void;
   isOpen: boolean;
+  onClose?: () => void;
 }
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -21,7 +22,7 @@ const iconMap: Record<string, React.ReactNode> = {
   Info: <Info size={15} />,
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen, onClose }) => {
   // Open all categories by default
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     'GETTING STARTED': true,
@@ -47,6 +48,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) 
     <aside className={`meridian-sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-brand-header">
         <span className="sidebar-doc-label">Meridian Documentation</span>
+        {onClose && (
+          <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       <nav className="sidebar-scroll-nav">
@@ -77,7 +83,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeId, onSelect, isOpen }) 
                       <li key={item.id}>
                         <button
                           className={`sidebar-link ${isActive ? 'active' : ''}`}
-                          onClick={() => onSelect(item.id)}
+                          onClick={() => {
+                            onSelect(item.id);
+                            if (onClose) onClose();
+                          }}
                         >
                           <span className="link-bullet"></span>
                           <span className="link-text">{item.title}</span>
