@@ -20,6 +20,7 @@
 #include "../shell/builtins.hpp"
 #include "../shell/shell.hpp"
 #include "../workspace/session_recorder.hpp"
+#include "../core/pty/pty_session.hpp"
 #include "meridian_gui.hpp"
 
 #include <cstdlib>
@@ -158,11 +159,9 @@ int handle_ai_subcommand(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     if (argc < 2 || (argc >= 2 && (std::string(argv[1]) == "shell" || std::string(argv[1]) == "run"))) {
-        // Default behavior: launch interactive terminal session
-        bool interactive = isatty(STDIN_FILENO);
-        shell::Shell shell(interactive);
-        if (interactive) shell.enable_job_control();
-        return shell.run_interactive(std::cin, std::cout, std::cerr);
+        // Real POSIX PTY session connected directly to user's login shell
+        pty::PtySession session;
+        return session.run_interactive();
     }
 
     std::string sub = argv[1];

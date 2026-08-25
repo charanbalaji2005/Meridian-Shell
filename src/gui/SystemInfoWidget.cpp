@@ -18,17 +18,17 @@ SystemInfoWidget::SystemInfoWidget(QWidget* parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    // Initial palette matching reference dots
+    // Vivid neon dots matching reference theme
     details_.palette_colors = {
-        QColor("#2d6a74"), // Dark Teal
-        QColor("#4e8790"), // Soft Cyan
-        QColor("#7d6f8d"), // Lavender
-        QColor("#a85b6b"), // Berry
-        QColor("#c95f4e"), // Coral
-        QColor("#d98157"), // Orange
-        QColor("#ebc47a"), // Yellow
-        QColor("#f3e0b5"), // Cream
-        QColor("#8ca388")  // Sage Green
+        QColor("#00E5FF"), // Neon Cyan
+        QColor("#3B82F6"), // Electric Blue
+        QColor("#A855F7"), // Neon Purple
+        QColor("#F43F5E"), // Hot Pink
+        QColor("#22C55E"), // Neon Green
+        QColor("#F59E0B"), // Amber
+        QColor("#FDE047"), // Yellow
+        QColor("#FB923C"), // Orange
+        QColor("#EF4444")  // Red
     };
 
     detectStaticDetails();

@@ -20,21 +20,21 @@ const QColor DEFAULT_FG(216, 222, 233);   // Soft White / Gray
 const QColor SELECTION_BG(59, 130, 246, 110); // Translucent Blue Accent
 
 const QColor ANSI_COLORS[16] = {
-    QColor("#1e222a"), // 0: Black
-    QColor("#e06c75"), // 1: Red
-    QColor("#98c379"), // 2: Green
-    QColor("#e5c07b"), // 3: Yellow
-    QColor("#61afef"), // 4: Blue
-    QColor("#c678dd"), // 5: Magenta
-    QColor("#56b6c2"), // 6: Cyan
-    QColor("#abb2bf"), // 7: White
+    QColor("#15171a"), // 0: Black
+    QColor("#ef4444"), // 1: Red
+    QColor("#22c55e"), // 2: Green
+    QColor("#fde047"), // 3: Yellow
+    QColor("#3b82f6"), // 4: Blue
+    QColor("#a855f7"), // 5: Magenta
+    QColor("#00e5ff"), // 6: Cyan
+    QColor("#f5f7fa"), // 7: White
     QColor("#5c6370"), // 8: Bright Black
-    QColor("#be5046"), // 9: Bright Red
-    QColor("#7ebd6a"), // 10: Bright Green
-    QColor("#d19a66"), // 11: Bright Yellow
-    QColor("#4fa6ed"), // 12: Bright Blue
-    QColor("#b55ad6"), // 13: Bright Magenta
-    QColor("#46a0ac"), // 14: Bright Cyan
+    QColor("#f43f5e"), // 9: Bright Red / Hot Pink
+    QColor("#4ade80"), // 10: Bright Green
+    QColor("#fef08a"), // 11: Bright Yellow
+    QColor("#60a5fa"), // 12: Bright Blue
+    QColor("#c084fc"), // 13: Bright Magenta
+    QColor("#22d3ee"), // 14: Bright Cyan
     QColor("#ffffff")  // 15: Bright White
 };
 

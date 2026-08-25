@@ -13,6 +13,7 @@ CORE_SRC := \
     src/core/vt/ansi_parser.cpp \
     src/core/vt/graphics.cpp \
     src/core/pty/pty_manager.cpp \
+    src/core/pty/pty_session.cpp \
     src/core/config.cpp \
     src/core/terminal_image.cpp \
     src/platform/LinuxPTY.cpp \

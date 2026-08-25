@@ -13,12 +13,16 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-add_compile_options(-Wall -Wextra)
+if(MSVC)
+    add_compile_options(/W4 /EHsc /permissive-)
+else()
+    add_compile_options(-Wall -Wextra)
+endif()
 
 option(MERIDIAN_BUILD_TESTS "Build the Meridian test suite" ON)
 option(MERIDIAN_ENABLE_ASAN "Build with AddressSanitizer + UBSan" OFF)
 
-if(MERIDIAN_ENABLE_ASAN)
+if(MERIDIAN_ENABLE_ASAN AND NOT MSVC)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
     add_link_options(-fsanitize=address,undefined)
 endif()
@@ -35,6 +39,7 @@ endif()
 # ---- meridian-core: PTY + VT/ANSI engine + GPU renderer ------------------
 add_library(meridian-core STATIC
     src/core/pty/pty_manager.cpp
+    src/core/pty/pty_session.cpp
     src/core/vt/screen_buffer.cpp
     src/core/vt/ansi_parser.cpp
     src/core/vt/graphics.cpp
@@ -48,7 +53,9 @@ add_library(meridian-core STATIC
 target_include_directories(meridian-core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_link_libraries(meridian-core PUBLIC util)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT (APPLE OR WIN32))
+    target_link_libraries(meridian-core PUBLIC util)
+endif()
 
 # ---- meridian-shell-lib: lexer/parser/executor/builtins/Shell/LineEditor -
 add_library(meridian-shell-lib STATIC

@@ -57,7 +57,8 @@ void ImageRenderer::setCornerRadius(int radius) {
 void ImageRenderer::paintEvent(QPaintEvent*) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // Nearest-neighbor scaling for pixel art (no blurring)
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
 
     QPixmap current_pix = is_animated_ && movie_ ? movie_->currentPixmap() : pixmap_;
     if (current_pix.isNull()) {

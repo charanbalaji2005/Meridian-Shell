@@ -22,7 +22,7 @@ jobs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++ make cmake rpm dpkg-dev libutil-dev
+        sudo apt-get install -y g++ make cmake rpm dpkg-dev
 
     - name: Build All Targets
       run: make -j$(nproc) all
