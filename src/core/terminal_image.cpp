@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 
 namespace meridian::core {
 
@@ -115,6 +116,32 @@ bool TerminalImage::load_file(const std::string& path) {
 #include "chainsaw_man_data.inl"
 
 TerminalImage TerminalImage::create_default_reference_artwork() {
+    // 1. Try loading user custom artwork or bundled artwork from file
+    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+    if (env_art && access(env_art, R_OK) == 0) {
+        TerminalImage img;
+        if (img.load_file(env_art)) return img;
+    }
+
+    const char* home = std::getenv("HOME");
+    if (home) {
+        std::string p1 = std::string(home) + "/.config/meridian/artwork.jpg";
+        std::string p2 = std::string(home) + "/.config/meridian/artwork.ppm";
+        TerminalImage img;
+        if (img.load_file(p1) || img.load_file(p2)) return img;
+    }
+
+    std::string candidate_paths[] = {
+        "resources/images/artwork.jpg",
+        "resources/images/artwork_thumb.ppm",
+        "resources/images/artwork.png"
+    };
+    for (const auto& cp : candidate_paths) {
+        TerminalImage img;
+        if (img.load_file(cp)) return img;
+    }
+
+    // 2. Fallback to embedded Chainsaw Man pixel buffer
     int w = 48;
     int h = 44;
     TerminalImage img(w, h);

@@ -159,9 +159,8 @@ int handle_ai_subcommand(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     if (argc < 2 || (argc >= 2 && (std::string(argv[1]) == "shell" || std::string(argv[1]) == "run"))) {
-        // Real POSIX PTY session connected directly to user's login shell
-        pty::PtySession session;
-        return session.run_interactive();
+        shell::Shell sh(true);
+        return sh.run_interactive(std::cin, std::cout, std::cerr);
     }
 
     std::string sub = argv[1];

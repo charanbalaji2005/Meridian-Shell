@@ -102,8 +102,6 @@ void render_reference_layout_header(std::ostream& out) {
 
     // 4. Print Side-by-Side Reference Header
     out << "\n";
-    out << core::TerminalImage::render_kitty_graphics_artwork(2, 1, 24, 10);
-
     size_t rows = std::max(art_lines.size(), sys_lines.size());
     for (size_t r = 0; r < rows; ++r) {
         out << "  ";
@@ -142,6 +140,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
     bool is_real_interactive = (&in == &std::cin && LineEditor::is_terminal_interactive());
 
     if (is_real_interactive) {
+        out << "\033[2J\033[H"; // Clear screen & home cursor so no previous shell prompt is visible
         render_reference_layout_header(out);
     }
 
