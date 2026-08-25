@@ -45,7 +45,14 @@ std::string default_config_path() {
 void print_usage() {
     std::cout <<
         "Meridian 2.0 — Terminal + Developer Environment + AI Platform\n\n"
-        "Usage: meridian <subcommand> [args]\n\n"
+        "Usage: meridian [subcommand] [args]\n\n"
+        "Terminal & System Lifecycle:\n"
+        "  (no args)                   launch interactive Meridian Terminal\n"
+        "  update                      update Meridian to the latest GitHub release\n"
+        "  uninstall [--purge]         uninstall Meridian binaries, launchers, and configs\n"
+        "  pic <file>                  render direct full-color inline raster image\n"
+        "  pic set <0-13|name|path>    set startup anime artwork permanently or random\n"
+        "  --version, -v               display version and build information\n\n"
         "AI Commands:\n"
         "  ask \"<intent>\"              translate natural language intent to safe shell command\n"
         "  diag \"<error_text>\"          diagnose compiler/runtime/database errors with suggested fixes\n"
@@ -170,16 +177,44 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (sub == "--version" || sub == "-v" || sub == "version") {
+        std::cout << "Meridian Terminal 2.0.0 (x86_64-linux)\n"
+                  << "Copyright (c) 2025-2026 Charan Balaji and Meridian Contributors.\n";
+        return 0;
+    }
+
     if (sub == "ai") {
         return handle_ai_subcommand(argc, argv);
     }
 
+    if (sub == "install") {
+        std::cout << "-> Installing Meridian Terminal to system...\n";
+        int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
+        return res;
+    }
+
     if (sub == "update" || sub == "upgrade") {
-        std::cout << "-> Updating Meridian Terminal to latest release...\n";
-        int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash -s -- --user");
-        if (res == 0) {
-            std::cout << "\033[38;2;34;197;94m✔\033[0m Meridian Terminal successfully updated!\n";
+        std::cout << "-> Updating Meridian Terminal to the latest release from GitHub...\n";
+        int res = 0;
+        if (access("/usr/local/bin/meridian", W_OK) == 0 || geteuid() == 0) {
+            res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
+        } else {
+            res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash -s -- --user");
         }
+        if (res == 0) {
+            std::cout << "\033[38;2;34;197;94m✔\033[0m Meridian Terminal successfully updated to the latest version!\n";
+        }
+        return res;
+    }
+
+    if (sub == "uninstall" || sub == "remove") {
+        std::string flags;
+        for (int i = 2; i < argc; ++i) {
+            flags += " ";
+            flags += argv[i];
+        }
+        std::cout << "-> Running Meridian Terminal uninstaller...\n";
+        int res = system(("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/uninstall.sh | bash -s --" + flags).c_str());
         return res;
     }
 
