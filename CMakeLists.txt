@@ -150,17 +150,6 @@ target_link_libraries(meridian PRIVATE
     meridian-security-lib
 )
 
-# ---- meridian: unified developer CLI & terminal engine ---------------------
-add_executable(meridian src/app/meridian_main.cpp src/app/meridian_gui.cpp)
-target_link_libraries(meridian PRIVATE
-    meridian-core
-    meridian-shell-lib
-    meridian-ai-lib
-    meridian-workspace-lib
-    meridian-dev-lib
-    meridian-config-lib
-    meridian-security-lib
-)
 
 # ---- meridian-shell: standalone shell binary ------------------------------
 add_executable(meridian-shell src/app/shell_main.cpp)
