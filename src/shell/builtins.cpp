@@ -2,6 +2,7 @@
 #include "builtins.hpp"
 #include "executor.hpp"
 #include "../core/terminal_image.hpp"
+#include "../core/art_gallery.hpp"
 #include "../core/graphics/image_decoder.hpp"
 #include "../ai/intent_engine.hpp"
 #include "../ai/error_diagnostics.hpp"
@@ -12,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <unistd.h>
 
@@ -117,42 +119,78 @@ static int builtin_type(const std::vector<std::string>& argv) {
 }
 
 static int builtin_pic(const std::vector<std::string>& argv) {
-    if (argv.size() >= 3 && argv[1] == "set") {
-        std::string src = argv[2];
-        const char* home = std::getenv("HOME");
-        if (home) {
-            if (src.rfind("~/", 0) == 0) {
-                src = std::string(home) + src.substr(1);
-            }
-            std::ifstream test_f(src);
-            if (!test_f.is_open()) {
-                std::cerr << "\033[38;2;239;68;68m✘\033[0m File not found: " << src << "\n";
-                std::cerr << "  Please specify an existing image file on your system.\n";
-                return 1;
-            }
-            test_f.close();
+    // 1. pic list / pic (with no args): Show all themes and current selection
+    if (argv.size() <= 1 || (argv.size() == 2 && (argv[1] == "list" || argv[1] == "--list" || argv[1] == "help" || argv[1] == "-h"))) {
+        auto themes = core::ArtGallery::list_themes();
+        std::string current_choice = core::ArtGallery::get_configured_choice();
 
-            std::string cfg_dir = std::string(home) + "/.config/meridian";
-            std::string cmd = "mkdir -p \"" + cfg_dir + "\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.jpg\" && cp -f \"" + src + "\" \"" + cfg_dir + "/artwork.png\"";
-            int res = system(cmd.c_str());
-            if (res == 0) {
-                std::cout << "\033[38;2;34;197;94m✔\033[0m Default terminal artwork updated to: " << src << "\n";
-                return 0;
-            }
+        std::cout << "\033[1;36m┌─── MERIDIAN ANIME & ARTWORK GALLERY ────────────────────────────────────────┐\033[0m\n";
+        for (size_t i = 0; i < themes.size(); ++i) {
+            bool is_active = (current_choice == themes[i].first || current_choice == std::to_string(i));
+            std::cout << "\033[1;36m│\033[0m "
+                      << (is_active ? "\033[1;32m●\033[0m" : " ")
+                      << " \033[1;33m[" << i << "]\033[0m \033[1;37m" << std::left << std::setw(18) << themes[i].first << "\033[0m - "
+                      << std::left << std::setw(36) << themes[i].second
+                      << (is_active ? " \033[1;32m[ACTIVE]\033[0m" : "         ")
+                      << " \033[1;36m│\033[0m\n";
         }
-        std::cerr << "Failed to set default artwork from: " << src << "\n";
-        return 1;
+        bool is_random = (current_choice == "random" || current_choice.empty());
+        std::cout << "\033[1;36m│\033[0m " << (is_random ? "\033[1;32m●\033[0m" : " ") << " \033[1;33m[r]\033[0m \033[1;37m" << std::left << std::setw(18) << "random" << "\033[0m - "
+                  << std::left << std::setw(36) << "Rotate to a new anime theme on startup"
+                  << (is_random ? " \033[1;32m[ACTIVE]\033[0m" : "         ") << " \033[1;36m│\033[0m\n";
+        std::cout << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
+        std::cout << "\033[1;37mCurrent Setting:\033[0m " << (is_random ? "\033[1;32mRandom / Rotating\033[0m" : ("\033[1;33m" + current_choice + "\033[0m (Permanent)")) << "\n\n"
+                  << "\033[0;37mCommands:\033[0m\n"
+                  << "  \033[1;32mpic set <number|id|path>\033[0m   Set artwork permanently (e.g. \033[1;33mpic set itachi\033[0m or \033[1;33mpic set 0\033[0m or \033[1;33mpic set /path/to/pic.png\033[0m)\n"
+                  << "  \033[1;32mpic set random\033[0m             Enable random rotating anime on each startup\n"
+                  << "  \033[1;32mpic show <number|id|path>\033[0m  Preview artwork right now in the terminal\n"
+                  << "  \033[1;32mpic --clear\033[0m                Clear all graphics from canvas\n";
+        return 0;
     }
 
+    // 2. pic set <name|index|file>
+    if (argv.size() >= 3 && (argv[1] == "set" || argv[1] == "--set")) {
+        std::string choice = argv[2];
+        if (choice == "random" || choice == "r") {
+            core::ArtGallery::set_permanent_choice("random");
+            std::cout << "\033[38;2;34;197;94m✔\033[0m Artwork set to \033[1;32mRandom / Rotating\033[0m on every terminal startup!\n";
+            return 0;
+        }
+
+        auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
+        core::ArtGallery::set_permanent_choice(choice);
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Artwork permanently set to: \033[1;33m" << theme.title << "\033[0m\n\n";
+
+        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
+        for (const auto& l : lines) {
+            std::cout << "  " << l << "\n";
+        }
+        std::cout << "\n";
+        return 0;
+    }
+
+    // 3. pic show <name|index|file>
+    if (argv.size() >= 3 && (argv[1] == "show" || argv[1] == "preview")) {
+        std::string choice = argv[2];
+        auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
+        std::cout << "\033[1;37mPreviewing:\033[0m \033[1;33m" << theme.title << "\033[0m\n\n";
+        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
+        for (const auto& l : lines) {
+            std::cout << "  " << l << "\n";
+        }
+        std::cout << "\n";
+        return 0;
+    }
+
+    // 4. pic --clear
     if (argv.size() > 1 && (argv[1] == "--clear" || argv[1] == "clear")) {
-        // Delete and clear current image from terminal canvas
         std::cout << "\033_Ga=d,d=a\033\\\n";
         return 0;
     }
 
     std::string filepath;
     int target_width = 200;
-    int target_height = 0; // 0 = auto calculate from aspect ratio
+    int target_height = 0;
 
     for (size_t i = 1; i < argv.size(); ++i) {
         if (argv[i] == "--width" && i + 1 < argv.size()) {
@@ -165,24 +203,12 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     }
 
     if (filepath.empty()) {
-        const char* env_art = std::getenv("MERIDIAN_ARTWORK");
-        if (env_art && access(env_art, R_OK) == 0) filepath = env_art;
-        else {
-            const char* home = std::getenv("HOME");
-            if (home) {
-                std::string p1 = std::string(home) + "/.config/meridian/artwork.jpg";
-                std::string p2 = std::string(home) + "/.config/meridian/artwork.png";
-                if (access(p1.c_str(), R_OK) == 0) filepath = p1;
-                else if (access(p2.c_str(), R_OK) == 0) filepath = p2;
-            }
-        }
-        if (filepath.empty()) {
-            if (access("resources/images/artwork.jpg", R_OK) == 0) filepath = "resources/images/artwork.jpg";
-            else filepath = "resources/images/artwork.png";
-        }
+        auto theme = core::ArtGallery::get_active_artwork(56, 22);
+        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
+        for (const auto& l : lines) std::cout << "  " << l << "\n";
+        return 0;
     }
 
-    // Decode original image into 32-bit RGBA8888 pixels preserving original colors & sharp details
     auto decoded = graphics::ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) {
         std::cerr << "meridian: image file not found or unsupported format: " << filepath << "\n";
@@ -192,13 +218,10 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     const auto& frame = decoded.frame(0);
     int src_w = frame.width;
     int src_h = frame.height;
-
-    // Calculate display dimensions preserving original aspect ratio
     int disp_w = target_width > 0 ? target_width : 200;
     int disp_h = target_height > 0 ? target_height : static_cast<int>(std::round(static_cast<float>(src_h * disp_w) / static_cast<float>(src_w)));
     if (disp_h <= 0) disp_h = 1;
 
-    // Direct transmission of original image to GPU / Terminal Canvas via Kitty Graphics Protocol
     std::ifstream f(filepath, std::ios::binary);
     if (f.is_open()) {
         std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
@@ -213,7 +236,6 @@ static int builtin_pic(const std::vector<std::string>& argv) {
                 b64.push_back((k + 1 < buffer.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
                 b64.push_back((k + 2 < buffer.size()) ? b64_tbl[b & 0x3F] : '=');
             }
-            // Clear prior image then display new full-color raster at top-left
             std::cout << "\033_Ga=d,d=a\033\\\033_Ga=T,f=100,t=d,x=30,y=30,c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\\n";
             return 0;
         }

@@ -1,5 +1,6 @@
 #include "line_editor.hpp"
 #include "../dev/git_intel.hpp"
+#include "../core/art_gallery.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -256,13 +257,32 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Ctrl+P / Ctrl+Shift+P: Terminal Pic Command
+        // Ctrl+P / Ctrl+Shift+P: Terminal Anime / Artwork Selector
         if (c == 16) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);
                 preview_lines_drawn = 0;
             }
-            current_line = "pic ";
+            auto themes = core::ArtGallery::list_themes();
+            std::string cur = core::ArtGallery::get_configured_choice();
+
+            out << "\n\033[1;36m┌─── MERIDIAN ANIME & ARTWORK SELECTOR (Ctrl+P) ──────────────────────────────────┐\033[0m\n";
+            for (size_t i = 0; i < themes.size(); ++i) {
+                bool is_active = (cur == themes[i].first || cur == std::to_string(i));
+                out << "\033[1;36m│\033[0m " << (is_active ? "\033[1;32m●\033[0m" : " ")
+                    << " \033[1;33m[" << i << "]\033[0m \033[1;37m" << themes[i].second;
+                int pad = 58 - static_cast<int>(themes[i].second.size());
+                for (int p = 0; p < pad; ++p) out << " ";
+                out << (is_active ? "\033[1;32m[ACTIVE]\033[0m" : "        ") << " \033[1;36m│\033[0m\n";
+            }
+            bool is_random = (cur == "random" || cur.empty());
+            out << "\033[1;36m│\033[0m " << (is_random ? "\033[1;32m●\033[0m" : " ")
+                << " \033[1;33m[r]\033[0m \033[1;37mRandom / Rotating on every startup                         \033[0m"
+                << (is_random ? "\033[1;32m[ACTIVE]\033[0m" : "        ") << " \033[1;36m│\033[0m\n";
+            out << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────────┘\033[0m\n"
+                << "\033[0;37mTip: Type '\033[1;32mpic set <0-9|name|path>\033[0m' or '\033[1;32mpic set random\033[0m' to switch anytime!\033[0m\n";
+            out.flush();
+            current_line = "pic set ";
             cursor_pos = static_cast<int>(current_line.size());
             refresh_prompt();
             continue;

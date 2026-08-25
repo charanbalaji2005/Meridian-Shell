@@ -84,8 +84,8 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Picture graphic lines (High-resolution rotating ArtGallery artwork)
-    auto theme = core::ArtGallery::get_next_artwork(56, 22);
+    // 2. Picture graphic lines (High-resolution ArtGallery artwork: permanent, custom, or rotating)
+    auto theme = core::ArtGallery::get_active_artwork(56, 22);
     std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
 
     // 3. System info lines (sleek Nerd Font glyphs matching reference theme)

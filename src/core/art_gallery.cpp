@@ -516,25 +516,98 @@ size_t ArtGallery::theme_count() {
     return 10;
 }
 
-ArtworkTheme ArtGallery::get_artwork_by_index(size_t index, int width, int height) {
-    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
-    if (env_art && access(env_art, R_OK) == 0) {
-        TerminalImage custom_img;
-        if (custom_img.load_file(env_art)) {
-            return ArtworkTheme{"custom", "Custom Artwork", custom_img};
-        }
-    }
+std::vector<std::pair<std::string, std::string>> ArtGallery::list_themes() {
+    return {
+        {"itachi_sharingan", "Itachi Mangekyō Sharingan"},
+        {"gojo_purple",      "Gojo: Hollow Purple"},
+        {"sukuna_shrine",    "Sukuna: Malevolent Shrine"},
+        {"naruto_rasengan",  "Naruto: Kurama Rasengan"},
+        {"rengoku_flames",   "Rengoku: Sun Breathing"},
+        {"ultra_instinct",   "Goku: Ultra Instinct"},
+        {"chainsaw_man",     "Chainsaw Man (Power & Denji)"},
+        {"cyberpunk",        "Cyberpunk Night (Lucy)"},
+        {"synthwave",        "Synthwave Horizon"},
+        {"ghibli",           "Studio Ghibli Anime Meadow"}
+    };
+}
 
+std::string ArtGallery::get_configured_choice() {
     const char* home = std::getenv("HOME");
-    if (home) {
-        std::string p1 = std::string(home) + "/.config/meridian/artwork.jpg";
-        std::string p2 = std::string(home) + "/.config/meridian/artwork.png";
+    if (!home) return "random";
+    std::string config_file = std::string(home) + "/.config/meridian/artwork_choice";
+    std::ifstream in(config_file);
+    if (!in.is_open()) return "random";
+    std::string choice;
+    if (std::getline(in, choice)) {
+        while (!choice.empty() && (choice.back() == '\r' || choice.back() == '\n' || choice.back() == ' ')) choice.pop_back();
+        while (!choice.empty() && (choice.front() == ' ' || choice.front() == '\t')) choice.erase(0, 1);
+        if (!choice.empty()) return choice;
+    }
+    return "random";
+}
+
+bool ArtGallery::set_permanent_choice(const std::string& choice) {
+    const char* home = std::getenv("HOME");
+    if (!home) return false;
+    std::string config_dir = std::string(home) + "/.config/meridian";
+    system(("mkdir -p " + config_dir).c_str());
+    std::string config_file = config_dir + "/artwork_choice";
+    std::ofstream out(config_file);
+    if (!out.is_open()) return false;
+    out << choice << "\n";
+    return true;
+}
+
+ArtworkTheme ArtGallery::get_artwork_by_id_or_file(const std::string& id_or_file, int width, int height) {
+    if (id_or_file == "random") {
+        return get_next_artwork(width, height);
+    }
+
+    // Check if numeric index
+    try {
+        size_t idx = std::stoul(id_or_file);
+        if (idx < theme_count()) {
+            return get_artwork_by_index(idx, width, height);
+        }
+    } catch (...) {}
+
+    // Check known IDs
+    if (id_or_file == "itachi" || id_or_file == "sharingan" || id_or_file == "itachi_sharingan") return ArtworkTheme{"itachi_sharingan", "Itachi Mangekyō Sharingan", make_itachi_sharingan_art(width, height)};
+    if (id_or_file == "gojo" || id_or_file == "purple" || id_or_file == "gojo_purple") return ArtworkTheme{"gojo_purple", "Gojo: Hollow Purple", make_gojo_hollow_purple_art(width, height)};
+    if (id_or_file == "sukuna" || id_or_file == "shrine" || id_or_file == "sukuna_shrine") return ArtworkTheme{"sukuna_shrine", "Sukuna: Malevolent Shrine", make_sukuna_art(width, height)};
+    if (id_or_file == "naruto" || id_or_file == "rasengan" || id_or_file == "naruto_rasengan") return ArtworkTheme{"naruto_rasengan", "Naruto: Kurama Rasengan", make_naruto_art(width, height)};
+    if (id_or_file == "rengoku" || id_or_file == "flames" || id_or_file == "rengoku_flames") return ArtworkTheme{"rengoku_flames", "Rengoku: Sun Breathing", make_rengoku_art(width, height)};
+    if (id_or_file == "goku" || id_or_file == "ultra_instinct" || id_or_file == "ui") return ArtworkTheme{"ultra_instinct", "Goku: Ultra Instinct", make_ultra_instinct_art(width, height)};
+    if (id_or_file == "chainsaw" || id_or_file == "chainsaw_man" || id_or_file == "denji" || id_or_file == "power") return ArtworkTheme{"chainsaw_man", "Chainsaw Man", make_chainsaw_man_art(width, height)};
+    if (id_or_file == "cyberpunk" || id_or_file == "lucy" || id_or_file == "night_city") return ArtworkTheme{"cyberpunk", "Cyberpunk Night", make_cyberpunk_art(width, height)};
+    if (id_or_file == "synthwave" || id_or_file == "sunset" || id_or_file == "retrowave") return ArtworkTheme{"synthwave", "Synthwave Horizon", make_synthwave_art(width, height)};
+    if (id_or_file == "ghibli" || id_or_file == "meadow" || id_or_file == "anime") return ArtworkTheme{"ghibli", "Anime Meadow", make_ghibli_art(width, height)};
+
+    // Check if it is a custom image file on disk
+    if (access(id_or_file.c_str(), R_OK) == 0) {
         TerminalImage custom_img;
-        if (custom_img.load_file(p1) || custom_img.load_file(p2)) {
-            return ArtworkTheme{"user_default", "User Artwork", custom_img};
+        if (custom_img.load_file(id_or_file)) {
+            return ArtworkTheme{"custom", "Custom File: " + id_or_file, custom_img};
         }
     }
 
+    return get_artwork_by_index(0, width, height);
+}
+
+ArtworkTheme ArtGallery::get_active_artwork(int width, int height) {
+    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+    if (env_art && std::string(env_art).length() > 0) {
+        return get_artwork_by_id_or_file(env_art, width, height);
+    }
+
+    std::string choice = get_configured_choice();
+    if (choice.empty() || choice == "random") {
+        return get_next_artwork(width, height);
+    }
+    return get_artwork_by_id_or_file(choice, width, height);
+}
+
+ArtworkTheme ArtGallery::get_artwork_by_index(size_t index, int width, int height) {
     size_t theme_id = index % theme_count();
 
     switch (theme_id) {
