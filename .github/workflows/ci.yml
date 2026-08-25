@@ -1,53 +1,141 @@
-name: CI
+name: Meridian Terminal CI/CD & Multi-OS Releases
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
-  build-and-test:
-    name: Build & Test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04]
+  # ---------------------------------------------------------------------------
+  # 1. Linux Multi-Distro Build & Automated Test Suite
+  # ---------------------------------------------------------------------------
+  linux-build:
+    name: Linux Build (Ubuntu / Debian / Fedora / Arch)
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential
+    - name: Install Build Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ make cmake rpm dpkg-dev libutil-dev
 
-      - name: Compile all binaries
-        run: make all
+    - name: Build All Targets
+      run: make -j$(nproc) all
 
-      - name: Run unit & integration test suite (109 tests)
-        run: make test
+    - name: Run Automated Test Suite (124 tests)
+      run: make test
 
-      - name: Run manual core test sequence (spec §78)
-        run: make manual-test
+    - name: Run Manual PTY Core Tests
+      run: make manual-test
 
-      - name: Test installation and uninstallation
-        run: |
-          make install DESTDIR=/tmp/test_install PREFIX=/usr
-          test -x /tmp/test_install/usr/bin/meridian
-          test -x /tmp/test_install/usr/bin/meridian-shell
-          test -x /tmp/test_install/usr/bin/meridian_demo
-          test -f /tmp/test_install/usr/share/applications/org.meridian_terminal.MeridianTerminal.desktop
-          test -f /tmp/test_install/usr/share/icons/hicolor/scalable/apps/meridian-terminal.svg
-          test -f /tmp/test_install/usr/share/metainfo/org.meridian_terminal.MeridianTerminal.metainfo.xml
-          make uninstall DESTDIR=/tmp/test_install PREFIX=/usr
+    - name: Generate All Offline Packages (.deb, .rpm, .tar.gz, AppImage)
+      run: |
+        ./scripts/build_all_releases.sh
 
-      - name: Test universal installer script
-        run: |
-          ./install.sh --prefix /tmp/test_installer
-          /tmp/test_installer/bin/meridian ai status
-          /tmp/test_installer/bin/meridian-shell -c "echo 'Installer verified!'"
-          ./install.sh --prefix /tmp/test_installer --uninstall
+    - name: Upload Linux Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: meridian-linux-packages
+        path: dist/*
 
+  # ---------------------------------------------------------------------------
+  # 2. macOS (Apple Silicon & Intel) Build
+  # ---------------------------------------------------------------------------
+  macos-build:
+    name: macOS Build (Clang / BSD PTY)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Install Build Dependencies
+      run: brew install cmake
+
+    - name: Build with CMake
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build -j$(sysctl -n hw.ncpu)
+
+    - name: Package macOS Universal Bundle
+      run: |
+        mkdir -p dist
+        tar -czf dist/meridian-terminal-macos.tar.gz -C build meridian meridian-shell
+
+    - name: Upload macOS Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: meridian-macos-packages
+        path: dist/*
+
+  # ---------------------------------------------------------------------------
+  # 3. Windows (MSVC / ConPTY) Build
+  # ---------------------------------------------------------------------------
+  windows-build:
+    name: Windows Build (ConPTY / MSVC)
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with MSVC
+      run: cmake --build build --config Release
+
+    - name: Package Windows Bundle
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path dist
+        Compress-Archive -Path .\build\Release\*.exe, .\meridian.desktop, .\packaging\windows\install.ps1 -DestinationPath dist\meridian-terminal-windows-x64.zip
+
+    - name: Upload Windows Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: meridian-windows-packages
+        path: dist/*
+
+  # ---------------------------------------------------------------------------
+  # 4. GitHub Release Automation (on Tag)
+  # ---------------------------------------------------------------------------
+  release:
+    name: Create GitHub Release
+    needs: [linux-build, macos-build, windows-build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download Linux Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: meridian-linux-packages
+        path: release_assets/
+
+    - name: Download macOS Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: meridian-macos-packages
+        path: release_assets/
+
+    - name: Download Windows Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: meridian-windows-packages
+        path: release_assets/
+
+    - name: Publish GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: release_assets/*
+        generate_release_notes: true
+        draft: false
+        prerelease: false

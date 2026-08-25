@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meridian Terminal — Kitty-Class Cross-Platform Terminal & Developer Platform</title>
+  <meta name="description" content="Modern Linux, macOS, and Windows terminal emulator with built-in TrueColor graphics engine, live Git telemetry, multiplexer, and inline AI defense.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090B10;
+      --card-bg: rgba(18, 22, 32, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --fg: #F5F7FA;
+      --muted: #8892b0;
+      --neon-cyan: #00E5FF;
+      --electric-blue: #3B82F6;
+      --neon-purple: #A855F7;
+      --hot-pink: #F43F5E;
+      --neon-green: #22C55E;
+      --amber: #F59E0B;
+      --yellow: #FDE047;
+      --orange: #FB923C;
+      --badge-blue: #1a6cda;
+      --badge-cyan: #189cb8;
+      --badge-red: #c93b3b;
+      --badge-yellow: #d4b41b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 15%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px 30px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--neon-cyan) 80%, var(--electric-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    p.hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      font-weight: 300;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--electric-blue));
+      color: #000;
+      box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 229, 255, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--fg);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Terminal Window Mockup */
+    .terminal-container {
+      max-width: 960px;
+      margin: 0 auto 60px;
+      background: rgba(14, 17, 24, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 229, 255, 0.08);
+      overflow: hidden;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .terminal-header {
+      background: rgba(22, 27, 38, 0.9);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+    .terminal-title { margin-left: 12px; font-size: 0.85rem; color: #8892b0; }
+
+    .terminal-body {
+      padding: 24px;
+      font-size: 0.95rem;
+      color: #e6edf3;
+      line-height: 1.5;
+    }
+
+    .term-row { display: flex; gap: 28px; margin-bottom: 24px; flex-wrap: wrap; }
+    .term-art { color: #fde047; white-space: pre; line-height: 1.25; }
+    .term-sys { color: #c9d1d9; line-height: 1.6; }
+    .term-divider { color: rgba(255, 255, 255, 0.2); }
+
+    /* Powerline Badges */
+    .pl-banner {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .pl-badge {
+      padding: 2px 10px;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .pl-blue { background: var(--badge-blue); }
+    .pl-cyan { background: var(--badge-cyan); }
+    .pl-red { background: var(--badge-red); }
+    .pl-yellow { background: var(--badge-yellow); color: #1a1a1a; font-weight: 700; }
+
+    .pl-arrow {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    /* Installation Section */
+    section {
+      max-width: 1000px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    p.section-desc {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    /* Tabs */
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      border: 1px solid var(--card-border);
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--neon-cyan);
+      color: #000;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 2px 12px rgba(0, 229, 255, 0.3);
+    }
+
+    .code-box {
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 18px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .code-box code { color: var(--neon-cyan); }
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* Features Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      border-radius: 10px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .feature-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    .feature-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge-pill">⚡ Meridian 2.0 Released</div>
+    <h1>Meridian Terminal</h1>
+    <p class="hero-subtitle">The Kitty-class, cross-platform terminal emulator & unified developer environment with native TrueColor graphics, live Git intelligence, and offline packaging.</p>
+
+    <div class="btn-group">
+      <a href="#install" class="btn btn-primary">⬇ Install Offline</a>
+      <a href="https://github.com/charanbalaji2005/Meridian-Shell" class="btn btn-secondary">★ GitHub Repository</a>
+    </div>
+
+    <!-- Live Terminal Canvas Preview -->
+    <div class="terminal-container">
+      <div class="terminal-header">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="terminal-title">meridian-shell — 80x24</span>
+      </div>
+      <div class="terminal-body">
+        <div class="term-row">
+          <div class="term-art">
+   .---.    *   .  
+  /     \    .    *
+  \     /   .     .
+   '---'       *   
+   /\     /\     /\
+  /  \   /  \   /  \
+ / /\ \ / /\ \ / /\ \
+~~~~~~~~~~~~~~~~~~~~~
+  ~ ~  ~  ~  ~ ~ ~ ~ </div>
+          <div class="term-sys">
+            <div style="font-weight:700; color:#fff;">charanbalaji@fedora</div>
+            <div class="term-divider">───────⭘───────</div>
+            <div><span style="color:#8ca388;">󰌽</span> → Linux 7.1.5-201.fc44.x86_64</div>
+            <div><span style="color:#6ea5b9;">󰨇</span> → Hyprland 0.56.1 (Wayland)</div>
+            <div><span style="color:#9b87af;">󰞷</span> → zsh 5.9</div>
+            <div><span style="color:#5aafa8;"></span> → meridian 2.0</div>
+            <div><span style="color:#d7b987;">󰘚</span> → 5.77 GiB / 15.25 GiB</div>
+            <div><span style="color:#cd8791;">󱑂</span> → 1 hour, 11 mins</div>
+            <div class="term-divider">───────⭘───────</div>
+            <div style="color:#3B82F6;">● <span style="color:#00E5FF;">●</span> <span style="color:#A855F7;">●</span> <span style="color:#F43F5E;">●</span> <span style="color:#FB923C;">●</span> <span style="color:#FDE047;">●</span> <span style="color:#22C55E;">●</span></div>
+          </div>
+        </div>
+
+        <div class="pl-banner">
+          <span class="pl-badge pl-blue">Tue 25 Aug - 09:40</span>
+          <span class="pl-arrow" style="color:var(--badge-blue); background:var(--badge-cyan);"></span>
+          <span class="pl-badge pl-cyan">~/Downloads/meridian-terminal</span>
+          <span class="pl-arrow" style="color:var(--badge-cyan); background:var(--badge-red);"></span>
+          <span class="pl-badge pl-red"> origin  main 6✸ 8●</span>
+          <span class="pl-arrow" style="color:var(--badge-red);"></span>
+        </div>
+
+        <div style="display:flex; align-items:center;">
+          <span class="pl-badge pl-yellow">@charanbalaji</span>
+          <span class="pl-arrow" style="color:var(--badge-yellow); margin-right:8px;"></span>
+          <span style="color:#fff;">echo "Welcome to Meridian Terminal 2.0"</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="install">
+    <h2>Offline Installation & Package Managers</h2>
+    <p class="section-desc">Download once, install completely offline on any laptop or operating system.</p>
+
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="setPkg('fedora')">Fedora / RHEL (dnf)</button>
+      <button class="tab-btn" onclick="setPkg('ubuntu')">Ubuntu / Debian (apt)</button>
+      <button class="tab-btn" onclick="setPkg('arch')">Arch Linux (pacman)</button>
+      <button class="tab-btn" onclick="setPkg('appimage')">AppImage (Universal)</button>
+      <button class="tab-btn" onclick="setPkg('macos')">macOS (Homebrew)</button>
+      <button class="tab-btn" onclick="setPkg('windows')">Windows (PowerShell)</button>
+    </div>
+
+    <div class="code-box">
+      <code id="cmd-text">sudo dnf install ./meridian-terminal.rpm</code>
+      <button class="copy-btn" onclick="copyCmd()">Copy</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Kitty-Class Capabilities</h2>
+    <p class="section-desc">Engineered for speed, graphics, AI defense, and developer multiplexing.</p>
+
+    <div class="grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">Native Graphics Engine</div>
+        <div class="feature-desc">Render TrueColor half-blocks (<code>pic</code>), colored ASCII, Sixel, Kitty Graphics Protocol, and animated GIFs directly on canvas.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">Security & Risk Defense</div>
+        <div class="feature-desc">Real-time prevention of destructive commands (<code>rm -rf /</code>, <code>curl | bash</code>, <code>dd</code>) and automated API key / token redaction.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Cross-Platform PTY Core</div>
+        <div class="feature-desc">Native PTY abstraction supporting Linux (<code>openpty</code>), macOS (BSD PTY), and Windows (<code>ConPTY</code>) with 100% fidelity.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🪟</div>
+        <div class="feature-title">Splits & Multiplexer</div>
+        <div class="feature-desc">Horizontal and vertical pane splits, zoom tabs, and persistent workspace layouts saved across reboot cycles.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">Terminal-Native AI</div>
+        <div class="feature-desc">Inline natural language translation and compiler/runtime error diagnosis via <code>ai &lt;query&gt;</code> without sidebars.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <div class="feature-title">Universal Offline Bundles</div>
+        <div class="feature-desc">Self-contained zero-dependency binaries and packages installable without an internet connection.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Meridian Terminal • Licensed under GNU GPLv3 or later • Built with C++20 & Qt 6</p>
+  </footer>
+
+  <script>
+    const commands = {
+      fedora: 'sudo dnf install ./meridian-terminal.rpm',
+      ubuntu: 'sudo apt install ./meridian-terminal_2.0.0_amd64.deb',
+      arch: 'sudo pacman -U ./meridian-terminal.pkg.tar.zst',
+      appimage: 'chmod +x Meridian-Terminal.AppImage && ./Meridian-Terminal.AppImage',
+      macos: 'brew install --build-from-source ./packaging/macos/meridian-terminal.rb',
+      windows: 'powershell -ExecutionPolicy Bypass -File .\\packaging\\windows\\install.ps1'
+    };
+
+    function setPkg(type) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('cmd-text').innerText = commands[type];
+    }
+
+    function copyCmd() {
+      const txt = document.getElementById('cmd-text').innerText;
+      navigator.clipboard.writeText(txt);
+      const btn = document.querySelector('.copy-btn');
+      btn.innerText = 'Copied!';
+      setTimeout(() => btn.innerText = 'Copy', 2000);
+    }
+  </script>
+</body>
+</html>
+

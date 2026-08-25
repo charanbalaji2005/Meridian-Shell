@@ -1,9 +1,8 @@
 #pragma once
 // meridian-shell / line_editor.hpp
 //
-// Interactive line editor featuring graphical command preview navigation.
-// When Up Arrow is pressed, displays an interactive graphical box with
-// previous commands, durations, and metadata. Down Arrow steps forward.
+// Interactive line editor featuring graphical command preview navigation,
+// live powerline prompt formatting, and terminal-native pic upload (Ctrl+Shift+P).
 
 #include <iostream>
 #include <string>
@@ -14,6 +13,12 @@ namespace meridian::shell {
 class LineEditor {
 public:
     static bool is_terminal_interactive();
+
+    // Builds the Date/Time status badge line (printed once above prompt)
+    static std::string build_date_badge(const std::string& cwd);
+
+    // Builds the single-line powerline prompt (without newlines for smooth in-place line editing)
+    static std::string build_powerline_prompt(const std::string& cwd);
 
     // Reads an interactive line from stdin with graphical command preview popup
     // on Up/Down arrow keys. Falls back to std::getline if not a TTY.
@@ -36,4 +41,3 @@ private:
 };
 
 } // namespace meridian::shell
-

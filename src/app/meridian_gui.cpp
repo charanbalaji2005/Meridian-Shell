@@ -3,10 +3,15 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <pwd.h>
 #include <sstream>
 #include <sys/ioctl.h>
+#include <sys/sysinfo.h>
+#include <sys/utsname.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -18,142 +23,167 @@ MeridianGui::MeridianGui() {
 }
 
 std::string MeridianGui::render_frame(int width, int height) {
-    if (width < 60) width = 80;
-    if (height < 20) height = 24;
+    if (width < 70) width = 80;
+    if (height < 22) height = 26;
 
     std::ostringstream ss;
-    auto metrics = sys_monitor_.sample();
-    auto git = dev::GitIntel::inspect_directory(".");
 
-    // 1. Top Tab & Title Bar
-    ss << "\033[1;37;44m";
-    ss << " 🚀 MERIDIAN 2.0 ";
-    for (size_t i = 0; i < tabs_.size(); ++i) {
-        if (static_cast<int>(i) == active_tab_) {
-            ss << "\033[1;30;47m [" << tabs_[i] << "] \033[1;37;44m";
-        } else {
-            ss << "  " << tabs_[i] << "  ";
+    // Detect system info
+    char hostname[256] = "fedora";
+    gethostname(hostname, sizeof(hostname));
+    std::string user = "charanbalaji";
+    struct passwd* pw = getpwuid(geteuid());
+    if (pw && pw->pw_name) {
+        user = pw->pw_name;
+    }
+
+    struct utsname uts{};
+    std::string kernel = "Linux 7.1.5-201.fc44.x86_64";
+    if (uname(&uts) == 0) {
+        kernel = std::string(uts.sysname) + " " + uts.release;
+    }
+
+    const char* xdg_desktop = std::getenv("XDG_CURRENT_DESKTOP");
+    const char* session_type = std::getenv("XDG_SESSION_TYPE");
+    std::string wm = (std::getenv("HYPRLAND_INSTANCE_SIGNATURE")) ? "Hyprland 0.56.1 (Wayland)" :
+                     (xdg_desktop ? (std::string(xdg_desktop) + " (" + (session_type ? session_type : "Wayland") + ")") : "Hyprland 0.56.1 (Wayland)");
+
+    const char* shell_env = std::getenv("SHELL");
+    std::string shell_name = shell_env ? shell_env : "zsh";
+    auto slash = shell_name.find_last_of('/');
+    if (slash != std::string::npos) shell_name = shell_name.substr(slash + 1);
+    std::string shell_str = shell_name + " 5.9";
+
+    // Memory info
+    std::string ram_str = "7.66 GiB / 15.25 GiB";
+    std::ifstream meminfo("/proc/meminfo");
+    if (meminfo.is_open()) {
+        std::string line;
+        uint64_t total_kb = 0, avail_kb = 0;
+        while (std::getline(meminfo, line)) {
+            if (line.rfind("MemTotal:", 0) == 0) {
+                std::istringstream mss(line.substr(9));
+                mss >> total_kb;
+            } else if (line.rfind("MemAvailable:", 0) == 0) {
+                std::istringstream mss(line.substr(13));
+                mss >> avail_kb;
+            }
+        }
+        if (total_kb > 0) {
+            uint64_t used_kb = (total_kb > avail_kb) ? (total_kb - avail_kb) : 0;
+            double used_gib = static_cast<double>(used_kb) / (1024.0 * 1024.0);
+            double total_gib = static_cast<double>(total_kb) / (1024.0 * 1024.0);
+            std::ostringstream ross;
+            ross << std::fixed << std::setprecision(2) << used_gib << " GiB / " << total_gib << " GiB";
+            ram_str = ross.str();
         }
     }
-    int used_header = 17 + 12 * static_cast<int>(tabs_.size());
-    std::string sys_badge = " CPU: " + std::to_string(static_cast<int>(metrics.cpu_percent)) + "% | RAM: " + std::to_string(metrics.mem_used_bytes / (1024 * 1024)) + "MB ";
-    int pad = width - used_header - static_cast<int>(sys_badge.size());
-    if (pad > 0) {
-        for (int p = 0; p < pad; ++p) ss << " ";
+
+    // Uptime
+    std::string uptime_str = "1 hour, 11 mins";
+    std::ifstream uptime_file("/proc/uptime");
+    if (uptime_file.is_open()) {
+        double seconds = 0;
+        uptime_file >> seconds;
+        uint64_t total_sec = static_cast<uint64_t>(seconds);
+        uint64_t hours = (total_sec % 86400) / 3600;
+        uint64_t mins = (total_sec % 3600) / 60;
+        uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
-    ss << sys_badge << "\033[0m\n";
 
-    // 2. Main Body Split Panes
-    int content_height = height - 4;
-    int left_width = (width * 3) / 5;
-    int right_width = width - left_width - 3;
+    // Time
+    std::time_t now = std::time(nullptr);
+    std::tm* local_tm = std::localtime(&now);
+    char time_buf[64];
+    std::strftime(time_buf, sizeof(time_buf), "%a %d %b  -  %H:%M", local_tm);
 
-    for (int r = 0; r < content_height; ++r) {
-        ss << "\033[1;34m│\033[0m ";
-        // Left main pane content
-        if (r == 0) {
-            ss << "\033[1;32m┌── Active Terminal Pane ──────────────────────────┐\033[0m";
-            int pad_l = left_width - 50;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 1) {
-            ss << "\033[0;36mmeridian:~/workspace$\033[0m npm run dev";
-            int pad_l = left_width - 34;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 2) {
-            ss << "\033[0;32m[ready]\033[0m Server listening on http://localhost:3000";
-            int pad_l = left_width - 49;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 3) {
-            ss << "\033[0;33m[ai-agent]\033[0m Intent engine active • GPU 144Hz pipeline";
-            int pad_l = left_width - 51;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 5) {
-            ss << "\033[1;36m┌── Command History Preview (↑/↓) ────────────────┐\033[0m";
-            int pad_l = left_width - 50;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 6) {
-            ss << "\033[1;32m│ ▶ \033[1;37;44m #24: git commit -m \"Meridian 2.0 release\" \033[0m\033[1;36m  │\033[0m";
-            int pad_l = left_width - 49;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 7) {
-            ss << "\033[1;36m│   #23: docker compose up -d                      │\033[0m";
-            int pad_l = left_width - 50;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
-        } else if (r == 8) {
-            ss << "\033[1;36m└──────────────────────────────────────────────────┘\033[0m";
-            int pad_l = left_width - 50;
-            for (int p = 0; p < pad_l; ++p) ss << " ";
+    // Pixel art card lines (Moon & Mountains)
+    std::vector<std::string> art_lines = {
+        "\033[38;2;240;230;180m   .---.   \033[38;2;90;120;140m *   .   \033[0m",
+        "\033[38;2;255;245;200m  /     \\  \033[38;2;70;100;120m  .    * \033[0m",
+        "\033[38;2;255;245;200m  \\     /  \033[38;2;50;80;100m .     .  \033[0m",
+        "\033[38;2;240;230;180m   '---'   \033[38;2;40;60;80m    *    \033[0m",
+        "\033[38;2;60;90;120m   /\\    \033[38;2;80;110;140m /\\      \033[38;2;40;70;90m/\\  \033[0m",
+        "\033[38;2;50;80;110m  /  \\  \033[38;2;70;100;130m/  \\    \033[38;2;30;60;80m/  \\ \033[0m",
+        "\033[38;2;30;60;90m / /\\ \\\033[38;2;50;80;110m/ /\\ \\  \033[38;2;20;45;65m/ /\\ \\\033[0m",
+        "\033[38;2;20;50;75m~~~~~~~~~~~~~~~~~~~~~\033[0m",
+        "\033[38;2;15;40;65m  ~ ~  ~  ~  ~ ~ ~ ~ \033[0m"
+    };
+
+    // System info lines (sleek Nerd Font glyphs matching reference theme)
+    std::vector<std::string> sys_lines = {
+        "\033[1;37m" + user + "@" + hostname + "\033[0m",
+        "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
+        "\033[38;2;140;163;136m󰌽 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + kernel + "\033[0m",
+        "\033[38;2;110;165;185m󰨇 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + wm + "\033[0m",
+        "\033[38;2;155;135;175m󰞷 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + shell_str + "\033[0m",
+        "\033[38;2;90;175;170m \033[38;2;170;180;200m→ \033[38;2;220;230;245mmeridian 2.0\033[0m",
+        "\033[38;2;215;185;135m󰘚 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + ram_str + "\033[0m",
+        "\033[38;2;205;135;145m󱑂 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + uptime_str + "\033[0m",
+        "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
+        "\033[38;2;45;106;116m● \033[38;2;78;135;144m● \033[38;2;125;111;141m● \033[38;2;168;91;107m● \033[38;2;201;95;78m● \033[38;2;217;129;87m● \033[38;2;235;196;122m● \033[38;2;243;224;181m● \033[38;2;140;163;136m●\033[0m"
+    };
+
+    // Render Top Box: Artwork (Left) + System Info (Right)
+    ss << "\n";
+    size_t max_rows = std::max(art_lines.size(), sys_lines.size());
+    for (size_t i = 0; i < max_rows; ++i) {
+        ss << "  ";
+        if (i < art_lines.size()) {
+            ss << art_lines[i];
         } else {
-            for (int p = 0; p < left_width; ++p) ss << " ";
+            ss << "                     ";
         }
-
-        // Splitter
-        ss << " \033[1;34m│\033[0m ";
-
-        // Right side panel (Telemetry & Git)
-        if (r == 0) {
-            ss << "\033[1;33m📊 System & Git Telemetry\033[0m";
-        } else if (r == 1) {
-            ss << "CPU Load:  " << static_cast<int>(metrics.cpu_percent) << "% [";
-            int bars = static_cast<int>(metrics.cpu_percent) / 10;
-            for (int b = 0; b < 10; ++b) ss << (b < bars ? "■" : " ");
-            ss << "]";
-        } else if (r == 2) {
-            ss << "Memory:    " << (metrics.mem_used_bytes / (1024 * 1024)) << " / " << (metrics.mem_total_bytes / (1024 * 1024)) << " MB";
-        } else if (r == 3) {
-            ss << "Disk:      " << static_cast<int>(metrics.disk_percent) << "% used";
-        } else if (r == 5) {
-            ss << "\033[1;35m📁 File Explorer\033[0m";
-        } else if (r == 6) {
-            ss << " 📁 src/ (core, ai, dev, app)";
-        } else if (r == 7) {
-            ss << " 📁 packaging/ (rpm, deb, aur)";
-        } else if (r == 8) {
-            ss << " 📄 CMakeLists.txt & Makefile";
-        } else if (r == 10 && git.is_git_repo) {
-            ss << " " << git.branch_name << (git.is_clean ? " ✓ clean" : " ! changes");
-        } else {
-            for (int p = 0; p < right_width; ++p) ss << " ";
+        ss << "    ";
+        if (i < sys_lines.size()) {
+            ss << sys_lines[i];
         }
-
-        ss << "\033[1;34m│\033[0m\n";
+        ss << "\n";
     }
 
-    // 3. Bottom Status Bar
-    ss << "\033[1;30;47m";
-    ss << " " << (git.is_git_repo ? (" " + git.branch_name) : "⚡ Local") << " │ ";
-    ss << status_message_;
-    int used_footer = 12 + static_cast<int>(status_message_.size());
-    int pad_f = width - used_footer - 18;
-    if (pad_f > 0) {
-        for (int p = 0; p < pad_f; ++p) ss << " ";
-    }
-    ss << " GPL-3.0-or-later \033[0m\n";
+    // Render Clock & Powerline Badges
+    ss << "\n";
+    ss << "  \033[48;2;45;101;117;38;2;229;233;240m " << time_buf << " \033[48;2;125;132;113;38;2;45;101;117m\033[48;2;125;132;113;38;2;30;34;42m ~ \033[0;38;2;125;132;113m\033[0m\n";
+    ss << "  \033[48;2;107;68;82;38;2;229;233;240m " << user << " \033[48;2;69;72;84;38;2;107;68;82m\033[48;2;69;72;84;38;2;171;178;191m ~ \033[0;38;2;69;72;84m\033[0m \033[38;2;92;99;112m3610\033[0m \033[1;37m|\033[0m\n";
 
     return ss.str();
 }
 
 int MeridianGui::run() {
-    struct winsize ws;
-    int w = 80, h = 24;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
-        w = ws.ws_col;
-        h = ws.ws_row;
-    }
-
-    std::cout << "\033[?1049h\033[2J\033[H"; // Enter alternate screen & clear
-    std::cout << render_frame(w, h);
+    // Enter alternate screen buffer
+    std::cout << "\033[?1049h\033[2J\033[H";
     std::cout.flush();
 
-    // If running in automated non-interactive / test environment
-    if (!isatty(STDIN_FILENO)) {
-        return 0;
+    struct winsize ws{};
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+    int cols = ws.ws_col > 0 ? ws.ws_col : 80;
+    int rows = ws.ws_row > 0 ? ws.ws_row : 24;
+
+    std::cout << render_frame(cols, rows);
+    std::cout.flush();
+
+    // Check if interactive
+    if (isatty(STDIN_FILENO)) {
+        struct termios raw{}, orig{};
+        tcgetattr(STDIN_FILENO, &orig);
+        raw = orig;
+        raw.c_lflag &= ~(ICANON | ECHO);
+        raw.c_cc[VMIN] = 1;
+        raw.c_cc[VTIME] = 0;
+        tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+
+        char c = 0;
+        while (read(STDIN_FILENO, &c, 1) > 0) {
+            if (c == 'q' || c == 27 || c == 3) {
+                break;
+            }
+        }
+        tcsetattr(STDIN_FILENO, TCSANOW, &orig);
     }
 
-    std::cout << "\n\033[1;33mPress [q] or [Enter] to return to shell...\033[0m\n";
-    std::string line;
-    std::getline(std::cin, line);
-    std::cout << "\033[?1049l"; // Exit alternate screen
+    // Exit alternate screen buffer
+    std::cout << "\033[?1049l";
+    std::cout.flush();
     return 0;
 }
 

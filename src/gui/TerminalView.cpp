@@ -1,0 +1,465 @@
+#include "TerminalView.hpp"
+
+#include <QPainter>
+#include <QPaintEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QClipboard>
+#include <QApplication>
+#include <QMenu>
+#include <QFontMetricsF>
+#include <algorithm>
+
+namespace meridian::gui {
+
+namespace {
+
+const QColor DEFAULT_BG(24, 25, 28, 235); // Dark Translucent
+const QColor DEFAULT_FG(216, 222, 233);   // Soft White / Gray
+const QColor SELECTION_BG(59, 130, 246, 110); // Translucent Blue Accent
+
+const QColor ANSI_COLORS[16] = {
+    QColor("#1e222a"), // 0: Black
+    QColor("#e06c75"), // 1: Red
+    QColor("#98c379"), // 2: Green
+    QColor("#e5c07b"), // 3: Yellow
+    QColor("#61afef"), // 4: Blue
+    QColor("#c678dd"), // 5: Magenta
+    QColor("#56b6c2"), // 6: Cyan
+    QColor("#abb2bf"), // 7: White
+    QColor("#5c6370"), // 8: Bright Black
+    QColor("#be5046"), // 9: Bright Red
+    QColor("#7ebd6a"), // 10: Bright Green
+    QColor("#d19a66"), // 11: Bright Yellow
+    QColor("#4fa6ed"), // 12: Bright Blue
+    QColor("#b55ad6"), // 13: Bright Magenta
+    QColor("#46a0ac"), // 14: Bright Cyan
+    QColor("#ffffff")  // 15: Bright White
+};
+
+} // namespace
+
+TerminalView::TerminalView(std::shared_ptr<PtyBridge> bridge, QWidget* parent)
+    : QWidget(parent)
+    , bridge_(std::move(bridge))
+    , font_("JetBrains Mono", 11)
+{
+    setFocusPolicy(Qt::StrongFocus);
+    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    setMouseTracking(true);
+
+    font_.setStyleHint(QFont::Monospace);
+    font_.setFixedPitch(true);
+    setFontSize(11.0);
+
+    connect(bridge_.get(), &PtyBridge::screenUpdated, this, [this]() {
+        update();
+    });
+
+    connect(&cursor_timer_, &QTimer::timeout, this, [this]() {
+        cursor_visible_ = !cursor_visible_;
+        update();
+    });
+    cursor_timer_.start(500);
+}
+
+void TerminalView::setFontSize(qreal pt_size) {
+    font_.setPointSizeF(std::clamp(pt_size, 6.0, 36.0));
+    QFontMetricsF fm(font_);
+    char_width_ = fm.horizontalAdvance(QLatin1Char('M'));
+    if (char_width_ <= 0) char_width_ = 8.0;
+    char_height_ = fm.height();
+    if (char_height_ <= 0) char_height_ = 16.0;
+    char_ascent_ = fm.ascent();
+
+    if (width() > 0 && height() > 0) {
+        int cols = std::max(10, static_cast<int>(width() / char_width_));
+        int rows = std::max(4, static_cast<int>(height() / char_height_));
+        bridge_->resize(rows, cols);
+    }
+    update();
+}
+
+QColor TerminalView::resolveColor(const vt::Color& color, bool is_fg) {
+    switch (color.type) {
+        case vt::ColorType::Default:
+            return is_fg ? DEFAULT_FG : DEFAULT_BG;
+        case vt::ColorType::Indexed: {
+            if (color.index < 16) {
+                return ANSI_COLORS[color.index];
+            }
+            // 256-color cube
+            if (color.index >= 16 && color.index <= 231) {
+                int idx = color.index - 16;
+                int r = (idx / 36) * 51;
+                int g = ((idx % 36) / 6) * 51;
+                int b = (idx % 6) * 51;
+                return QColor(r, g, b);
+            }
+            // Grayscale ramp
+            if (color.index >= 232 && color.index <= 255) {
+                int gray = 8 + (color.index - 232) * 10;
+                return QColor(gray, gray, gray);
+            }
+            return is_fg ? DEFAULT_FG : DEFAULT_BG;
+        }
+        case vt::ColorType::Rgb:
+            return QColor(color.r, color.g, color.b);
+    }
+    return is_fg ? DEFAULT_FG : DEFAULT_BG;
+}
+
+QPoint TerminalView::pixelToCell(const QPoint& pt) const {
+    int col = static_cast<int>(pt.x() / char_width_);
+    int row = static_cast<int>(pt.y() / char_height_);
+    return QPoint(col, row);
+}
+
+void TerminalView::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    int cols = std::max(10, static_cast<int>(width() / char_width_));
+    int rows = std::max(4, static_cast<int>(height() / char_height_));
+    bridge_->resize(rows, cols);
+}
+
+void TerminalView::paintEvent(QPaintEvent*) {
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+    painter.setFont(font_);
+
+    std::lock_guard<std::mutex> lock(bridge_->screenMutex());
+    const auto& screen = bridge_->screenBuffer();
+
+    int rows = screen.rows();
+    int cols = screen.cols();
+
+    // 1. Draw Cell Backgrounds & Glyphs
+    for (int r = 0; r < rows; ++r) {
+        qreal y = r * char_height_;
+
+        for (int c = 0; c < cols; ++c) {
+            qreal x = c * char_width_;
+            const auto& cell = screen.cell(r, c);
+
+            bool is_selected = selection_.contains(r, c);
+            QColor bg = resolveColor(cell.attrs.bg, false);
+            QColor fg = resolveColor(cell.attrs.fg, true);
+
+            if (cell.attrs.inverse) {
+                std::swap(bg, fg);
+            }
+
+            // Draw Background rect if not default
+            if (bg != DEFAULT_BG) {
+                painter.fillRect(QRectF(x, y, char_width_ + 0.5, char_height_), bg);
+            }
+
+            // Draw Selection Highlight
+            if (is_selected) {
+                painter.fillRect(QRectF(x, y, char_width_ + 0.5, char_height_), SELECTION_BG);
+            }
+
+            // Draw Glyph
+            if (cell.codepoint != 0 && cell.codepoint != ' ') {
+                QFont cellFont = font_;
+                if (cell.attrs.bold) cellFont.setBold(true);
+                if (cell.attrs.italic) cellFont.setItalic(true);
+                if (cell.attrs.underline) cellFont.setUnderline(true);
+                painter.setFont(cellFont);
+
+                painter.setPen(fg);
+                QString ch = QString::fromUcs4(&cell.codepoint, 1);
+                painter.drawText(QPointF(x, y + char_ascent_), ch);
+            }
+        }
+    }
+
+    // 2. Draw Cursor
+    if (cursor_visible_ && screen.is_cursor_visible() && hasFocus()) {
+        int cur_r = screen.cursor_row();
+        int cur_c = screen.cursor_col();
+
+        if (cur_r >= 0 && cur_r < rows && cur_c >= 0 && cur_c < cols) {
+            qreal cx = cur_c * char_width_;
+            qreal cy = cur_r * char_height_;
+
+            switch (screen.cursor_shape()) {
+                case vt::CursorShape::Block:
+                    painter.fillRect(QRectF(cx, cy, char_width_, char_height_), QColor(255, 255, 255, 180));
+                    // Invert cursor char
+                    {
+                        const auto& cell = screen.cell(cur_r, cur_c);
+                        if (cell.codepoint != 0 && cell.codepoint != ' ') {
+                            painter.setPen(QColor(0, 0, 0));
+                            QString ch = QString::fromUcs4(&cell.codepoint, 1);
+                            painter.drawText(QPointF(cx, cy + char_ascent_), ch);
+                        }
+                    }
+                    break;
+                case vt::CursorShape::Underline:
+                    painter.fillRect(QRectF(cx, cy + char_height_ - 2, char_width_, 2), QColor(255, 255, 255, 220));
+                    break;
+                case vt::CursorShape::Bar:
+                    painter.fillRect(QRectF(cx, cy, 2, char_height_), QColor(255, 255, 255, 220));
+                    break;
+            }
+        }
+    }
+}
+
+void TerminalView::keyPressEvent(QKeyEvent* event) {
+    Qt::KeyboardModifiers mods = event->modifiers();
+    int key = event->key();
+
+    // 1. Linux Standard Clipboard Copy: Ctrl+Shift+C (or Ctrl+C if text is selected)
+    if ((mods == (Qt::ControlModifier | Qt::ShiftModifier) && key == Qt::Key_C) ||
+        (mods == Qt::ControlModifier && key == Qt::Key_C && selection_.active)) {
+        copySelection();
+        event->accept();
+        return;
+    }
+
+    // 2. Linux Standard Clipboard Paste: Ctrl+Shift+V (or Ctrl+V in normal mode)
+    if ((mods == (Qt::ControlModifier | Qt::ShiftModifier) && key == Qt::Key_V) ||
+        (mods == Qt::ControlModifier && key == Qt::Key_V)) {
+        pasteClipboard();
+        event->accept();
+        return;
+    }
+
+    // 3. Zoom In/Out Shortcuts
+    if (mods == Qt::ControlModifier && (key == Qt::Key_Plus || key == Qt::Key_Equal)) {
+        setFontSize(font_.pointSizeF() + 1.0);
+        event->accept();
+        return;
+    }
+    if (mods == Qt::ControlModifier && (key == Qt::Key_Minus || key == Qt::Key_Underscore)) {
+        setFontSize(font_.pointSizeF() - 1.0);
+        event->accept();
+        return;
+    }
+    if (mods == Qt::ControlModifier && key == Qt::Key_0) {
+        setFontSize(11.0);
+        event->accept();
+        return;
+    }
+
+    // Clear selection on new input
+    if (selection_.active) {
+        selection_.active = false;
+        update();
+    }
+
+    // 4. Special Keys to PTY Escape Sequences
+    QByteArray payload;
+    if (mods & Qt::ControlModifier) {
+        if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+            char ctrl_char = static_cast<char>(key - Qt::Key_A + 1);
+            payload.append(ctrl_char);
+        } else if (key == Qt::Key_Space) {
+            payload.append('\0');
+        }
+    } else {
+        switch (key) {
+            case Qt::Key_Return:
+            case Qt::Key_Enter:
+                payload = "\r";
+                break;
+            case Qt::Key_Backspace:
+                payload = "\x7f";
+                break;
+            case Qt::Key_Tab:
+                payload = "\t";
+                break;
+            case Qt::Key_Escape:
+                payload = "\x1b";
+                break;
+            case Qt::Key_Up:
+                payload = "\x1b[A";
+                break;
+            case Qt::Key_Down:
+                payload = "\x1b[B";
+                break;
+            case Qt::Key_Right:
+                payload = "\x1b[C";
+                break;
+            case Qt::Key_Left:
+                payload = "\x1b[D";
+                break;
+            case Qt::Key_Home:
+                payload = "\x1b[H";
+                break;
+            case Qt::Key_End:
+                payload = "\x1b[F";
+                break;
+            case Qt::Key_PageUp:
+                payload = "\x1b[5~";
+                break;
+            case Qt::Key_PageDown:
+                payload = "\x1b[6~";
+                break;
+            case Qt::Key_Delete:
+                payload = "\x1b[3~";
+                break;
+            case Qt::Key_Insert:
+                payload = "\x1b[2~";
+                break;
+            default:
+                if (!event->text().isEmpty()) {
+                    payload = event->text().toUtf8();
+                }
+                break;
+        }
+    }
+
+    if (!payload.isEmpty()) {
+        bridge_->writeInput(payload);
+        cursor_visible_ = true;
+        cursor_timer_.start(500);
+        event->accept();
+    }
+}
+
+void TerminalView::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        QPoint cell = pixelToCell(event->pos());
+        selection_.active = true;
+        selection_.start_row = cell.y();
+        selection_.start_col = cell.x();
+        selection_.end_row = cell.y();
+        selection_.end_col = cell.x();
+        selecting_ = true;
+        update();
+    } else if (event->button() == Qt::MiddleButton) {
+        // Middle Click Paste
+        pasteClipboard();
+    }
+}
+
+void TerminalView::mouseMoveEvent(QMouseEvent* event) {
+    if (selecting_) {
+        QPoint cell = pixelToCell(event->pos());
+        selection_.end_row = cell.y();
+        selection_.end_col = cell.x();
+        update();
+    }
+}
+
+void TerminalView::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton && selecting_) {
+        selecting_ = false;
+        if (selection_.start_row == selection_.end_row && selection_.start_col == selection_.end_col) {
+            selection_.active = false;
+        }
+        update();
+    }
+}
+
+void TerminalView::wheelEvent(QWheelEvent* event) {
+    int numDegrees = event->angleDelta().y() / 8;
+    int numSteps = numDegrees / 15;
+    if (numSteps != 0) {
+        std::lock_guard<std::mutex> lock(bridge_->screenMutex());
+        bridge_->screenBuffer().scroll_view(-numSteps * 3);
+        update();
+    }
+}
+
+QString TerminalView::selectedText() const {
+    if (!selection_.active) return "";
+
+    std::lock_guard<std::mutex> lock(bridge_->screenMutex());
+    const auto& screen = bridge_->screenBuffer();
+
+    int r0 = std::clamp(std::min(selection_.start_row, selection_.end_row), 0, screen.rows() - 1);
+    int r1 = std::clamp(std::max(selection_.start_row, selection_.end_row), 0, screen.rows() - 1);
+
+    QString text;
+    for (int r = r0; r <= r1; ++r) {
+        int c0 = (r == r0) ? std::min(selection_.start_col, selection_.end_col) : 0;
+        int c1 = (r == r1) ? std::max(selection_.start_col, selection_.end_col) : screen.cols() - 1;
+
+        c0 = std::clamp(c0, 0, screen.cols() - 1);
+        c1 = std::clamp(c1, 0, screen.cols() - 1);
+
+        QString rowText;
+        for (int c = c0; c <= c1; ++c) {
+            const auto& cell = screen.cell(r, c);
+            if (cell.codepoint != 0) {
+                rowText.append(QString::fromUcs4(&cell.codepoint, 1));
+            } else {
+                rowText.append(' ');
+            }
+        }
+        text.append(rowText.trimmed());
+        if (r < r1) text.append('\n');
+    }
+    return text;
+}
+
+void TerminalView::copySelection() {
+    QString text = selectedText();
+    if (!text.isEmpty()) {
+        QApplication::clipboard()->setText(text);
+    }
+}
+
+void TerminalView::pasteClipboard() {
+    QString text = QApplication::clipboard()->text();
+    if (!text.isEmpty()) {
+        // Clean single paste
+        bridge_->writeInput(text.toUtf8());
+    }
+}
+
+void TerminalView::selectAll() {
+    std::lock_guard<std::mutex> lock(bridge_->screenMutex());
+    const auto& screen = bridge_->screenBuffer();
+    selection_.active = true;
+    selection_.start_row = 0;
+    selection_.start_col = 0;
+    selection_.end_row = screen.rows() - 1;
+    selection_.end_col = screen.cols() - 1;
+    update();
+}
+
+void TerminalView::clearScrollback() {
+    std::lock_guard<std::mutex> lock(bridge_->screenMutex());
+    bridge_->screenBuffer().clear_scrollback();
+    update();
+}
+
+void TerminalView::contextMenuEvent(QContextMenuEvent* event) {
+    QMenu menu(this);
+    menu.setStyleSheet("QMenu { background-color: #21252b; color: #abb2bf; border: 1px solid #3e4451; padding: 4px; } "
+                       "QMenu::item:selected { background-color: #3b82f6; color: #ffffff; }");
+
+    auto* copyAct = menu.addAction("Copy (Ctrl+Shift+C)", this, &TerminalView::copySelection);
+    copyAct->setEnabled(selection_.active);
+
+    auto* pasteAct = menu.addAction("Paste (Ctrl+Shift+V)", this, &TerminalView::pasteClipboard);
+    pasteAct->setEnabled(!QApplication::clipboard()->text().isEmpty());
+
+    menu.addSeparator();
+    menu.addAction("Select All", this, &TerminalView::selectAll);
+    menu.addAction("Clear Scrollback", this, &TerminalView::clearScrollback);
+
+    menu.exec(event->globalPos());
+}
+
+void TerminalView::focusInEvent(QFocusEvent*) {
+    cursor_visible_ = true;
+    cursor_timer_.start(500);
+    update();
+}
+
+void TerminalView::focusOutEvent(QFocusEvent*) {
+    cursor_visible_ = false;
+    cursor_timer_.stop();
+    update();
+}
+
+} // namespace meridian::gui
+

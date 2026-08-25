@@ -14,6 +14,8 @@ CORE_SRC := \
     src/core/vt/graphics.cpp \
     src/core/pty/pty_manager.cpp \
     src/core/config.cpp \
+    src/core/terminal_image.cpp \
+    src/platform/LinuxPTY.cpp \
     src/core/renderer/damage_tracker.cpp \
     src/core/renderer/glyph_atlas.cpp \
     src/core/renderer/render_pipeline.cpp
@@ -110,7 +112,7 @@ $(BUILD)/meridian_demo: $(CORE_OBJ) $(BUILD)/src/app/demo_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian-shell: $(SHELL_OBJ) $(BUILD)/src/app/shell_main.o
+$(BUILD)/meridian-shell: $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(DEV_OBJ) $(BUILD)/src/app/shell_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 

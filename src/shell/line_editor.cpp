@@ -1,10 +1,14 @@
 #include "line_editor.hpp"
+#include "../dev/git_intel.hpp"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <dirent.h>
 #include <poll.h>
+#include <pwd.h>
 #include <sstream>
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -47,10 +51,74 @@ bool has_pending_input(int fd, int timeout_ms) {
     return poll(&pfd, 1, timeout_ms) > 0 && (pfd.revents & POLLIN);
 }
 
+std::string format_cwd(const std::string& cwd) {
+    std::string dir = cwd.empty() ? "~" : cwd;
+    const char* home = std::getenv("HOME");
+    if (home && dir.rfind(home, 0) == 0) {
+        dir = "~" + dir.substr(std::strlen(home));
+    }
+    return dir;
+}
+
 } // namespace
 
 bool LineEditor::is_terminal_interactive() {
     return isatty(STDIN_FILENO) && isatty(STDOUT_FILENO);
+}
+
+std::string LineEditor::build_date_badge(const std::string& cwd) {
+    std::string dir = format_cwd(cwd);
+
+    // Live Date/Time
+    std::time_t now = std::time(nullptr);
+    std::tm* local_tm = std::localtime(&now);
+    char time_buf[64];
+    std::strftime(time_buf, sizeof(time_buf), "%a %d %b  -  %H:%M", local_tm);
+
+    std::ostringstream ss;
+    // Badge 1: Vibrant Cobalt Blue Date/Time Badge
+    ss << "  \033[48;2;26;108;218;38;2;255;255;255;1m " << time_buf << " "
+    // Arrow from Cobalt Blue to Ocean Cyan
+       << "\033[48;2;24;156;184;38;2;26;108;218m"
+    // Badge 2: Vibrant Ocean Cyan Directory Badge
+       << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir << " ";
+
+    // Live Git Repo Status
+    auto git_status = dev::GitIntel::inspect_directory(cwd.empty() ? "." : cwd);
+    if (git_status.is_git_repo && !git_status.branch_name.empty()) {
+        std::string branch = git_status.branch_name;
+        int unstaged = git_status.unstaged_count + git_status.untracked_count;
+        int staged = git_status.staged_count;
+
+        std::string git_extra;
+        if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✸";
+        if (staged > 0) git_extra += " " + std::to_string(staged) + "●";
+
+        // Arrow from Ocean Cyan to Crimson Red
+        ss << "\033[48;2;201;59;59;38;2;24;156;184m"
+        // Badge 3: Vibrant Crimson Red Git Badge
+           << "\033[48;2;201;59;59;38;2;255;255;255;1m  origin  " << branch << git_extra << " "
+        // Ending Arrow from Crimson Red to Terminal Default
+           << "\033[0;38;2;201;59;59m\033[0m";
+    } else {
+        // Ending Arrow from Ocean Cyan to Terminal Default
+        ss << "\033[0;38;2;24;156;184m\033[0m";
+    }
+
+    return ss.str();
+}
+
+std::string LineEditor::build_powerline_prompt(const std::string& /*cwd*/) {
+    // Detect username
+    std::string user = "charanbalaji";
+    struct passwd* pw = getpwuid(geteuid());
+    if (pw && pw->pw_name) user = pw->pw_name;
+
+    std::ostringstream ss;
+    // Single-line prompt: Vibrant Golden Yellow badge with purple/dark text (@username )
+    ss << "  \033[48;2;212;180;27;38;2;85;35;110;1m @" << user << " "
+       << "\033[0;38;2;212;180;27m\033[0m ";
+    return ss.str();
 }
 
 void LineEditor::clear_history_preview(std::ostream& out, int lines_drawn) {
@@ -171,7 +239,27 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Backspace
+        // Ctrl+P / Ctrl+Shift+P: Terminal Pic Upload & Selector
+        if (c == 16) {
+            if (preview_lines_drawn > 0) {
+                clear_history_preview(out, preview_lines_drawn);
+                preview_lines_drawn = 0;
+            }
+            out << "\n\033[1;36m┌─── PIC UPLOAD / SELECTOR (Ctrl+Shift+P) ──────────────────────┐\033[0m\n"
+                << "\033[1;36m│ \033[1;32m[1]\033[0m Reference Moon & Mountain Artwork (Default)                 \033[1;36m│\033[0m\n"
+                << "\033[1;36m│ \033[1;32m[2]\033[0m Render as ASCII Density Art                                \033[1;36m│\033[0m\n"
+                << "\033[1;36m│ \033[1;32m[3]\033[0m Render as TrueColor Colored ASCII                          \033[1;36m│\033[0m\n"
+                << "\033[1;36m│ \033[1;32m[4]\033[0m Render as Hybrid Mode                                      \033[1;36m│\033[0m\n"
+                << "\033[1;36m│ \033[0;37mTip: Use 'pic <filepath> [--ascii|--color-ascii|--hybrid]'     \033[1;36m│\033[0m\n"
+                << "\033[1;36m└───────────────────────────────────────────────────────────────┘\033[0m\n";
+            out.flush();
+            current_line = "pic --default";
+            cursor_pos = static_cast<int>(current_line.size());
+            refresh_prompt();
+            continue;
+        }
+
+        // Backspace: in-place character deletion
         if (c == 127 || c == 8) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);

@@ -1,168 +1,138 @@
-# 🚀 Meridian 2.0 — Terminal + Developer Environment + AI Platform
+# 🚀 Meridian Terminal 2.0 — Cross-Platform Terminal & Developer Platform
 
-**Meridian Terminal** is a high-performance, GPU-accelerated terminal emulator, multiplexer, developer intelligence platform, and local AI agent built with modern **C++20** for Linux.
+[![CI/CD](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/ci.yml/badge.svg)](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/ci.yml)
+[![Pages](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/pages.yml/badge.svg)](https://charanbalaji2005.github.io/Meridian-Shell/)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#)
+
+**Meridian Terminal** is a high-performance, Kitty-class cross-platform terminal emulator, multiplexer, developer intelligence platform, and local AI agent built with **C++20 & Qt 6**.
+
+📖 **Live Website & Documentation**: [https://charanbalaji2005.github.io/Meridian-Shell/](https://charanbalaji2005.github.io/Meridian-Shell/)
+
+---
+
+## 🎨 Vivid High-Contrast Powerline & Native Graphics
 
 ```text
-                    MERIDIAN 2.0 ARCHITECTURE
-                               │
-       ┌───────────────────────┼────────────────────────┐
-       │                       │                        │
-  Terminal Engine         AI Subsystem          Developer Tools
-  • 144Hz GPU Quad Buffer • Intent Engine       • System & Net Monitor
-  • Kitty / Sixel Graphics• AI Coding Agent     • Git Branch Intel
-  • BSP Tree Multiplexer  • Error Diagnostics   • Universal Search
-  • Session Recording     • Security & Risk     • Command Palette (Ctrl+Shift+P)
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   .---.    *   .       charanbalaji@fedora                  │
+│  /     \    .    *     ───────⭘───────                      │
+│  \     /   .     .     󰌽 → Linux 7.1.5-201.fc44             │
+│   '---'       *        󰨇 → Hyprland 0.56.1 (Wayland)        │
+│   /\     /\     /\     󰞷 → zsh 5.9                          │
+│  /  \   /  \   /  \     → meridian 2.0                      │
+│ / /\ \ / /\ \ / /\ \   󰘚 → 5.77 GiB / 15.25 GiB              │
+│~~~~~~~~~~~~~~~~~~~~~   󱑂 → 1 hour, 11 mins                  │
+│  ~ ~  ~  ~  ~ ~ ~ ~    ───────⭘───────                      │
+│                        ● ● ● ● ● ● ● ● ●                    │
+│                                                             │
+│  [Tue 25 Aug - 09:40]  [~/Downloads/meridian]  [ origin  main 6✸ 8●] 
+│  [@charanbalaji]  echo "Welcome to Meridian Terminal"      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Universal Installation
+## 📦 Offline Multi-OS Installation
 
-Anybody can install Meridian Terminal across any major Linux distribution:
+Download the package once and install completely offline on any laptop or operating system:
 
-### 1. Fedora / RHEL / openSUSE (`dnf` / RPM)
+### 1. Fedora / RHEL / CentOS / openSUSE (`dnf` / RPM)
 ```bash
-sudo dnf install meridian-terminal
-# Or build RPM from spec:
+# Build RPM from spec or download release asset:
 rpmbuild -ba packaging/rpm/meridian-terminal.spec
+
+# Install offline with DNF:
+sudo dnf install ./dist/meridian-terminal.rpm
 ```
 
-### 2. Arch Linux / Manjaro (`pacman` / AUR)
+### 2. Ubuntu / Debian / Linux Mint (`apt` / DEB)
 ```bash
-# Via AUR helper:
-paru -S meridian-terminal
+# Generate package:
+./scripts/package_offline.sh
+
+# Install offline with APT:
+sudo apt install ./dist/meridian-terminal_2.0.0_amd64.deb
 # or
-yay -S meridian-terminal
-
-# Or manually via makepkg:
-cd packaging/aur && makepkg -si
+sudo dpkg -i ./dist/meridian-terminal_2.0.0_amd64.deb
 ```
 
-### 3. Ubuntu / Debian / Pop!_OS / Linux Mint (`apt` / DEB)
+### 3. Arch Linux / Manjaro / EndeavourOS (`pacman`)
 ```bash
-sudo apt install meridian-terminal
-# Or build debian package:
-cd packaging/deb && dpkg-buildpackage -us -uc -b
+# Build and install:
+cd packaging/arch && makepkg -si
+
+# Or install from offline package file:
+sudo pacman -U ./dist/meridian-terminal-2.0.0-1-x86_64.pkg.tar.zst
 ```
 
-### 4. Universal Snap Package
+### 4. Universal Linux Portable (AppImage / Zero-Install)
 ```bash
-sudo snap install meridian-terminal
+# Extract and run without installation or root:
+tar -xzf dist/Meridian-Terminal-2.0.0-x86_64.AppDir.tar.gz
+./AppDir/AppRun
 ```
 
-### 5. Universal Flatpak (Flathub)
+### 5. macOS (MacBooks - Intel & Apple Silicon M1/M2/M3/M4)
 ```bash
-flatpak install flathub org.meridian_terminal.MeridianTerminal
+# Install via local Homebrew formula:
+brew install --build-from-source packaging/macos/meridian-terminal.rb
 ```
 
-### 6. One-Line Installer Script
-```bash
-# Install to ~/.local/bin (no root required)
-./install.sh --user
+### 6. Windows 10 / 11 (PowerShell & ConPTY)
+```powershell
+# Open PowerShell and run:
+.\packaging\windows\install.ps1
+```
 
-# Or system-wide:
+### 7. Universal Turnkey Installer
+```bash
+# Build & install directly (system-wide):
 sudo ./install.sh
+
+# Or install for your user only (~/.local/bin, no root required):
+./install.sh --user
 ```
 
 ---
 
-## ⚡ Interactive Command History Preview (Up / Down Navigation)
+## ⚡ Features at a Glance
 
-Meridian Shell features an **interactive graphical command preview overlay**:
-- Press **`Up Arrow` (↑)**: Pops up an interactive graphical preview box above/below the prompt showing previous commands, their exit codes, durations, and directories.
-- Press **`Down Arrow` (↓)**: Steps forward through history.
-- Press **`Enter`**: Executes the selected command immediately.
-- Press **`Tab`**: Auto-completes filenames and executables.
-
-```text
-┌─── Command History Preview (↑/↓ to navigate, Enter to run) ───┐
-│ ▶ #24: git commit -m "Meridian 2.0 release"                   │
-│   #23: docker compose up -d                                   │
-│   #22: npm run dev                                            │
-│   #21: cargo test --workspace                                 │
-└───────────────────────────────────────────────────────────────┘
-meridian:~/workspace$ git commit -m "Meridian 2.0 release"
-```
+* **🎨 Native Graphics Engine (`pic`)**:
+  * `pic <file>` → TrueColor 24-bit half-blocks (`▀`/`▄`)
+  * `pic <file> --ascii` → Grayscale ASCII density
+  * `pic <file> --color-ascii` → Bright colored ASCII
+  * `pic <file> --hybrid` → Hybrid background overlay
+  * **`Ctrl+Shift+P`** → Interactive in-terminal image uploader and selector.
+* **🛡️ Terminal-Native Safety & Risk Defense**: Real-time detection of destructive operations (`rm -rf /`, `curl | bash`, `dd`, `git push --force`, credential leaks).
+* **🤖 Inline AI Engine (`ai`)**:
+  * `ai "<query>"` → Natural language intent translation into safe shell commands.
+  * `ai "<error message>"` → Automated compiler/runtime diagnosis and suggested fixes.
+* **🪟 Multiplexer & Panes**: Splits (Horizontal/Vertical) and Zoom tabs.
+* **⚡ Cross-Platform PTY Core**: Linux (`openpty`), macOS (BSD PTY), and Windows (`ConPTY`).
 
 ---
 
-## 🖥️ Graphical Workstation Interface (`meridian gui`)
-
-Launch the visual developer workstation with split panes, tabs, and live telemetry:
+## 🧪 Building & Testing
 
 ```bash
-meridian gui
-```
+# Compile all targets
+make all -j$(nproc)
 
-- **Top Bar**: Active tabs (`[Tab 1: main]`, `[Tab 2: server]`, `[Tab 3: agent]`) with real-time CPU/RAM meters.
-- **Split Panes**: Left side terminal session; Right side live `/proc` CPU/RAM/Disk/Network telemetry & file explorer.
-- **Footer**: Live Git branch status (` main ↑0 ↓0 | ✓ Safe | 144Hz GPU Engine`).
-
----
-
-## 🤖 Meridian AI & Developer CLI
-
-```bash
-# 1. Natural Language Intent Translation
-meridian ask "find all python files modified in the last 2 days"
-meridian ask "kill process running on port 3000"
-
-# 2. Automatic Error Diagnostics & Suggested Fixes
-meridian diag "Error: Cannot find module 'express'"
-meridian diag "ModuleNotFoundError: No module named 'requests'"
-
-# 3. Autonomous AI Coding & Repair Agent
-meridian agent "Diagnose repository and run test suite"
-
-# 4. Developer Intelligence Tools
-meridian monitor           # Real-time CPU, RAM, Disk, Net & Top Processes
-meridian git               # Git branch divergence, staged/unstaged changes
-meridian files [dir]       # Tree file explorer with git status badges
-meridian search "<query>"  # Universal search across screens, history & files
-meridian palette [query]   # Fuzzy Command Palette (Ctrl+Shift+P)
-meridian history           # Rich command history with exit codes & durations
-```
-
----
-
-## 🛠️ Building and Testing Locally
-
-```bash
-# Build all binaries (meridian, meridian-shell, meridian_demo, meridian_tests)
-make all
-
-# Run comprehensive test suite (124 tests, 376 assertions)
+# Run full test suite (124 unit & integration tests)
 make test
 
-# Run manual PTY and POSIX job control verification
+# Run manual PTY core tests
 make manual-test
 
-# Install system-wide
-sudo make install
-```
-
----
-
-## 🚀 Pushing to GitHub
-
-To push this repository to GitHub:
-
-```bash
-# 1. Initialize and add files (respects .gitignore)
-git init
-git branch -m main
-git add .
-
-# 2. Create initial commit
-git commit -m "feat: Meridian 2.0 - Terminal + Developer Environment + AI Platform"
-
-# 3. Add your GitHub remote and push
-git remote add origin git@github.com:<your-username>/meridian-terminal.git
-git push -u origin main
+# Generate all offline distribution bundles in dist/
+./scripts/build_all_releases.sh
 ```
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**. See the [LICENSE](LICENSE) file for details.
+Meridian Terminal is free and open-source software licensed under the **GNU General Public License v3.0 or later** ([GPL-3.0-or-later](LICENSE)).

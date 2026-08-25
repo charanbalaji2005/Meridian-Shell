@@ -17,6 +17,7 @@
 #include "../dev/rich_history.hpp"
 #include "../dev/system_monitor.hpp"
 #include "../dev/universal_search.hpp"
+#include "../shell/builtins.hpp"
 #include "../shell/shell.hpp"
 #include "../workspace/session_recorder.hpp"
 #include "meridian_gui.hpp"
@@ -173,6 +174,14 @@ int main(int argc, char** argv) {
 
     if (sub == "ai") {
         return handle_ai_subcommand(argc, argv);
+    }
+
+    // meridian pic [file] [--ascii|--color-ascii|--hybrid|--width|--height]
+    if (sub == "pic") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        shell::Executor ctx;
+        return shell::run_builtin("pic", args, ctx);
     }
 
     // 1. meridian ask "<intent>"
