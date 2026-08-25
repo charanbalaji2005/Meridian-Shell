@@ -56,6 +56,7 @@ private:
     void handle_utf8_continuation(uint8_t b);
 
     void dispatch_csi(uint8_t final_byte);
+    void dispatch_osc();
     void dispatch_sgr(const std::vector<long>& params);
     void dispatch_decset(const std::vector<long>& params, bool set);
     void dispatch_kitty_keyboard(char prefix, const std::vector<long>& params);

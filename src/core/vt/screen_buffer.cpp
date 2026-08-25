@@ -274,6 +274,20 @@ const Cell& ScreenBuffer::cell_at(int row, int col) const {
     return grid()[static_cast<std::size_t>(row)][static_cast<std::size_t>(col)];
 }
 
+uint32_t ScreenBuffer::register_hyperlink(const std::string& uri, const std::string& /*id*/) {
+    if (uri.empty()) return 0;
+    for (std::size_t i = 1; i < hyperlink_table_.size(); ++i) {
+        if (hyperlink_table_[i] == uri) return static_cast<uint32_t>(i);
+    }
+    hyperlink_table_.push_back(uri);
+    return static_cast<uint32_t>(hyperlink_table_.size() - 1);
+}
+
+std::string ScreenBuffer::get_hyperlink(uint32_t id) const {
+    if (id == 0 || id >= hyperlink_table_.size()) return "";
+    return hyperlink_table_[id];
+}
+
 std::string ScreenBuffer::dump_row_text(int row) const {
     std::string out;
     const auto& g = grid();

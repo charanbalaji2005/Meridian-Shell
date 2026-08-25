@@ -22,7 +22,8 @@ CORE_SRC := \
     src/platform/LinuxPTY.cpp \
     src/core/renderer/damage_tracker.cpp \
     src/core/renderer/glyph_atlas.cpp \
-    src/core/renderer/render_pipeline.cpp
+    src/core/renderer/render_pipeline.cpp \
+    src/core/renderer/telemetry_profiler.cpp
 
 SHELL_SRC := \
     src/shell/lexer.cpp \
@@ -53,7 +54,11 @@ DEV_SRC := \
     src/dev/file_explorer.cpp \
     src/dev/command_palette.cpp \
     src/dev/universal_search.cpp \
-    src/dev/rich_history.cpp
+    src/dev/rich_history.cpp \
+    src/dev/ssh_manager.cpp
+
+PLUGIN_SRC := \
+    src/plugins/plugin_manager.cpp
 
 CONFIG_SRC := \
     src/config/terminal_config.cpp \
@@ -79,13 +84,15 @@ TEST_SRC := \
     tests/test_renderer.cpp \
     tests/test_workspace.cpp \
     tests/test_intent_and_diagnostics.cpp \
-    tests/test_dev_tools.cpp
+    tests/test_dev_tools.cpp \
+    tests/test_advanced_protocols.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))
 AI_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(AI_SRC))
 WORKSPACE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(WORKSPACE_SRC))
 DEV_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(DEV_SRC))
+PLUGIN_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(PLUGIN_SRC))
 CONFIG_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CONFIG_SRC))
 SECURITY_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SECURITY_SRC))
 TEST_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(TEST_SRC))
@@ -108,7 +115,7 @@ $(BUILD)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/meridian_tests: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(TEST_OBJ)
+$(BUILD)/meridian_tests: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(TEST_OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
@@ -116,11 +123,11 @@ $(BUILD)/meridian_demo: $(CORE_OBJ) $(BUILD)/src/app/demo_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian-shell: $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(DEV_OBJ) $(BUILD)/src/app/shell_main.o
+$(BUILD)/meridian-shell: $(BUILD)/src/app/shell_main.o $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(BUILD)/src/app/meridian_gui.o $(BUILD)/src/app/meridian_main.o
+$(BUILD)/meridian: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(BUILD)/src/app/meridian_gui.o $(BUILD)/src/app/meridian_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 

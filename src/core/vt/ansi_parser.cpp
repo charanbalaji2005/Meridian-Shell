@@ -78,6 +78,7 @@ void AnsiParser::handle_escape(uint8_t b) {
     if (b == 'D') { screen_.newline(); state_ = State::Ground; return; }
     if (b == 'M') { screen_.move_cursor_rel(-1, 0); state_ = State::Ground; return; }
     if (b == 'E') { screen_.carriage_return(); screen_.newline(); state_ = State::Ground; return; }
+    if (b == '\\') { state_ = State::Ground; return; } // String Terminator (ST)
     state_ = State::Ground;
 }
 
@@ -97,7 +98,7 @@ void AnsiParser::handle_apc(uint8_t b) {
             screen_.graphics().handle_kitty_graphics(std::string_view(apc_buffer_).substr(1),
                                                     screen_.cursor_row(), screen_.cursor_col());
         }
-        state_ = State::Ground;
+        state_ = State::Escape;
         return;
     }
     if (apc_buffer_.size() < kMaxApcLen) {
@@ -107,12 +108,20 @@ void AnsiParser::handle_apc(uint8_t b) {
 
 void AnsiParser::handle_dcs(uint8_t b) {
     // DCS string terminator: ESC \ or BEL
-    if (b == 0x07 || b == 0x1B) {
+    if (b == 0x07) {
         if (dcs_buffer_.rfind("q", 0) == 0) {
             screen_.graphics().handle_sixel(std::string_view(dcs_buffer_).substr(1),
                                           screen_.cursor_row(), screen_.cursor_col());
         }
         state_ = State::Ground;
+        return;
+    }
+    if (b == 0x1B) {
+        if (dcs_buffer_.rfind("q", 0) == 0) {
+            screen_.graphics().handle_sixel(std::string_view(dcs_buffer_).substr(1),
+                                          screen_.cursor_row(), screen_.cursor_col());
+        }
+        state_ = State::Escape;
         return;
     }
     if (dcs_buffer_.size() < kMaxDcsLen) {
@@ -138,20 +147,98 @@ void AnsiParser::handle_csi(uint8_t b) {
     }
 }
 
-void AnsiParser::handle_osc(uint8_t b) {
-    if (b == 0x07) {
-        auto semi = osc_buffer_.find(';');
-        if (semi != std::string::npos) {
-            std::string code = osc_buffer_.substr(0, semi);
-            if (code == "0" || code == "2") {
-                window_title_ = osc_buffer_.substr(semi + 1);
+static std::string base64_decode_string(const std::string& in) {
+    std::string out;
+    std::vector<int> T(256, -1);
+    for (int i = 0; i < 64; ++i) {
+        T[static_cast<uint8_t>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i])] = i;
+    }
+    int val = 0, valb = -8;
+    for (uint8_t c : in) {
+        if (c == '=') break;
+        if (T[c] == -1) continue;
+        val = (val << 6) + T[c];
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(static_cast<char>((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+void AnsiParser::dispatch_osc() {
+    auto semi = osc_buffer_.find(';');
+    if (semi == std::string::npos) return;
+    std::string code = osc_buffer_.substr(0, semi);
+    std::string payload = osc_buffer_.substr(semi + 1);
+
+    if (code == "0" || code == "2") {
+        window_title_ = payload;
+    } else if (code == "7") {
+        // OSC 7: file://hostname/path
+        std::string path = payload;
+        auto file_pos = path.find("file://");
+        if (file_pos != std::string::npos) {
+            path = path.substr(file_pos + 7);
+            auto slash_pos = path.find('/');
+            if (slash_pos != std::string::npos) {
+                path = path.substr(slash_pos);
             }
         }
+        screen_.set_working_directory(path);
+    } else if (code == "8") {
+        // OSC 8: 8;params;url
+        auto next_semi = payload.find(';');
+        if (next_semi != std::string::npos) {
+            std::string params = payload.substr(0, next_semi);
+            std::string url = payload.substr(next_semi + 1);
+            if (url.empty()) {
+                current_attrs_.hyperlink_id = 0;
+            } else {
+                current_attrs_.hyperlink_id = screen_.register_hyperlink(url, params);
+            }
+        } else {
+            current_attrs_.hyperlink_id = 0;
+        }
+    } else if (code == "52") {
+        // OSC 52: 52;c;base64 or 52;p;base64
+        auto next_semi = payload.find(';');
+        if (next_semi != std::string::npos) {
+            std::string b64 = payload.substr(next_semi + 1);
+            screen_.set_clipboard(base64_decode_string(b64));
+        }
+    } else if (code == "133") {
+        // OSC 133 Shell Integration / Semantic Prompts
+        if (!payload.empty()) {
+            char type = payload[0];
+            if (type == 'A') {
+                screen_.set_semantic_state(ScreenBuffer::SemanticPromptState::Prompt);
+            } else if (type == 'B') {
+                screen_.set_semantic_state(ScreenBuffer::SemanticPromptState::CommandInput);
+            } else if (type == 'C') {
+                screen_.set_semantic_state(ScreenBuffer::SemanticPromptState::CommandOutput);
+            } else if (type == 'D') {
+                int exit_code = 0;
+                auto code_semi = payload.find(';');
+                if (code_semi != std::string::npos) {
+                    try { exit_code = std::stoi(payload.substr(code_semi + 1)); } catch (...) {}
+                }
+                screen_.set_semantic_state(ScreenBuffer::SemanticPromptState::CommandFinished, exit_code);
+            }
+        }
+    }
+}
+
+void AnsiParser::handle_osc(uint8_t b) {
+    if (b == 0x07) {
+        dispatch_osc();
         state_ = State::Ground;
         return;
     }
     if (b == 0x1B) {
-        state_ = State::Ground;
+        dispatch_osc();
+        state_ = State::Escape;
         return;
     }
     if (osc_buffer_.size() < kMaxOscLen) {

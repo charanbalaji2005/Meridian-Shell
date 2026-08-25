@@ -15,8 +15,11 @@
 #include "../dev/file_explorer.hpp"
 #include "../dev/git_intel.hpp"
 #include "../dev/rich_history.hpp"
+#include "../dev/ssh_manager.hpp"
 #include "../dev/system_monitor.hpp"
 #include "../dev/universal_search.hpp"
+#include "../plugins/plugin_manager.hpp"
+#include "../core/renderer/telemetry_profiler.hpp"
 #include "../shell/builtins.hpp"
 #include "../shell/shell.hpp"
 #include "../workspace/session_recorder.hpp"
@@ -65,6 +68,9 @@ void print_usage() {
         "  workspace rm <name>         delete a saved workspace\n"
         "  session save <file>         save recorded session trace to file\n\n"
         "Developer Tooling:\n"
+        "  ssh [alias]                 manage & connect to SSH remote workspaces (~/.ssh/config)\n"
+        "  plugins                     list active extensible plugins & hooks (~/.config/meridian/plugins/)\n"
+        "  --performance, perf         display live GPU framerate, PTY latency & telemetry profiler\n"
         "  monitor                     display real-time CPU, RAM, Disk, Network & Process metrics\n"
         "  git                         inspect Git branch divergence, staged/unstaged changes\n"
         "  files [dir]                 view tree file explorer with git badges\n"
@@ -372,7 +378,37 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    // 11. meridian gui
+    // 11. meridian ssh [alias]
+    if (sub == "ssh") {
+        dev::SSHManager ssh_mgr;
+        if (argc >= 3) {
+            std::string alias = argv[2];
+            auto host = ssh_mgr.find_host(alias);
+            if (host) {
+                std::cout << "\033[1;38;2;0;229;255mConnecting to " << host->alias << " (" << host->hostname << ")...\033[0m\n";
+                std::string cmd = host->command_line();
+                return std::system(cmd.c_str());
+            } else {
+                std::cerr << "SSH host '" << alias << "' not found in ~/.ssh/config. Showing workspace overview:\n\n";
+            }
+        }
+        std::cout << ssh_mgr.format_overview();
+        return 0;
+    }
+
+    // 12. meridian plugins / plugin list
+    if (sub == "plugins" || sub == "plugin") {
+        std::cout << plugins::PluginManager::instance().format_plugin_list();
+        return 0;
+    }
+
+    // 13. meridian --performance / perf
+    if (sub == "--performance" || sub == "perf" || sub == "performance") {
+        std::cout << renderer::TelemetryProfiler::instance().format_report();
+        return 0;
+    }
+
+    // 14. meridian gui
     if (sub == "gui") {
         gui::MeridianGui gui;
         return gui.run();

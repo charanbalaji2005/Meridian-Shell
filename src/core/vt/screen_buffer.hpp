@@ -61,6 +61,29 @@ public:
     GraphicsEngine& graphics() { return graphics_; }
     const GraphicsEngine& graphics() const { return graphics_; }
 
+    // OSC 8 Hyperlinks
+    uint32_t register_hyperlink(const std::string& uri, const std::string& id = "");
+    std::string get_hyperlink(uint32_t id) const;
+
+    // OSC 7 Working Directory tracking
+    void set_working_directory(const std::string& dir) { working_directory_ = dir; }
+    const std::string& working_directory() const { return working_directory_; }
+
+    // OSC 52 Clipboard
+    void set_clipboard(const std::string& content) { clipboard_ = content; }
+    const std::string& clipboard() const { return clipboard_; }
+
+    // OSC 133 Shell Integration / Semantic Prompts
+    enum class SemanticPromptState { None, Prompt, CommandInput, CommandOutput, CommandFinished };
+    void set_semantic_state(SemanticPromptState state, int exit_code = 0) {
+        semantic_state_ = state;
+        if (state == SemanticPromptState::CommandFinished) {
+            last_command_exit_code_ = exit_code;
+        }
+    }
+    SemanticPromptState semantic_state() const { return semantic_state_; }
+    int last_command_exit_code() const { return last_command_exit_code_; }
+
     // Plain-text dump of the visible screen, one line per row, trailing
     // spaces trimmed. Used by tests and the headless demo — not part of
     // the "real" rendering path (a GPU renderer would read cells directly).
@@ -92,6 +115,12 @@ private:
     int saved_cursor_col_ = 0;
 
     GraphicsEngine graphics_;
+
+    std::vector<std::string> hyperlink_table_{""}; // 0 = no hyperlink
+    std::string working_directory_;
+    std::string clipboard_;
+    SemanticPromptState semantic_state_ = SemanticPromptState::None;
+    int last_command_exit_code_ = 0;
 };
 
 } // namespace meridian::vt

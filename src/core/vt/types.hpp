@@ -60,11 +60,13 @@ struct Attributes {
     bool reverse = false;
     bool hidden = false;
     bool strikethrough = false;
+    uint32_t hyperlink_id = 0;
 
     bool operator==(const Attributes& o) const {
         return fg == o.fg && bg == o.bg && bold == o.bold && dim == o.dim &&
                italic == o.italic && underline == o.underline && blink == o.blink &&
-               reverse == o.reverse && hidden == o.hidden && strikethrough == o.strikethrough;
+               reverse == o.reverse && hidden == o.hidden && strikethrough == o.strikethrough &&
+               hyperlink_id == o.hyperlink_id;
     }
     bool operator!=(const Attributes& o) const { return !(*this == o); }
 };
