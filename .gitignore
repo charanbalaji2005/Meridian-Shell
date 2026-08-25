@@ -41,3 +41,6 @@ meridian_credentials.local
 .DS_Store
 compile_commands.json
 .clangd/
+node_modules/
+web-docs/node_modules/
+.vite/

@@ -6,7 +6,7 @@ export interface DocArticle {
   lastUpdated: string;
   headings: { id: string; text: string; level: number }[];
   summary: string;
-  body: string; // Markdown / HTML formatted string
+  body: string;
 }
 
 export const DOCS_ARTICLES: Record<string, DocArticle> = {
@@ -16,7 +16,7 @@ export const DOCS_ARTICLES: Record<string, DocArticle> = {
     category: 'Getting Started',
     status: 'implemented',
     lastUpdated: 'August 25, 2026',
-    summary: 'A high-performance Linux terminal emulator and unified developer platform built with C++20.',
+    summary: 'High-performance Linux terminal emulator, developer environment, and local AI agent platform built with C++20.',
     headings: [
       { id: 'overview', text: 'Overview', level: 2 },
       { id: 'screenshot', text: 'Live Environment Showcase', level: 2 },
@@ -226,6 +226,80 @@ curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/mai
 `
   },
 
+  'terminal': {
+    id: 'terminal',
+    title: 'Terminal & Shell Engine',
+    category: 'Terminal & Shell',
+    status: 'implemented',
+    lastUpdated: 'August 25, 2026',
+    summary: 'VT100/XTerm emulation, 24-bit TrueColor, POSIX AST execution engine, pipes, redirects, and job control.',
+    headings: [
+      { id: 'emulation', text: 'VT / XTerm Terminal Emulation', level: 2 },
+      { id: 'shell-engine', text: 'POSIX Shell Engine & Parser', level: 2 },
+      { id: 'job-control', text: 'Job Control & Background Tasks', level: 2 },
+    ],
+    body: `
+<p>Meridian combines a standard-compliant VT100/XTerm terminal emulation core with an independent POSIX-compliant AST execution engine.</p>
+
+<h2 id="emulation">VT / XTerm Terminal Emulation</h2>
+<ul>
+  <li>Full support for ANSI color escapes (16 standard, 256 color, and 24-bit TrueColor RGB).</li>
+  <li>Alternate Screen Buffer for curses applications (<code>vim</code>, <code>htop</code>, <code>less</code>).</li>
+  <li>UTF-8 multibyte character encoding with complete Nerd Font glyph support.</li>
+</ul>
+
+<h2 id="shell-engine">POSIX Shell Engine & Parser</h2>
+<p>Meridian includes an internal lexer and recursive-descent parser capable of parsing complex shell pipelines:</p>
+<ul>
+  <li>Pipes (<code>|</code>) and chaining (<code>cmd1 | cmd2 | cmd3</code>)</li>
+  <li>I/O Redirections (<code>&gt;</code>, <code>&gt;&gt;</code>, <code>&lt;</code>, <code>2&gt;&amp;1</code>)</li>
+  <li>Logical operators (<code>&amp;&amp;</code>, <code>||</code>, <code>;</code>)</li>
+  <li>Environment variable expansions (<code>$VAR</code>, <code>\${VAR}</code>, <code>$?</code>)</li>
+</ul>
+
+<h2 id="job-control">Job Control & Background Tasks</h2>
+<pre><code class="language-bash">Ctrl+Z        # Suspend foreground job
+bg            # Resume suspended job in background
+fg            # Bring background job to foreground
+jobs          # List all running child processes</code></pre>
+`
+  },
+
+  'keybindings': {
+    id: 'keybindings',
+    title: 'Keybindings & Shortcuts',
+    category: 'Terminal & Shell',
+    status: 'implemented',
+    lastUpdated: 'August 25, 2026',
+    summary: 'Keyboard shortcuts for command palette, theme switcher, splits, and session navigation.',
+    headings: [
+      { id: 'default-shortcuts', text: 'Default Keybindings', level: 2 },
+      { id: 'custom-keys', text: 'Custom Keybinding Configuration', level: 2 },
+    ],
+    body: `
+<p>Meridian provides fast keyboard shortcuts for instant navigation, splits, command searching, and theme switching.</p>
+
+<h2 id="default-shortcuts">Default Keybindings</h2>
+<table class="doc-table">
+  <thead>
+    <tr><th>Shortcut</th><th>Action</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Ctrl+P</code></td><td>Artwork Gallery</td><td>Open interactive anime theme gallery switcher</td></tr>
+    <tr><td><code>Ctrl+Shift+P</code></td><td>Command Palette</td><td>Open fuzzy-search action palette</td></tr>
+    <tr><td><code>Ctrl+Shift+D</code></td><td>Split Vertical</td><td>Split active terminal window vertically</td></tr>
+    <tr><td><code>Ctrl+Shift+E</code></td><td>Split Horizontal</td><td>Split active terminal window horizontally</td></tr>
+    <tr><td><code>Ctrl+Shift+Z</code></td><td>Zoom Toggle</td><td>Maximize/zoom active pane to full window</td></tr>
+    <tr><td><code>Ctrl+Shift+F</code></td><td>Universal Search</td><td>Search across scrollback buffer & history</td></tr>
+    <tr><td><code>Ctrl+L</code></td><td>Clear Screen</td><td>Clear terminal screen and redraw prompt</td></tr>
+  </tbody>
+</table>
+
+<h2 id="custom-keys">Custom Keybinding Configuration</h2>
+<p>Custom shortcuts can be defined in <code>~/.config/meridian/keybindings.json</code>.</p>
+`
+  },
+
   'raster-images': {
     id: 'raster-images',
     title: 'Direct Raster Image Pipeline',
@@ -272,43 +346,9 @@ DISPLAY: 220x121</code></pre>
 `
   },
 
-  'kitty-protocol': {
-    id: 'kitty-protocol',
-    title: 'Kitty Graphics Protocol',
-    category: 'Graphics & Artwork',
-    status: 'implemented',
-    lastUpdated: 'August 25, 2026',
-    summary: 'Chunked 2048-byte transmission protocol with m=1/m=0 control frames and dual-layer TrueColor fallback.',
-    headings: [
-      { id: 'chunking', text: 'Protocol Chunking & 4KB Safety', level: 2 },
-      { id: 'dual-layer', text: 'Dual-Layer Cross-Terminal Compatibility', level: 2 },
-    ],
-    body: `
-<p>Meridian implements the standardized Kitty Graphics Protocol with robust frame chunking.</p>
-
-<h2 id="chunking">Protocol Chunking & 4KB Safety</h2>
-<p>Terminal emulators (Kitty, WezTerm, Ghostty) enforce a strict 4096-byte limit per escape sequence. Meridian automatically splits image payloads into 2048-byte safe chunks with <code>m=1</code> (more data) and <code>m=0</code> (final chunk) control keys.</p>
-
-<pre><code class="language-cpp">// First chunk
-\\033_Ga=T,f=100,t=d,c=28,r=10,m=1;&lt;chunk_0_base64&gt;\\033\\\\
-
-// Subsequent chunks
-\\033_Gm=1;&lt;chunk_i_base64&gt;\\033\\\\
-
-// Final chunk
-\\033_Gm=0;&lt;chunk_final_base64&gt;\\033\\\\</code></pre>
-
-<h2 id="dual-layer">Dual-Layer Cross-Terminal Compatibility</h2>
-<ul>
-  <li><strong>GPU Texture Layer</strong>: Transmitted to hardware-accelerated terminals (Kitty, WezTerm, Ghostty).</li>
-  <li><strong>TrueColor Subpixel Fallback</strong>: Rendered in 16.7M 24-bit RGB on standard terminals (Foot, Alacritty, GNOME Terminal) so images are <strong>never missing or blank</strong>.</li>
-</ul>
-`
-  },
-
   'anime-gallery': {
     id: 'anime-gallery',
-    title: 'Anime Gallery & Custom Art',
+    title: 'Anime Gallery & Themes',
     category: 'Graphics & Artwork',
     status: 'implemented',
     lastUpdated: 'August 25, 2026',
@@ -351,126 +391,117 @@ pic set ~/art.png    # Use your own custom image file</code></pre>
 `
   },
 
-  'ai-intent': {
-    id: 'ai-intent',
-    title: 'Natural Language Intent (ask)',
+  'ai-assistant': {
+    id: 'ai-assistant',
+    title: 'Intent & Error Diagnostics',
     category: 'AI & Intelligence',
     status: 'implemented',
     lastUpdated: 'August 25, 2026',
-    summary: 'Translates natural language human descriptions into safe, verified shell commands.',
+    summary: 'Natural language intent translation (ask) and instant compiler/database diagnostics (diag).',
     headings: [
-      { id: 'usage', text: 'Usage & Examples', level: 2 },
-      { id: 'safety', text: 'Interactive Safety Preview', level: 2 },
+      { id: 'intent-ask', text: 'Natural Language Intent Translation (ask)', level: 2 },
+      { id: 'diagnostics-diag', text: 'Automated Error Diagnostics (diag)', level: 2 },
     ],
     body: `
-<p>The <code>ask</code> command translates conversational English queries into concrete shell pipelines without requiring an external cloud connection.</p>
+<p>Meridian includes an offline, privacy-first AI intelligence engine built directly into the binary.</p>
 
-<h2 id="usage">Usage & Examples</h2>
-<pre><code class="language-bash">meridian ask "find all pdf files larger than 10MB modified in last 7 days"
+<h2 id="intent-ask">Natural Language Intent Translation (ask)</h2>
+<p>Translates human language into verified, executable shell pipelines:</p>
+<pre><code class="language-bash">meridian ask "find all pdf files modified in the last 7 days larger than 10MB"
 meridian ask "compress the src folder into a tar.gz archive"
-meridian ask "check which process is listening on port 8080"
-meridian ask "git undo last commit but keep changes staged"</code></pre>
+meridian ask "find which process is using port 8080"</code></pre>
 
-<h2 id="safety">Interactive Safety Preview</h2>
-<p>Each translated command is presented as an interactive visual card showing:</p>
-<ul>
-  <li>Suggested executable command</li>
-  <li>Risk level rating (🟢 Low, 🟡 Medium, 🔴 High)</li>
-  <li>Explanation of all flags and side effects</li>
-  <li>Option to execute immediately or copy to clipboard</li>
-</ul>
-`
-  },
-
-  'ai-diagnostics': {
-    id: 'ai-diagnostics',
-    title: 'Automated Error Diagnostics (diag)',
-    category: 'AI & Intelligence',
-    status: 'implemented',
-    lastUpdated: 'August 25, 2026',
-    summary: 'Instant rule-based diagnosis of compiler errors, runtime exceptions, and database failures.',
-    headings: [
-      { id: 'usage', text: 'Diagnosing Errors', level: 2 },
-      { id: 'supported', text: 'Supported Error Patterns', level: 2 },
-    ],
-    body: `
-<p>When a command fails with a cryptic stack trace, <code>meridian diag</code> parses compiler errors, runtime exceptions, and permission faults to deliver exact actionable fixes.</p>
-
-<h2 id="usage">Diagnosing Errors</h2>
-<pre><code class="language-bash"># Diagnose previous command failure automatically:
+<h2 id="diagnostics-diag">Automated Error Diagnostics (diag)</h2>
+<p>Parses stack traces from GCC, Clang, Rust, Python, and PostgreSQL to deliver instant fixes:</p>
+<pre><code class="language-bash"># Diagnose last failed command automatically:
 meridian diag
 
-# Or pass custom error output string:
-meridian diag "g++: error: cannot find -lutil"
-meridian diag "psql: error: connection to server on socket failed: Permission denied"</code></pre>
-
-<h2 id="supported">Supported Error Patterns</h2>
-<ul>
-  <li><strong>C/C++ Compilers</strong>: GCC / Clang missing symbols, include paths, template instantiation faults, missing libraries (<code>-lutil</code>, <code>-lpthread</code>).</li>
-  <li><strong>Rust</strong>: Borrow checker violations, lifetime errors, missing crate dependencies.</li>
-  <li><strong>Python</strong>: <code>ModuleNotFoundError</code>, <code>AttributeError</code>, venv mismatch.</li>
-  <li><strong>Linux System</strong>: Permission denied, port bind errors (<code>EADDRINUSE</code>), disk space exhausted.</li>
-</ul>
+# Or diagnose specific error output:
+meridian diag "g++: error: cannot find -lutil"</code></pre>
 `
   },
 
-  'ai-agent': {
-    id: 'ai-agent',
-    title: 'Autonomous Coding Agent (agent)',
-    category: 'AI & Intelligence',
-    status: 'experimental',
-    lastUpdated: 'August 25, 2026',
-    summary: 'Autonomous goal-driven repair loop executing iterative commands and self-correction.',
-    headings: [
-      { id: 'agent-loop', text: 'Autonomous Agent Lifecycle', level: 2 },
-      { id: 'running', text: 'Running the Agent', level: 2 },
-    ],
-    body: `
-<p>Meridian Agent provides an autonomous multi-step execution loop capable of formulating plans, running tests, diagnosing compiler failures, and self-correcting errors.</p>
-
-<h2 id="agent-loop">Autonomous Agent Lifecycle</h2>
-<ol>
-  <li><strong>Plan Formulation</strong>: Breaks high-level user goals into atomic shell steps.</li>
-  <li><strong>Execution & PTY Monitoring</strong>: Runs commands inside isolated sub-processes.</li>
-  <li><strong>Self-Correction Loop</strong>: Automatically invokes <code>diag</code> on non-zero exit codes to retry alternative solutions.</li>
-</ol>
-
-<h2 id="running">Running the Agent</h2>
-<pre><code class="language-bash">meridian agent "find all memory leaks in src/ and generate report"
-meridian agent "refactor Makefile to enable ccache and parallel compilation"</code></pre>
-`
-  },
-
-  'ai-security': {
-    id: 'ai-security',
-    title: 'Safety Defense & Secret Redactor',
+  'ai-safety': {
+    id: 'ai-safety',
+    title: 'Safety Defense & Redaction',
     category: 'AI & Intelligence',
     status: 'implemented',
     lastUpdated: 'August 25, 2026',
-    summary: 'Real-time terminal safety classifier and credential leakage blocker.',
+    summary: 'Real-time destructive command blocking and automatic credential leakage redactor.',
     headings: [
-      { id: 'risk-classifier', text: 'Destructive Command Interceptor', level: 2 },
-      { id: 'secret-redactor', text: 'Automatic Token & Secret Redactor', level: 2 },
+      { id: 'risk-tiers', text: 'Destructive Command Interceptor', level: 2 },
+      { id: 'secret-masking', text: 'Credential & Token Masking', level: 2 },
     ],
     body: `
-<p>Meridian intercepts dangerous commands and masks credentials before they enter screen buffers or history logs.</p>
+<p>Meridian intercepts high-risk commands and masks sensitive secrets before they enter history files or terminal screen buffers.</p>
 
-<h2 id="risk-classifier">Destructive Command Interceptor</h2>
-<p>Classifies operations into 4 risk tiers:</p>
+<h2 id="risk-tiers">Destructive Command Interceptor</h2>
 <ul>
-  <li>🔴 <strong>Critical (Blocked / Prompt Required)</strong>: <code>rm -rf /</code>, <code>:(){ :|:& };:</code> (fork bombs), <code>dd if=/dev/zero of=/dev/sda</code>, piping untrusted curl to bash without review.</li>
-  <li>🟡 <strong>High (Confirmation Warning)</strong>: <code>sudo rm -rf &lt;dir&gt;</code>, <code>git push --force</code>, modifying root partitions.</li>
-  <li>🟢 <strong>Low / Safe</strong>: Standard read, navigation, and build tasks.</li>
+  <li>🔴 <strong>Critical (Blocked)</strong>: <code>rm -rf /</code>, <code>:(){ :|:& };:</code> (fork bombs), <code>dd of=/dev/sda</code>, untrusted curl pipes.</li>
+  <li>🟡 <strong>High (Confirmation)</strong>: <code>sudo rm -rf</code>, <code>git push --force</code>, partition modifications.</li>
+  <li>🟢 <strong>Low / Safe</strong>: Standard read, build, and navigation operations.</li>
 </ul>
 
-<h2 id="secret-redactor">Automatic Token & Secret Redactor</h2>
-<p>Scans terminal I/O streams for:</p>
-<ul>
-  <li>AWS Access Keys (<code>AKIA...</code>)</li>
-  <li>Bearer Tokens & OAuth Credentials</li>
-  <li>Private RSA / OpenSSH PEM blocks</li>
-  <li>Database passwords in URI strings (<code>postgres://user:password@host</code>)</li>
-</ul>
+<h2 id="secret-masking">Credential & Token Masking</h2>
+<p>Automatically detects and redacts AWS Keys (<code>AKIA...</code>), Bearer tokens, private RSA keys, and database passwords from screen output.</p>
+`
+  },
+
+  'architecture': {
+    id: 'architecture',
+    title: 'PTY & Core Architecture',
+    category: 'Developer & Core',
+    status: 'implemented',
+    lastUpdated: 'August 25, 2026',
+    summary: 'Linux openpty multiplexer, ScreenBuffer cell matrix, damage tracking, and glyph atlas.',
+    headings: [
+      { id: 'pty-multiplexer', text: 'Linux PTY Pseudoterminal Engine', level: 2 },
+      { id: 'screen-buffer', text: 'ScreenBuffer & Damage Tracking', level: 2 },
+      { id: 'glyph-atlas', text: 'Glyph Atlas & Font Rasterizer', level: 2 },
+    ],
+    body: `
+<p>Meridian is engineered as a clean modular C++20 codebase structured into independent core layers.</p>
+
+<h2 id="pty-multiplexer">Linux PTY Pseudoterminal Engine</h2>
+<p>Uses POSIX <code>openpty</code> to fork master/slave pairs, handling non-blocking asynchronous I/O and window resize signaling (<code>SIGWINCH</code>).</p>
+
+<h2 id="screen-buffer">ScreenBuffer & Damage Tracking</h2>
+<p>Maintains a 2D matrix of cell attributes (character code, foreground/background RGB, bold, italic, underline) and tracks dirty row bounding boxes to minimize frame blitting overhead.</p>
+
+<h2 id="glyph-atlas">Glyph Atlas & Font Rasterizer</h2>
+<p>Renders high-density TrueColor characters and Nerd Font symbols with sub-pixel alignment and caching.</p>
+`
+  },
+
+  'dev-tools': {
+    id: 'dev-tools',
+    title: 'Developer Tooling & Workspaces',
+    category: 'Developer & Core',
+    status: 'implemented',
+    lastUpdated: 'August 25, 2026',
+    summary: 'Built-in real-time system monitor, Git intelligence, tree file explorer, and workspace multiplexing.',
+    headings: [
+      { id: 'monitor', text: 'System Resource Monitor (monitor)', level: 2 },
+      { id: 'git-intel', text: 'Git Intelligence (git)', level: 2 },
+      { id: 'file-explorer', text: 'Tree File Explorer (files)', level: 2 },
+      { id: 'workspace-multiplexer', text: 'Persistent Workspace Multiplexer', level: 2 },
+    ],
+    body: `
+<p>Meridian includes an integrated suite of developer tools that can be invoked via CLI or from the Command Palette (<code>Ctrl+Shift+P</code>).</p>
+
+<h2 id="monitor">System Resource Monitor (monitor)</h2>
+<pre><code class="language-bash">meridian monitor      # Display real-time CPU, RAM, Disk, Network, and Process tree</code></pre>
+
+<h2 id="git-intel">Git Intelligence (git)</h2>
+<pre><code class="language-bash">meridian git          # Inspect branch divergence, ahead/behind status, staged/unstaged changes</code></pre>
+
+<h2 id="file-explorer">Tree File Explorer (files)</h2>
+<pre><code class="language-bash">meridian files [dir]  # Interactive directory tree with Git badges and MIME icons</code></pre>
+
+<h2 id="workspace-multiplexer">Persistent Workspace Multiplexer</h2>
+<pre><code class="language-bash">meridian workspace save backend-dev   # Save current window splits & layout
+meridian workspace open backend-dev   # Restore saved development environment
+meridian workspace list               # List all saved workspaces</code></pre>
 `
   },
 

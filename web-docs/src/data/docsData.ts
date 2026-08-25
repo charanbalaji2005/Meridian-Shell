@@ -1,16 +1,13 @@
-export interface DocSection {
+export interface NavItem {
   id: string;
   title: string;
-  category: string;
-  content: string;
-  headings: { id: string; text: string; level: number }[];
   status?: 'implemented' | 'development' | 'experimental';
 }
 
 export interface NavCategory {
   title: string;
   icon: string;
-  items: { id: string; title: string; status?: 'implemented' | 'development' | 'experimental' }[];
+  items: NavItem[];
 }
 
 export const NAV_STRUCTURE: NavCategory[] = [
@@ -28,9 +25,7 @@ export const NAV_STRUCTURE: NavCategory[] = [
     title: 'Terminal & Shell',
     icon: 'Terminal',
     items: [
-      { id: 'emulation', title: 'Terminal Emulation (VT/XTerm)', status: 'implemented' },
-      { id: 'shell-engine', title: 'POSIX Shell & Builtins', status: 'implemented' },
-      { id: 'history-search', title: 'Rich History & Universal Search', status: 'implemented' },
+      { id: 'terminal', title: 'Terminal & Shell Engine', status: 'implemented' },
       { id: 'keybindings', title: 'Keybindings & Shortcuts', status: 'implemented' },
     ],
   },
@@ -39,49 +34,23 @@ export const NAV_STRUCTURE: NavCategory[] = [
     icon: 'Image',
     items: [
       { id: 'raster-images', title: 'Direct Raster Image Pipeline', status: 'implemented' },
-      { id: 'kitty-protocol', title: 'Kitty Graphics Protocol', status: 'implemented' },
-      { id: 'anime-gallery', title: 'Anime Gallery & Custom Art', status: 'implemented' },
+      { id: 'anime-gallery', title: 'Anime Gallery & Themes', status: 'implemented' },
     ],
   },
   {
     title: 'AI & Intelligence',
     icon: 'Sparkles',
     items: [
-      { id: 'ai-intent', title: 'Natural Language Intent (ask)', status: 'implemented' },
-      { id: 'ai-diagnostics', title: 'Automated Error Diagnostics (diag)', status: 'implemented' },
-      { id: 'ai-agent', title: 'Autonomous Coding Agent (agent)', status: 'experimental' },
-      { id: 'ai-security', title: 'Safety Defense & Secret Redactor', status: 'implemented' },
+      { id: 'ai-assistant', title: 'Intent & Error Diagnostics', status: 'implemented' },
+      { id: 'ai-safety', title: 'Safety Defense & Redaction', status: 'implemented' },
     ],
   },
   {
-    title: 'Developer Tooling',
-    icon: 'Wrench',
-    items: [
-      { id: 'dev-monitor', title: 'System Resource Monitor', status: 'implemented' },
-      { id: 'dev-git', title: 'Git Intelligence & Badges', status: 'implemented' },
-      { id: 'dev-files', title: 'File Tree Explorer', status: 'implemented' },
-      { id: 'dev-palette', title: 'Command Palette (Ctrl+Shift+P)', status: 'implemented' },
-      { id: 'dev-workspace', title: 'Workspace Multiplexer & Panes', status: 'implemented' },
-    ],
-  },
-  {
-    title: 'Architecture & Core',
+    title: 'Developer & Core',
     icon: 'Layers',
     items: [
-      { id: 'arch-pty', title: 'Linux PTY Manager', status: 'implemented' },
-      { id: 'arch-buffer', title: 'ScreenBuffer & Damage Tracker', status: 'implemented' },
-      { id: 'arch-glyph', title: 'Glyph Atlas & TrueColor Engine', status: 'implemented' },
-      { id: 'arch-security', title: 'Encrypted Credential Store', status: 'implemented' },
-    ],
-  },
-  {
-    title: 'Packaging & Releases',
-    icon: 'Package',
-    items: [
-      { id: 'pkg-fedora', title: 'Fedora / RHEL (DNF & RPM)', status: 'implemented' },
-      { id: 'pkg-debian', title: 'Ubuntu / Debian (APT & DEB)', status: 'implemented' },
-      { id: 'pkg-arch', title: 'Arch Linux (Pacman & AUR)', status: 'implemented' },
-      { id: 'pkg-macos-win', title: 'macOS & Windows', status: 'development' },
+      { id: 'architecture', title: 'PTY & Core Architecture', status: 'implemented' },
+      { id: 'dev-tools', title: 'Developer Tooling & Workspaces', status: 'implemented' },
     ],
   },
   {
