@@ -182,8 +182,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
         while (!trimmed.empty() && (trimmed.back() == ' ' || trimmed.back() == '\t' || trimmed.back() == '\r')) trimmed.pop_back();
 
         if (trimmed == "clear" && is_real_interactive) {
-            out << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\";
-            out.flush();
+            out << "\033[H\033[2J\033[3J" << std::flush;
             executor_.push_history(line);
             continue;
         }
