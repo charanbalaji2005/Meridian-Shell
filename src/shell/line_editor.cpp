@@ -131,19 +131,15 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
         struct passwd* pw = getpwuid(geteuid());
         if (pw && pw->pw_name) u = pw->pw_name;
 
-        ss << "  \033[48;2;124;58;237;38;2;255;255;255;1m  " << u << "@" << hname << " "
+        ss << "\033[48;2;124;58;237;38;2;255;255;255;1m  " << u << "@" << hname << " "
            << "\033[48;2;24;156;184;38;2;124;58;237m";
     } else {
-        ss << "  \033[48;2;26;108;218;38;2;255;255;255;1m  " << time_buf << " "
+        ss << "\033[48;2;26;108;218;38;2;255;255;255;1m " << time_buf << " "
            << "\033[48;2;24;156;184;38;2;26;108;218m";
     }
 
     // Segment 2: Context-Aware Directory + Project Language
-    ss << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir_icon << dir;
-    if (!lang_icon.empty()) {
-        ss << " " << lang_icon;
-    }
-    ss << " ";
+    ss << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir << " ";
 
     // Segment 3: Intelligent Git Segment
     if (git_status.is_git_repo && !git_status.branch_name.empty()) {
@@ -182,11 +178,11 @@ std::string LineEditor::build_powerline_prompt(const std::string& /*cwd*/) {
     std::ostringstream ss;
     if (uid == 0) {
         // Elevated Root Prompt in Crimson Red
-        ss << "  \033[48;2;220;38;38;38;2;255;255;255;1m ⚡ root "
+        ss << "\033[48;2;220;38;38;38;2;255;255;255;1m ⚡ root "
            << "\033[0;38;2;220;38;38m\033[0m \033[1;31m❯\033[0m ";
     } else {
         // Standard User Prompt: Vibrant Golden Yellow badge with purple/dark text (@username  ❯)
-        ss << "  \033[48;2;212;180;27;38;2;85;35;110;1m  @" << user << " "
+        ss << "\033[48;2;212;180;27;38;2;85;35;110;1m @" << user << " "
            << "\033[0;38;2;212;180;27m\033[0m \033[1;33m❯\033[0m ";
     }
     return ss.str();
