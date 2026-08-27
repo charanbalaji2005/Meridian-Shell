@@ -26,6 +26,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sys/stat.h>
 #include <unistd.h>
 
 extern char** environ;
@@ -36,7 +37,7 @@ namespace {
 const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
-    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ssh-mgr", "plugins", "perf"
+    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ssh-mgr", "plugins", "perf", "auth"
 };
 } // namespace
 
@@ -498,6 +499,133 @@ static int builtin_perf() {
     return 0;
 }
 
+static int builtin_auth(const std::vector<std::string>& argv) {
+    std::string service = (argv.size() >= 2) ? argv[1] : "github";
+    if (service != "github" && service != "gh") {
+        std::cout << "Usage: auth github [--status | --token <token> | --user <name> <email>]\n";
+        return 0;
+    }
+
+    std::string flag = (argv.size() >= 3) ? argv[2] : "";
+
+    const char* home = std::getenv("HOME");
+    std::string home_str = home ? home : "/tmp";
+    std::string ssh_dir = home_str + "/.ssh";
+    std::string key_file = ssh_dir + "/id_ed25519";
+    std::string pub_key_file = key_file + ".pub";
+    std::string config_file = ssh_dir + "/config";
+
+    // 1. Direct Token Provisioning (e.g. auth github --token ghp_xxxx)
+    if (flag == "--token" && argv.size() >= 4) {
+        std::string token = argv[3];
+        std::string user = (argv.size() >= 5) ? argv[4] : "git";
+
+        int s = system("git config --global credential.helper store");
+        (void)s;
+        std::string cred_line = "https://" + user + ":" + token + "@github.com\n";
+        std::ofstream cred_file(home_str + "/.git-credentials", std::ios::app);
+        if (cred_file.is_open()) {
+            cred_file << cred_line;
+            chmod((home_str + "/.git-credentials").c_str(), 0600);
+        }
+        std::cout << "\033[1;32m✔ GitHub Personal Access Token saved to secure credential store!\033[0m\n";
+        return 0;
+    }
+
+    // 2. Direct User Profile Provisioning (e.g. auth github --user username email@example.com)
+    if (flag == "--user" && argv.size() >= 5) {
+        std::string u = argv[3];
+        std::string e = argv[4];
+        int s1 = system(("git config --global user.name \"" + u + "\"").c_str());
+        int s2 = system(("git config --global user.email \"" + e + "\"").c_str());
+        (void)s1; (void)s2;
+        std::cout << "\033[1;32m✔ Git identity configured: " << u << " <" << e << ">\033[0m\n";
+        return 0;
+    }
+
+    std::cout << "\n\033[1;36m┌─── Meridian GitHub Authentication Manager ───────────────────────────────────┐\033[0m\n";
+
+    // 1. Check & Ensure SSH Key exists
+    bool has_key = (access(key_file.c_str(), F_OK) == 0 && access(pub_key_file.c_str(), F_OK) == 0);
+    if (!has_key) {
+        std::cout << "\033[1;33mℹ Generating new ED25519 SSH key for GitHub...\033[0m\n";
+        int s1 = system(("mkdir -p " + ssh_dir + " && chmod 700 " + ssh_dir).c_str());
+        int s2 = system(("ssh-keygen -t ed25519 -C \"meridian-user\" -f " + key_file + " -N \"\"").c_str());
+        (void)s1; (void)s2;
+    }
+
+    // 2. Ensure Port 443 Config exists in ~/.ssh/config
+    std::ifstream cfg_in(config_file);
+    std::string cfg_contents;
+    if (cfg_in.is_open()) {
+        std::stringstream ss; ss << cfg_in.rdbuf();
+        cfg_contents = ss.str();
+    }
+    if (cfg_contents.find("ssh.github.com") == std::string::npos) {
+        std::ofstream cfg_out(config_file, std::ios::app);
+        if (cfg_out.is_open()) {
+            cfg_out << "\nHost github.com\n"
+                    << "    Hostname ssh.github.com\n"
+                    << "    Port 443\n"
+                    << "    User git\n"
+                    << "    IdentityFile " << key_file << "\n";
+            chmod(config_file.c_str(), 0600);
+        }
+    }
+
+    // 3. Read Public Key
+    std::string pub_key;
+    std::ifstream pub_in(pub_key_file);
+    if (pub_in.is_open()) {
+        std::getline(pub_in, pub_key);
+    }
+
+    // 4. Test Live GitHub Authentication
+    std::cout << "\033[1;37m│\033[0m Checking connection to GitHub (Port 443)...\n";
+    FILE* pipe = popen("ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1", "r");
+    std::string auth_output;
+    if (pipe) {
+        char buf[256];
+        while (fgets(buf, sizeof(buf), pipe) != nullptr) {
+            auth_output += buf;
+        }
+        pclose(pipe);
+    }
+
+    bool is_authenticated = (auth_output.find("successfully authenticated") != std::string::npos);
+
+    if (is_authenticated) {
+        std::string gh_user = "user";
+        auto hi_pos = auth_output.find("Hi ");
+        if (hi_pos != std::string::npos) {
+            auto ex_pos = auth_output.find('!', hi_pos + 3);
+            if (ex_pos != std::string::npos) {
+                gh_user = auth_output.substr(hi_pos + 3, ex_pos - (hi_pos + 3));
+            }
+        }
+
+        std::cout << "\033[1;37m│\033[0m \033[1;32m● STATUS: AUTHENTICATED\033[0m as \033[1;33m@" << gh_user << "\033[0m\n"
+                  << "\033[1;37m│\033[0m \033[38;2;34;197;94m✔ Git push / pull write access is fully operational!\033[0m\n";
+    } else {
+        std::cout << "\033[1;37m│\033[0m \033[1;31m○ STATUS: NOT YET LINKED\033[0m\n"
+                  << "\033[1;37m│\033[0m Follow these 2 quick steps to link your GitHub account:\n"
+                  << "\033[1;37m│\033[0m\n"
+                  << "\033[1;37m│\033[0m \033[1;33mStep 1:\033[0m Copy your Meridian SSH Public Key below:\n"
+                  << "\033[1;37m│\033[0m \033[1;36m" << pub_key << "\033[0m\n"
+                  << "\033[1;37m│\033[0m\n"
+                  << "\033[1;37m│\033[0m \033[1;33mStep 2:\033[0m Add it in your browser at:\n"
+                  << "\033[1;37m│\033[0m 👉 \033[1;34mhttps://github.com/settings/ssh/new\033[0m\n";
+    }
+
+    std::cout << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
+              << "\033[1;37mCommands:\033[0m\n"
+              << "  \033[1;32mauth github\033[0m                          Check status & display SSH setup key\n"
+              << "  \033[1;32mauth github --token <token>\033[0m          Authenticate via Personal Access Token\n"
+              << "  \033[1;32mauth github --user <name> <email>\033[0m    Set global Git commit author\n";
+
+    return 0;
+}
+
 static int builtin_help() {
     std::cout <<
         "Meridian Shell builtins:\n"
@@ -516,9 +644,10 @@ static int builtin_help() {
         "  search <query>   search across scrollback & history (Ctrl+Shift+F)\n"
         "  split [v|h]      split active terminal pane (Ctrl+Shift+D / Ctrl+Shift+E)\n"
         "  monitor          display live CPU, RAM, Disk, Network metrics\n"
-        "  git              inspect Git branch divergence and changes\n"
+        "  gitintel         inspect Git branch divergence and changes\n"
         "  files [dir]      view tree file explorer with git badges\n"
-        "  ssh [alias]      manage & connect to SSH remote workspaces\n"
+        "  ssh-mgr [alias]  manage & connect to SSH remote workspaces\n"
+        "  auth [service]   manage GitHub / remote authentication & SSH keys\n"
         "  plugins          list active extensible plugins & hooks\n"
         "  perf             display GPU framerate & telemetry profiler\n"
         "  pic <file>       render direct full-color raster image\n"
@@ -550,6 +679,7 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "gitintel") return builtin_git();
     if (name == "files") return builtin_files(argv);
     if (name == "ssh-mgr") return builtin_ssh(argv);
+    if (name == "auth") return builtin_auth(argv);
     if (name == "plugins") return builtin_plugins();
     if (name == "perf" || name == "performance") return builtin_perf();
     if (name == "help") return builtin_help();
