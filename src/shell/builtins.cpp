@@ -36,7 +36,7 @@ namespace {
 const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
-    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "git", "files", "ssh", "plugins", "perf"
+    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ssh-mgr", "plugins", "perf"
 };
 } // namespace
 
@@ -547,9 +547,9 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "zoom") return builtin_zoom();
     if (name == "pane") return builtin_pane(argv);
     if (name == "monitor") return builtin_monitor();
-    if (name == "git") return builtin_git();
+    if (name == "gitintel") return builtin_git();
     if (name == "files") return builtin_files(argv);
-    if (name == "ssh") return builtin_ssh(argv);
+    if (name == "ssh-mgr") return builtin_ssh(argv);
     if (name == "plugins") return builtin_plugins();
     if (name == "perf" || name == "performance") return builtin_perf();
     if (name == "help") return builtin_help();
