@@ -1,12 +1,4 @@
-// tests / test_shell_class.cpp
-//
-// Tests what Shell::run_interactive actually controls: prompt printing,
-// its own error routing, exit-code propagation, and history — NOT
-// builtin/program output, which structurally can't be captured into an
-// arbitrary ostream (see the doc comment on run_interactive in
-// shell.hpp for why). Real command *output* is already verified via
-// real file redirection in tests/test_shell_executor.cpp and a real
-// PTY in tests/test_job_control.cpp / tests/manual_core_test.sh.
+
 
 #include "mini_test.hpp"
 #include "../src/shell/shell.hpp"
@@ -20,8 +12,6 @@ MTEST(shell_noninteractive_prints_no_prompt) {
     std::istringstream in("echo hi\n");
     std::ostringstream out, err;
     shell.run_interactive(in, out, err);
-    // Non-interactive mode must not print "meridian:...$ " prompts —
-    // scripts piping commands in shouldn't see prompt noise.
     ASSERT_TRUE(out.str().find("meridian:") == std::string::npos);
 }
 
