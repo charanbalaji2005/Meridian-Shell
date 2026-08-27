@@ -140,7 +140,6 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
 
     // Segment 2: Context-Aware Directory + Project Language
     ss << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir << " ";
-
     // Segment 3: Intelligent Git Segment
     if (git_status.is_git_repo && !git_status.branch_name.empty()) {
         std::string branch = git_status.branch_name;
@@ -176,6 +175,9 @@ std::string LineEditor::build_powerline_prompt(const std::string& /*cwd*/) {
     if (pw && pw->pw_name) user = pw->pw_name;
 
     std::ostringstream ss;
+    // Dim grey hollow circle dot glyph matching user reference
+    ss << "\033[38;2;120;130;150m○ \033[0m";
+
     if (uid == 0) {
         // Elevated Root Prompt in Crimson Red
         ss << "\033[48;2;220;38;38;38;2;255;255;255;1m ⚡ root "
