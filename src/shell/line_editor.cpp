@@ -138,13 +138,13 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
            << "\033[48;2;24;156;184;38;2;26;108;218m";
     }
 
-    // Segment 2: Context-Aware Directory + Project Language
+    // Segment 2: Context-Aware Directory
     ss << "\033[48;2;24;156;184;38;2;255;255;255;1m " << dir << " ";
-    // Segment 3: Intelligent Git Segment
+
+    // Segment 3: Normal Git Segment
     if (git_status.is_git_repo && !git_status.branch_name.empty()) {
         std::string branch = git_status.branch_name;
-        int unstaged = git_status.unstaged_count;
-        int untracked = git_status.untracked_count;
+        int unstaged = git_status.unstaged_count + git_status.untracked_count;
         int staged = git_status.staged_count;
         int ahead = git_status.ahead_count;
         int behind = git_status.behind_count;
@@ -152,13 +152,12 @@ std::string LineEditor::build_date_badge(const std::string& cwd) {
         std::string git_extra;
         if (ahead > 0) git_extra += " ↑" + std::to_string(ahead);
         if (behind > 0) git_extra += " ↓" + std::to_string(behind);
-        if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✗";
-        if (untracked > 0) git_extra += " " + std::to_string(untracked) + "?";
+        if (unstaged > 0) git_extra += " " + std::to_string(unstaged) + "✸";
         if (staged > 0) git_extra += " " + std::to_string(staged) + "●";
         if (git_status.is_clean && ahead == 0 && behind == 0) git_extra += " ✔";
 
         ss << "\033[48;2;16;185;129;38;2;24;156;184m"
-           << "\033[48;2;16;185;129;38;2;20;35;28;1m  " << branch << git_extra << " "
+           << "\033[48;2;16;185;129;38;2;20;35;28;1m 󰘬 origin ☊ " << branch << git_extra << " "
            << "\033[0;38;2;16;185;129m\033[0m";
     } else {
         ss << "\033[0;38;2;24;156;184m\033[0m";
@@ -351,13 +350,13 @@ std::string LineEditor::read_line(
             continue;
         }
 
-        // Ctrl+L: Clear screen completely (removes header, images and scrollback)
+        // Ctrl+L: Clear screen completely
         if (c == 12) {
             if (preview_lines_drawn > 0) {
                 clear_history_preview(out, preview_lines_drawn);
                 preview_lines_drawn = 0;
             }
-            out << "\033[3J\033[2J\033[H\033_Ga=d,d=a\033\\";
+            out << "\033[H\033[2J\033[3J";
             out.flush();
             refresh_prompt();
             continue;
