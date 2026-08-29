@@ -198,16 +198,45 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         std::cout << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
         std::cout << "\033[1;37mCurrent Setting:\033[0m " << (is_random ? "\033[1;32mRandom / Rotating\033[0m" : ("\033[1;33m" + current_choice + "\033[0m (Permanent)")) << "\n\n"
                   << "\033[0;37mCommands:\033[0m\n"
-                  << "  \033[1;32mpic <filepath>\033[0m             Display real direct full-color raster image (e.g. \033[1;33mpic tanjiro.png\033[0m)\n"
-                  << "  \033[1;32mpic set <number|id|path>\033[0m   Set artwork permanently (e.g. \033[1;33mpic set 0\033[0m or \033[1;33mpic set eye\033[0m)\n"
+                  << "  \033[1;32mpic <name|filepath>\033[0m         Display image directly (e.g. \033[1;33mpic itachi --pixel\033[0m or \033[1;33mpic gojo\033[0m)\n"
+                  << "  \033[1;32mpic add <file> [name]\033[0m       Add your own image directly to Meridian gallery\n"
+                  << "  \033[1;32mpic set <name|index|path>\033[0m   Set artwork permanently on startup (e.g. \033[1;33mpic set itachi\033[0m)\n"
                   << "  \033[1;32mpic set random\033[0m             Enable random rotating anime on each startup\n"
-                  << "  \033[1;32mpic show <number|id|path>\033[0m  Preview artwork right now in the terminal\n"
+                  << "  \033[1;32mpic show <name|index|path>\033[0m  Preview artwork right now in the terminal\n"
                   << "  \033[1;32mpic --debug <file>\033[0m         Inspect decoded raster metadata & GPU texture specs\n"
                   << "  \033[1;32mpic --clear\033[0m                Clear all graphics from canvas\n";
         return 0;
     }
 
-    // 4. pic set <name|index|file>
+    // 4. pic add <file> [alias]
+    if (argv.size() >= 3 && (argv[1] == "add" || argv[1] == "--add")) {
+        std::string src = argv[2];
+        std::string name = (argv.size() >= 4) ? argv[3] : "";
+        if (name.empty()) {
+            size_t slash = src.find_last_of("/\\");
+            name = (slash != std::string::npos) ? src.substr(slash + 1) : src;
+            size_t dot = name.find_last_of('.');
+            if (dot != std::string::npos) name = name.substr(0, dot);
+        }
+        const char* home = std::getenv("HOME");
+        std::string dest_dir = std::string(home ? home : ".") + "/.config/meridian/gallery";
+        system(("mkdir -p " + dest_dir).c_str());
+        std::string dest_file = dest_dir + "/" + name + ".png";
+
+        auto decoded = graphics::ImageDecoder::decode_file(src);
+        if (!decoded.is_valid()) {
+            std::cerr << "\033[31mmeridian: could not load source image:\033[0m " << src << "\n";
+            return 1;
+        }
+        std::string cmd = "cp -f \"" + src + "\" \"" + dest_file + "\"";
+        system(cmd.c_str());
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Image successfully added to Meridian Gallery as '\033[1;33m" << name << "\033[0m'!\n"
+                  << "  \033[0;37m• View directly:\033[0m      pic " << name << " --pixel\n"
+                  << "  \033[0;37m• Set on startup:\033[0m     pic set " << name << "\n";
+        return 0;
+    }
+
+    // 5. pic set <name|index|file>
     if (argv.size() >= 3 && (argv[1] == "set" || argv[1] == "--set")) {
         std::string choice = argv[2];
         if (choice == "random" || choice == "r") {
@@ -223,7 +252,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // 5. pic show <name|index|file>
+    // 6. pic show <name|index|file>
     if (argv.size() >= 3 && (argv[1] == "show" || argv[1] == "preview")) {
         std::string choice = argv[2];
         auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
@@ -232,7 +261,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // 6. pic <filepath> — PIXEL ART & INLINE RASTER IMAGE PIPELINE
+    // 7. pic <filepath|name> — PIXEL ART & INLINE RASTER IMAGE PIPELINE
     std::string filepath;
     int target_width = 220;
     int target_height = 220;
@@ -279,6 +308,48 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             try { target_height = std::stoi(argv[++i]); popts.max_height_rows = target_height; } catch (...) {}
         } else if (argv[i][0] != '-') {
             filepath = argv[i];
+        }
+    }
+
+    // Resolve name aliases and gallery directory paths
+    if (!filepath.empty() && access(filepath.c_str(), R_OK) != 0) {
+        std::string alias = filepath;
+        if (filepath == "itachi" || filepath == "sharingan") alias = "itachi_sharingan";
+        else if (filepath == "swordsman" || filepath == "shadow") alias = "shadow_swordsman";
+        else if (filepath == "ribbon") alias = "ribbon_girl";
+        else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
+        else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
+        else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
+        else if (filepath == "sakura") alias = "sakura_girl";
+        else if (filepath == "fan") alias = "fan_girl";
+
+        const char* home = std::getenv("HOME");
+        std::string home_str = home ? home : "";
+        std::vector<std::string> candidates = {
+            home_str + "/.config/meridian/gallery/" + alias + ".png",
+            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
+            home_str + "/.config/meridian/gallery/" + alias + ".webp",
+            home_str + "/.config/meridian/gallery/" + alias,
+            "resources/images/gallery/" + alias + ".png",
+            "resources/images/gallery/" + alias + ".jpg",
+            "resources/images/gallery/" + alias + ".webp",
+            "resources/images/gallery/" + alias,
+            home_str + "/.config/meridian/gallery/" + filepath + ".png",
+            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
+            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
+            home_str + "/.config/meridian/gallery/" + filepath,
+            "resources/images/gallery/" + filepath + ".png",
+            "resources/images/gallery/" + filepath + ".jpg",
+            "resources/images/gallery/" + filepath + ".webp",
+            "resources/images/gallery/" + filepath,
+            "resources/images/" + filepath,
+            "resources/images/" + filepath + ".png"
+        };
+        for (const auto& c : candidates) {
+            if (access(c.c_str(), R_OK) == 0) {
+                filepath = c;
+                break;
+            }
         }
     }
 
