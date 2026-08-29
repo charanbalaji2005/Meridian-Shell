@@ -501,11 +501,12 @@ std::string PixelArtRenderer::render_pixels(const std::vector<PixelRgba>& pixels
         if (grid_h % 2 != 0) grid_h++;
     }
 
-    // Apply scale override if specified
+    int low_w = grid_w;
+    int low_h = grid_h;
     if (opts.scale > 1) {
-        grid_w = std::max(4, grid_w / opts.scale);
-        grid_h = std::max(4, grid_h / opts.scale);
-        if (grid_h % 2 != 0) grid_h++;
+        low_w = std::max(4, grid_w / opts.scale);
+        low_h = std::max(4, grid_h / opts.scale);
+        if (low_h % 2 != 0) low_h++;
     }
 
     // 1. Sharpening
@@ -515,22 +516,49 @@ std::string PixelArtRenderer::render_pixels(const std::vector<PixelRgba>& pixels
     auto edges = compute_sobel_edges(sharpened, src_w, src_h);
 
     // 3. Pixel Grid Reduction
-    auto reduced = reduce_to_pixel_grid(sharpened, src_w, src_h, grid_w, grid_h, edges);
+    auto reduced = reduce_to_pixel_grid(sharpened, src_w, src_h, low_w, low_h, edges);
 
     // 4. Color Quantization
     if (opts.style == PixelRenderStyle::PixelArt) {
-        reduced = quantize_colors(reduced, opts.num_colors, opts.dither, grid_w, grid_h);
+        reduced = quantize_colors(reduced, opts.num_colors, opts.dither, low_w, low_h);
     }
 
-    // 5. Output Emission
+    // 5. Expand pixel blocks if scale > 1 (creating crisp, chunky retro pixel art blocks)
+    int final_w = low_w;
+    int final_h = low_h;
+    std::vector<PixelRgba> final_grid = reduced;
+
+    if (opts.scale > 1) {
+        final_w = low_w * opts.scale;
+        final_h = low_h * opts.scale;
+        if (final_h % 2 != 0) final_h++;
+        final_grid.assign(final_w * final_h, {0, 0, 0, 0});
+
+        for (int ly = 0; ly < low_h; ++ly) {
+            for (int lx = 0; lx < low_w; ++lx) {
+                const auto& pix = reduced[ly * low_w + lx];
+                for (int dy = 0; dy < opts.scale; ++dy) {
+                    int fy = ly * opts.scale + dy;
+                    if (fy >= final_h) continue;
+                    for (int dx = 0; dx < opts.scale; ++dx) {
+                        int fx = lx * opts.scale + dx;
+                        if (fx >= final_w) continue;
+                        final_grid[fy * final_w + fx] = pix;
+                    }
+                }
+            }
+        }
+    }
+
+    // 6. Output Emission
     if (opts.style == PixelRenderStyle::Ascii) {
-        return emit_ascii(reduced, grid_w, grid_h, false, opts.charset);
+        return emit_ascii(final_grid, final_w, final_h, false, opts.charset);
     } else if (opts.style == PixelRenderStyle::AsciiColor) {
-        return emit_ascii(reduced, grid_w, grid_h, true, opts.charset);
+        return emit_ascii(final_grid, final_w, final_h, true, opts.charset);
     } else if (opts.style == PixelRenderStyle::Braille) {
-        return emit_braille(reduced, grid_w, grid_h);
+        return emit_braille(final_grid, final_w, final_h);
     } else {
-        return emit_ansi_halfblocks(reduced, grid_w, grid_h, opts.preserve_alpha);
+        return emit_ansi_halfblocks(final_grid, final_w, final_h, opts.preserve_alpha);
     }
 }
 
@@ -556,3 +584,4 @@ std::string PixelArtRenderer::render_file(const std::string& filepath, const Pix
 }
 
 } // namespace meridian::graphics
+
