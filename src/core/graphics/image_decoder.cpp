@@ -104,7 +104,7 @@ bool decode_bmp(const uint8_t* data, size_t size, DecodedImage& out) {
     uint16_t bpp = *reinterpret_cast<const uint16_t*>(data + 28);
     uint32_t compression = *reinterpret_cast<const uint32_t*>(data + 30);
 
-    if (w <= 0 || h == 0 || (bpp != 24 && bpp != 32) || compression != 0) return false;
+    if (header_size < 40 || w <= 0 || h == 0 || (bpp != 24 && bpp != 32) || compression != 0) return false;
     if (data_offset >= size) return false;
 
     bool flip_y = (h > 0);

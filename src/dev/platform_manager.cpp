@@ -103,10 +103,8 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     "terminal.integrated.defaultProfile.linux": "Meridian Shell"
 })";
 
-        int configured_count = 0;
         for (const auto& [name, path] : ide_paths) {
             write_file_contents(path, new_settings);
-            configured_count++;
         }
 
         // Also configure current workspace if in a project
