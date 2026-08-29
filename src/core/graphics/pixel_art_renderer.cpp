@@ -473,62 +473,53 @@ std::string PixelArtRenderer::render_pixels(const std::vector<PixelRgba>& pixels
     int term_cols = 80, term_rows = 24;
     get_terminal_dimensions(term_cols, term_rows);
 
-    int target_cols = (opts.max_width_cols > 0) ? opts.max_width_cols : std::min(term_cols - 2, 76);
-    int target_rows = (opts.max_height_rows > 0) ? opts.max_height_rows : (term_rows - 4);
-    if (target_cols <= 4) target_cols = 40;
-    if (target_rows <= 4) target_rows = 20;
+    int target_cols = (opts.max_width_cols > 0) ? opts.max_width_cols : std::min(term_cols - 2, 78);
+    if (target_cols <= 4) target_cols = 64;
 
-    int grid_w = target_cols;
-    int grid_h = target_rows * 2; // 2 vertical pixels per character cell
-
-    // Aspect ratio contain calculation
     float img_aspect = static_cast<float>(src_w) / src_h;
+    int grid_w = target_cols;
+    int grid_h = std::max(2, static_cast<int>(grid_w / img_aspect));
+    if (grid_h % 2 != 0) grid_h++;
+
+    // For ASCII / AsciiColor mode (character cells are ~1:2)
     if (opts.style == PixelRenderStyle::Ascii || opts.style == PixelRenderStyle::AsciiColor) {
-        // Character aspect is ~1:2 (width:height)
-        grid_h = target_rows;
-        grid_w = static_cast<int>(grid_h * img_aspect * 2.0f);
-        if (grid_w > target_cols) {
-            grid_w = target_cols;
-            grid_h = std::max(1, static_cast<int>(grid_w / (img_aspect * 2.0f)));
-        }
-    } else {
-        // Halfblock has 1:1 pixel aspect
-        grid_w = static_cast<int>(grid_h * img_aspect);
-        if (grid_w > target_cols) {
-            grid_w = target_cols;
-            grid_h = std::max(2, static_cast<int>(grid_w / img_aspect));
-        }
-        if (grid_h % 2 != 0) grid_h++;
+        grid_w = target_cols;
+        grid_h = std::max(1, static_cast<int>(grid_w / (img_aspect * 2.0f)));
     }
 
     int low_w = grid_w;
     int low_h = grid_h;
-    if (opts.scale > 1) {
+    if (opts.style == PixelRenderStyle::PixelArt && opts.scale > 1) {
         low_w = std::max(4, grid_w / opts.scale);
         low_h = std::max(4, grid_h / opts.scale);
         if (low_h % 2 != 0) low_h++;
     }
 
-    // 1. Sharpening
-    auto sharpened = sharpen_image(pixels, src_w, src_h, opts.sharpness);
+    // 1. Sharpening (if sharpness > 0)
+    std::vector<PixelRgba> processed = (opts.sharpness > 0.01f)
+        ? sharpen_image(pixels, src_w, src_h, opts.sharpness)
+        : pixels;
 
-    // 2. Edge Detection
-    auto edges = compute_sobel_edges(sharpened, src_w, src_h);
+    // 2. Edge Detection (for PixelArt mode)
+    std::vector<float> edges;
+    if (opts.style == PixelRenderStyle::PixelArt) {
+        edges = compute_sobel_edges(processed, src_w, src_h);
+    }
 
-    // 3. Pixel Grid Reduction
-    auto reduced = reduce_to_pixel_grid(sharpened, src_w, src_h, low_w, low_h, edges);
+    // 3. High-Quality Pixel Grid Reduction (Area Averaging)
+    auto reduced = reduce_to_pixel_grid(processed, src_w, src_h, low_w, low_h, edges);
 
-    // 4. Color Quantization
+    // 4. Color Quantization (Only for PixelArt mode)
     if (opts.style == PixelRenderStyle::PixelArt) {
         reduced = quantize_colors(reduced, opts.num_colors, opts.dither, low_w, low_h);
     }
 
-    // 5. Expand pixel blocks if scale > 1 (creating crisp, chunky retro pixel art blocks)
+    // 5. Expand pixel blocks if scale > 1 and in PixelArt mode
     int final_w = low_w;
     int final_h = low_h;
     std::vector<PixelRgba> final_grid = reduced;
 
-    if (opts.scale > 1) {
+    if (opts.style == PixelRenderStyle::PixelArt && opts.scale > 1) {
         final_w = low_w * opts.scale;
         final_h = low_h * opts.scale;
         if (final_h % 2 != 0) final_h++;

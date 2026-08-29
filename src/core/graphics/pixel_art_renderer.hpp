@@ -23,12 +23,12 @@ enum class PixelRenderStyle {
 };
 
 struct PixelArtOptions {
-    PixelRenderStyle style = PixelRenderStyle::PixelArt;
-    int scale = 0;              // Pixel block size (0 = auto based on terminal width)
-    int num_colors = 32;        // Palette size: 16, 32, 64, 128 (default 32)
-    float sharpness = 0.35f;    // Unsharp mask edge sharpening (0.0 to 1.0)
-    bool dither = false;        // Ordered Bayer dithering (default false for clean pixel art)
-    int max_width_cols = 0;     // Target terminal columns (0 = auto-detect via ioctl)
+    PixelRenderStyle style = PixelRenderStyle::HalfBlock; // HD Full TrueColor Halfblocks by default
+    int scale = 1;              // 1:1 HD pixel grid by default
+    int num_colors = 64;        // High-fidelity palette
+    float sharpness = 0.20f;    // Subtle sharpening
+    bool dither = false;        // Ordered Bayer dithering
+    int max_width_cols = 0;     // Target terminal columns (0 = auto-detect)
     int max_height_rows = 0;    // Target terminal rows (0 = auto-detect)
     bool preserve_alpha = true; // Preserve transparency
     std::string charset = " .:-=+*#%@";
