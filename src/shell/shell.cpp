@@ -3,6 +3,7 @@
 #include "builtins.hpp"
 #include "../ai/command_analyzer.hpp"
 #include "../dev/github_integration.hpp"
+#include "../dev/ide_detector.hpp"
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
 #include <termios.h>
@@ -145,6 +146,10 @@ int Shell::run_command(const std::string& command, std::ostream& err) {
 
 int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& err) {
     bool is_real_interactive = (&in == &std::cin && LineEditor::is_terminal_interactive());
+
+    if (is_real_interactive) {
+        dev::IdeDetector::ensure_first_run_registered();
+    }
 
     ai::CommandAnalyzer analyzer(get_builtin_names());
     analyzer.refresh_path_index();

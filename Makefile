@@ -57,7 +57,8 @@ DEV_SRC := \
     src/dev/rich_history.cpp \
     src/dev/ssh_manager.cpp \
     src/dev/platform_manager.cpp \
-    src/dev/github_integration.cpp
+    src/dev/github_integration.cpp \
+    src/dev/ide_detector.cpp
 
 PLUGIN_SRC := \
     src/plugins/plugin_manager.cpp
@@ -89,7 +90,8 @@ TEST_SRC := \
     tests/test_dev_tools.cpp \
     tests/test_advanced_protocols.cpp \
     tests/test_platform_manager.cpp \
-    tests/test_github_integration.cpp
+    tests/test_github_integration.cpp \
+    tests/test_ide_detector.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))

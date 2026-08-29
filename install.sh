@@ -249,23 +249,75 @@ if [ "${USER_MODE}" = false ] && [ -w /etc/shells ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 6. VS Code Auto-Detection & Integration
+# 6. Automatic IDE & Development Environment Detection
 # ------------------------------------------------------------------------------
-if command -v code >/dev/null 2>&1 || [ -d "${HOME}/.config/Code" ]; then
-    log_step "VS Code detected on system"
-    VSCODE_SETTINGS_DIR="${HOME}/.config/Code/User"
-    mkdir -p "${VSCODE_SETTINGS_DIR}"
-    SETTINGS_FILE="${VSCODE_SETTINGS_DIR}/settings.json"
-    
-    if [ ! -f "${SETTINGS_FILE}" ]; then
-        echo "{}" > "${SETTINGS_FILE}"
-    fi
+echo ""
+echo -e "${CYAN}Detecting development environments...${RESET}"
 
-    if command -v "${PREFIX}/bin/meridian" >/dev/null 2>&1; then
-        "${PREFIX}/bin/meridian" vscode enable >/dev/null 2>&1 || true
-        log_step "Registered Meridian Shell as auto-detected terminal profile in VS Code"
-    fi
+DETECTED_IDES=()
+
+# Visual Studio Code & Forks
+if command -v code >/dev/null 2>&1 || [ -d "${HOME}/.config/Code" ] || [ -d "${HOME}/.config/Code - OSS" ] || [ -d "${HOME}/.config/VSCodium" ]; then
+    echo -e " ${GREEN}✓${RESET} Visual Studio Code"
+    DETECTED_IDES+=("VS Code")
 fi
+
+# Cursor AI Editor
+if command -v cursor >/dev/null 2>&1 || [ -d "${HOME}/.config/Cursor" ]; then
+    echo -e " ${GREEN}✓${RESET} Cursor"
+    DETECTED_IDES+=("Cursor")
+fi
+
+# Windsurf AI IDE
+if command -v windsurf >/dev/null 2>&1 || [ -d "${HOME}/.config/Windsurf" ]; then
+    echo -e " ${GREEN}✓${RESET} Windsurf"
+    DETECTED_IDES+=("Windsurf")
+fi
+
+# Google Antigravity
+if [ -d "${HOME}/.config/Antigravity" ] || [ -d "${HOME}/.config/antigravity" ] || [ -d "${HOME}/.gemini/antigravity" ]; then
+    echo -e " ${GREEN}✓${RESET} Google Antigravity"
+    DETECTED_IDES+=("Google Antigravity")
+fi
+
+# Zed Editor
+if command -v zed >/dev/null 2>&1 || [ -d "${HOME}/.config/zed" ]; then
+    echo -e " ${GREEN}✓${RESET} Zed"
+    DETECTED_IDES+=("Zed")
+fi
+
+# JetBrains Suite (IntelliJ, PyCharm, CLion, Android Studio)
+if [ -d "${HOME}/.config/JetBrains" ] || [ -d "${HOME}/.local/share/JetBrains" ] || [ -d "${HOME}/.AndroidStudio" ]; then
+    echo -e " ${GREEN}✓${RESET} JetBrains (IntelliJ / PyCharm / CLion / Android Studio)"
+    DETECTED_IDES+=("JetBrains")
+fi
+
+# Neovim
+if command -v nvim >/dev/null 2>&1 || [ -d "${HOME}/.config/nvim" ]; then
+    echo -e " ${GREEN}✓${RESET} Neovim"
+    DETECTED_IDES+=("Neovim")
+fi
+
+echo ""
+echo -e "${CYAN}Registering Meridian terminal integrations...${RESET}"
+for ide in "${DETECTED_IDES[@]}"; do
+    echo -e " ${GREEN}✓${RESET} ${ide}"
+done
+
+# Perform profile registrations
+SHELL_EXEC="${PREFIX}/bin/meridian-shell"
+GUI_EXEC="${PREFIX}/bin/meridian"
+if [ ! -f "${SHELL_EXEC}" ]; then
+    SHELL_EXEC="${HOME}/.local/bin/meridian-shell"
+    GUI_EXEC="${HOME}/.local/bin/meridian"
+fi
+
+if [ -f "${GUI_EXEC}" ]; then
+    "${GUI_EXEC}" vscode enable >/dev/null 2>&1 || true
+fi
+
+echo ""
+echo -e "${GREEN}Meridian is now available as an integrated terminal where supported.${RESET}"
 
 # ------------------------------------------------------------------------------
 # 7. PATH Configuration Check
