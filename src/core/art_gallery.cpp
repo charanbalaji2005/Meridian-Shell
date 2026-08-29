@@ -1,6 +1,7 @@
 // src/core/art_gallery.cpp
 #include "art_gallery.hpp"
 #include "graphics/image_decoder.hpp"
+#include "graphics/ascii_art_engine.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -673,30 +674,35 @@ std::vector<std::string> ArtGallery::render_artwork_lines(const TerminalImage& i
     std::vector<std::string> lines;
     int src_w = img.width();
     int src_h = img.height();
-    if (src_w <= 0 || src_h <= 0) return lines;
+    if (src_w <= 0 || src_h <= 0 || target_cols <= 0 || target_rows <= 0) return lines;
 
-    for (int r = 0; r < target_rows; ++r) {
-        std::ostringstream ss;
-        for (int c = 0; c < target_cols; ++c) {
-            // High-precision subpixel sampling
-            float u = static_cast<float>(c) / std::max(1, target_cols - 1);
-            float v_top = static_cast<float>(r * 2) / std::max(1, target_rows * 2 - 1);
-            float v_bot = static_cast<float>(r * 2 + 1) / std::max(1, target_rows * 2 - 1);
-
-            int x = std::clamp(static_cast<int>(u * (src_w - 1)), 0, src_w - 1);
-            int y_top = std::clamp(static_cast<int>(v_top * (src_h - 1)), 0, src_h - 1);
-            int y_bot = std::clamp(static_cast<int>(v_bot * (src_h - 1)), 0, src_h - 1);
-
-            RgbColor c_top = img.get_pixel(x, y_top);
-            RgbColor c_bot = img.get_pixel(x, y_bot);
-
-            // TrueColor 24-bit half-block character
-            ss << "\033[38;2;" << static_cast<int>(c_top.r) << ";" << static_cast<int>(c_top.g) << ";" << static_cast<int>(c_top.b)
-               << ";48;2;" << static_cast<int>(c_bot.r) << ";" << static_cast<int>(c_bot.g) << ";" << static_cast<int>(c_bot.b)
-               << "m▀";
+    std::vector<uint8_t> rgba(src_w * src_h * 4);
+    for (int y = 0; y < src_h; ++y) {
+        for (int x = 0; x < src_w; ++x) {
+            auto c = img.get_pixel(x, y);
+            int idx = (y * src_w + x) * 4;
+            rgba[idx + 0] = c.r;
+            rgba[idx + 1] = c.g;
+            rgba[idx + 2] = c.b;
+            rgba[idx + 3] = c.a;
         }
-        ss << "\033[0m";
-        lines.push_back(ss.str());
+    }
+
+    int grid_w = target_cols;
+    int grid_h = target_rows * 2;
+
+    auto resampled = graphics::AsciiArtEngine::resample_lanczos3(rgba, src_w, src_h, grid_w, grid_h);
+    graphics::AsciiArtEngine::apply_color_adjustments(resampled, grid_w, grid_h, 1.05f, 1.15f, 0.98f, 1.15f);
+    graphics::AsciiArtEngine::apply_edge_enhancement(resampled, grid_w, grid_h, 0.35f);
+
+    std::string ansi = graphics::AsciiArtEngine::emit_truecolor_halfblocks(resampled, grid_w, grid_h, true);
+
+    std::stringstream ss(ansi);
+    std::string line;
+    while (std::getline(ss, line)) {
+        if (!line.empty() || lines.size() < static_cast<size_t>(target_rows)) {
+            lines.push_back(line);
+        }
     }
 
     return lines;

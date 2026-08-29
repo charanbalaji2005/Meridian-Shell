@@ -475,3 +475,4 @@ std::string AsciiArtEngine::render_file(
 }
 
 } // namespace meridian::graphics
+

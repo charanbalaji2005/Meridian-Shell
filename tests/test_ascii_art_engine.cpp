@@ -148,3 +148,4 @@ MTEST(ascii_art_cli_pic_command_modes) {
     int rc2 = shell.run_command("pic eye --width 60 --mode ascii --dither", err);
     ASSERT_EQ(rc2, 0);
 }
+

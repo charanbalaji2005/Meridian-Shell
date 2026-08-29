@@ -89,10 +89,9 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Picture graphic: emit direct chunked Kitty GPU raster sequence
-    auto theme = core::ArtGallery::get_active_artwork(56, 22);
-    out << "\n" << theme.image.to_kitty_graphics_escape(30, 30, 28, 10);
-    std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, 28, 10);
+    // 2. Picture graphic: Render high-definition TrueColor dual-pixel halfblocks
+    auto theme = core::ArtGallery::get_active_artwork(64, 32);
+    std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, 32, 10);
 
     // 3. System info lines (sleek Nerd Font glyphs matching reference theme)
     std::vector<std::string> sys_lines = {
@@ -110,12 +109,13 @@ void render_reference_layout_header(std::ostream& out) {
 
     // 4. Print Side-by-Side Header with 2 spaces left margin, 4 spaces clean gap
     size_t max_rows = std::max(art_lines.size(), sys_lines.size());
+    out << "\n";
     for (size_t r = 0; r < max_rows; ++r) {
         out << "  "; // 2 spaces left margin
         if (r < art_lines.size()) {
             out << art_lines[r];
         } else {
-            out << "                            ";
+            out << "                                ";
         }
         out << "    "; // 4 spaces clean gap
         if (r < sys_lines.size()) {
