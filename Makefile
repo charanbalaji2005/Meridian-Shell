@@ -55,7 +55,8 @@ DEV_SRC := \
     src/dev/command_palette.cpp \
     src/dev/universal_search.cpp \
     src/dev/rich_history.cpp \
-    src/dev/ssh_manager.cpp
+    src/dev/ssh_manager.cpp \
+    src/dev/platform_manager.cpp
 
 PLUGIN_SRC := \
     src/plugins/plugin_manager.cpp
@@ -85,7 +86,8 @@ TEST_SRC := \
     tests/test_workspace.cpp \
     tests/test_intent_and_diagnostics.cpp \
     tests/test_dev_tools.cpp \
-    tests/test_advanced_protocols.cpp
+    tests/test_advanced_protocols.cpp \
+    tests/test_platform_manager.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))
@@ -97,7 +99,7 @@ CONFIG_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CONFIG_SRC))
 SECURITY_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SECURITY_SRC))
 TEST_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(TEST_SRC))
 
-VERSION ?= 0.1.0
+VERSION ?= 2.5.0
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 DATADIR ?= $(PREFIX)/share

@@ -11,6 +11,7 @@
 #include "../ai/ai_controller.hpp"
 #include "../ai/error_diagnostics.hpp"
 #include "../ai/intent_engine.hpp"
+#include "../dev/platform_manager.hpp"
 #include "../dev/command_palette.hpp"
 #include "../dev/file_explorer.hpp"
 #include "../dev/git_intel.hpp"
@@ -47,11 +48,14 @@ std::string default_config_path() {
 
 void print_usage() {
     std::cout <<
-        "Meridian 2.0 — Terminal + Developer Environment + AI Platform\n\n"
+        "Meridian 2.5 — Terminal + Developer Environment + AI Platform\n\n"
         "Usage: meridian [subcommand] [args]\n\n"
         "Terminal & System Lifecycle:\n"
         "  (no args)                   launch interactive Meridian Terminal\n"
-        "  update                      update Meridian to the latest GitHub release\n"
+        "  vscode [status|enable|off]  manage VS Code auto-detection & terminal profiles\n"
+        "  update [--check|--yes]      check and update Meridian to the latest release\n"
+        "  stats [--year YYYY|--growth]view anonymous usage counts & yearly statistics\n"
+        "  telemetry [status|on|off]   manage opt-in anonymous metrics and privacy\n"
         "  uninstall [--purge]         uninstall Meridian binaries, launchers, and configs\n"
         "  pic <file>                  render direct full-color inline raster image\n"
         "  pic set <0-13|name|path>    set startup anime artwork permanently or random\n"
@@ -68,11 +72,12 @@ void print_usage() {
         "  workspace rm <name>         delete a saved workspace\n"
         "  session save <file>         save recorded session trace to file\n\n"
         "Developer Tooling:\n"
+        "  auth github                 1-click GitHub SSH key setup & live authentication\n"
         "  ssh [alias]                 manage & connect to SSH remote workspaces (~/.ssh/config)\n"
         "  plugins                     list active extensible plugins & hooks (~/.config/meridian/plugins/)\n"
         "  --performance, perf         display live GPU framerate, PTY latency & telemetry profiler\n"
         "  monitor                     display real-time CPU, RAM, Disk, Network & Process metrics\n"
-        "  git                         inspect Git branch divergence, staged/unstaged changes\n"
+        "  gitintel                    inspect Git branch divergence, staged/unstaged changes\n"
         "  files [dir]                 view tree file explorer with git badges\n"
         "  search \"<query>\"             search across screen buffers, command history & files\n"
         "  palette [query]             open / fuzzy-search Command Palette actions (Ctrl+Shift+P)\n"
@@ -184,9 +189,40 @@ int main(int argc, char** argv) {
     }
 
     if (sub == "--version" || sub == "-v" || sub == "version") {
-        std::cout << "Meridian Terminal 2.0.0 (x86_64-linux)\n"
+        std::cout << "Meridian Terminal 2.5.0 (x86_64-linux)\n"
                   << "Copyright (c) 2025-2026 Charan Balaji and Meridian Contributors.\n";
         return 0;
+    }
+
+    if (sub == "vscode") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        return dev::PlatformManager::handle_vscode(args);
+    }
+
+    if (sub == "update" || sub == "upgrade") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        return dev::PlatformManager::handle_update(args);
+    }
+
+    if (sub == "stats" || sub == "stat") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        return dev::PlatformManager::handle_stats(args);
+    }
+
+    if (sub == "telemetry") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        return dev::PlatformManager::handle_telemetry(args);
+    }
+
+    if (sub == "auth") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        shell::Executor ctx;
+        return shell::run_builtin("auth", args, ctx);
     }
 
     if (sub == "ai") {
@@ -194,22 +230,8 @@ int main(int argc, char** argv) {
     }
 
     if (sub == "install") {
-        std::cout << "-> Installing Meridian Terminal to system...\n";
+        std::cout << "-> Installing Meridian Terminal 2.5 to system...\n";
         int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
-        return res;
-    }
-
-    if (sub == "update" || sub == "upgrade") {
-        std::cout << "-> Updating Meridian Terminal to the latest release from GitHub...\n";
-        int res = 0;
-        if (access("/usr/local/bin/meridian", W_OK) == 0 || geteuid() == 0) {
-            res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
-        } else {
-            res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash -s -- --user");
-        }
-        if (res == 0) {
-            std::cout << "\033[38;2;34;197;94m✔\033[0m Meridian Terminal successfully updated to the latest version!\n";
-        }
         return res;
     }
 

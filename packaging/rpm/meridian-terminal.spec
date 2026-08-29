@@ -1,5 +1,5 @@
 Name:           meridian-terminal
-Version:        2.0.0
+Version:        2.5.0
 Release:        1%{?dist}
 Summary:        Modern Linux Terminal & Unified Developer Environment
 
@@ -43,5 +43,7 @@ cp -rf resources/images/gallery/* $RPM_BUILD_ROOT%{_datadir}/meridian/images/gal
 %{_datadir}/meridian
 
 %changelog
+* Sat Aug 29 2026 Charan Balaji <charanbalaji@fedora> - 2.5.0-1
+- Release Meridian 2.5 with prebuilt multi-distro installer, VS Code auto-detection, and stats/update engine.
 * Tue Aug 25 2026 Charan Balaji <charanbalaji@fedora> - 2.0.0-1
 - Release Meridian 2.0 with TrueColor graphics, live Git badges, and unified canvas.
