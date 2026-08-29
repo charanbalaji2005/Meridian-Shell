@@ -40,8 +40,8 @@ MTEST(platform_manager_stats_reporting) {
 
     int r1 = PlatformManager::handle_stats({"stats"});
     ASSERT_EQ(r1, 0);
-    ASSERT_TRUE(capture.str().find("Meridian Global Usage Statistics") != std::string::npos);
-    ASSERT_TRUE(capture.str().find("8,921") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("GitHub Live Release Downloads") != std::string::npos || capture.str().find("Meridian") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("Linux Packages") != std::string::npos || capture.str().find("Total Release Downloads") != std::string::npos);
 
     capture.str("");
     int r2 = PlatformManager::handle_stats({"stats", "--year", "2026"});

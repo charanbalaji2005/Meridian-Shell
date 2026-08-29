@@ -1,5 +1,6 @@
 // src/dev/platform_manager.cpp
 #include "platform_manager.hpp"
+#include "rich_history.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -211,6 +212,88 @@ int PlatformManager::handle_update(const std::vector<std::string>& argv) {
     return 0;
 }
 
+struct GitHubLiveStats {
+    int total_downloads = 0;
+    int linux_downloads = 0;
+    int macos_downloads = 0;
+    int windows_downloads = 0;
+    int stars = 1;
+    int forks = 0;
+    bool is_live = false;
+};
+
+static GitHubLiveStats query_github_live_stats() {
+    GitHubLiveStats stats;
+    FILE* fp = popen("curl -fsSL -m 3 -H \"User-Agent: Meridian-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell/releases 2>/dev/null", "r");
+    if (fp) {
+        char buf[4096];
+        std::string json;
+        while (fgets(buf, sizeof(buf), fp)) {
+            json += buf;
+        }
+        pclose(fp);
+
+        if (!json.empty() && json.find("\"download_count\":") != std::string::npos) {
+            stats.is_live = true;
+            size_t pos = 0;
+            while ((pos = json.find("\"name\":", pos)) != std::string::npos) {
+                size_t name_start = json.find('"', pos + 7);
+                if (name_start == std::string::npos) break;
+                name_start++;
+                size_t name_end = json.find('"', name_start);
+                if (name_end == std::string::npos) break;
+                std::string asset_name = json.substr(name_start, name_end - name_start);
+
+                size_t dl_pos = json.find("\"download_count\":", name_end);
+                int dl_count = 0;
+                if (dl_pos != std::string::npos) {
+                    size_t num_start = json.find_first_of("0123456789", dl_pos + 17);
+                    if (num_start != std::string::npos) {
+                        dl_count = std::atoi(json.c_str() + num_start);
+                    }
+                }
+
+                stats.total_downloads += dl_count;
+                std::string lower_name = asset_name;
+                for (auto& c : lower_name) c = std::tolower(c);
+
+                if (lower_name.find("mac") != std::string::npos || lower_name.find(".dmg") != std::string::npos || lower_name.find(".rb") != std::string::npos) {
+                    stats.macos_downloads += dl_count;
+                } else if (lower_name.find("win") != std::string::npos || lower_name.find(".exe") != std::string::npos || lower_name.find(".msi") != std::string::npos) {
+                    stats.windows_downloads += dl_count;
+                } else {
+                    stats.linux_downloads += dl_count;
+                }
+
+                pos = name_end + 1;
+            }
+        }
+    }
+
+    FILE* fp2 = popen("curl -fsSL -m 3 -H \"User-Agent: Meridian-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell 2>/dev/null", "r");
+    if (fp2) {
+        char buf[4096];
+        std::string json;
+        while (fgets(buf, sizeof(buf), fp2)) {
+            json += buf;
+        }
+        pclose(fp2);
+
+        size_t star_pos = json.find("\"stargazers_count\":");
+        if (star_pos != std::string::npos) {
+            size_t num_start = json.find_first_of("0123456789", star_pos + 19);
+            if (num_start != std::string::npos) stats.stars = std::atoi(json.c_str() + num_start);
+        }
+        size_t fork_pos = json.find("\"forks_count\":");
+        if (fork_pos != std::string::npos) {
+            size_t num_start = json.find_first_of("0123456789", fork_pos + 14);
+            if (num_start != std::string::npos) stats.forks = std::atoi(json.c_str() + num_start);
+        }
+    }
+
+    return stats;
+}
+
 int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
     bool growth = false;
     std::string year = "";
@@ -223,6 +306,11 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
         }
     }
 
+    auto gh = query_github_live_stats();
+    RichHistory history;
+    history.load();
+    size_t user_cmd_count = history.size();
+
     if (growth) {
         std::cout << "\n\033[1;36m┌─── Meridian Growth & Adoption ───────────────────────────────────────────────┐\033[0m\n"
                   << "\033[1;37m│\033[0m \033[1;33mYear      Installations    Growth\033[0m\n"
@@ -231,6 +319,7 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
                   << "\033[1;37m│\033[0m 2026             8,921    \033[1;32m+384%\033[0m\n"
                   << "\033[1;37m│\033[0m ─────────────────────────────────────────────────────────────────────────────\n"
                   << "\033[1;37m│\033[0m \033[1;32mTotal Installations: 10,763\033[0m\n"
+                  << "\033[1;37m│\033[0m \033[1;36mLive GitHub Releases Count: " << gh.total_downloads << " downloads (" << gh.stars << "★ / " << gh.forks << "⑂)\033[0m\n"
                   << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
         return 0;
     }
@@ -245,28 +334,30 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
                   << "\033[1;37m│\033[0m   Linux                 : 6,102 (68.4%)\n"
                   << "\033[1;37m│\033[0m   Windows               : 1,942 (21.8%)\n"
                   << "\033[1;37m│\033[0m   macOS                 :   877  (9.8%)\n"
+                  << "\033[1;37m│\033[0m\n"
+                  << "\033[1;37m│\033[0m \033[1;33mYour Local Terminal Activity\033[0m\n"
+                  << "\033[1;37m│\033[0m   Commands executed     : \033[1;32m" << user_cmd_count << "\033[0m\n"
                   << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
         return 0;
     }
 
-    std::cout << "\n\033[1;36m┌─── Meridian Global Usage Statistics ─────────────────────────────────────────┐\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;33mCurrent Users\033[0m\n"
-              << "\033[1;37m│\033[0m   Active installations     : \033[1;32m6,417\033[0m\n"
-              << "\033[1;37m│\033[0m   Total installations      : \033[1;32m8,921\033[0m\n"
+    std::cout << "\n\033[1;36m┌─── Meridian Live Usage & Community Statistics ──────────────────────────────┐\033[0m\n"
+              << "\033[1;37m│\033[0m \033[1;33mGitHub Live Release Downloads (charanbalaji2005/Meridian-Shell)\033[0m\n"
+              << "\033[1;37m│\033[0m   Total Release Downloads  : \033[1;32m" << gh.total_downloads << "\033[0m" << (gh.is_live ? " \033[1;36m(Live from GitHub)\033[0m" : "") << "\n"
+              << "\033[1;37m│\033[0m   Linux Packages (.deb/.rpm): \033[1;32m" << gh.linux_downloads << "\033[0m\n"
+              << "\033[1;37m│\033[0m   macOS Bundles (.dmg/.rb) : \033[1;32m" << gh.macos_downloads << "\033[0m\n"
+              << "\033[1;37m│\033[0m   Windows Packages (.exe)  : \033[1;32m" << gh.windows_downloads << "\033[0m\n"
+              << "\033[1;37m│\033[0m   GitHub Stars             : \033[1;33m★ " << gh.stars << "\033[0m\n"
+              << "\033[1;37m│\033[0m   GitHub Forks             : \033[1;36m⑂ " << gh.forks << "\033[0m\n"
               << "\033[1;37m│\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;33mYearly Breakdown\033[0m\n"
-              << "\033[1;37m│\033[0m   2024                     :       0\n"
-              << "\033[1;37m│\033[0m   2025                     :   1,842\n"
-              << "\033[1;37m│\033[0m   2026                     :   8,921 \033[1;32m(+384%)\033[0m\n"
-              << "\033[1;37m│\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;33mPlatforms\033[0m\n"
-              << "\033[1;37m│\033[0m   Linux                    : 6,102 (68.4%)\n"
-              << "\033[1;37m│\033[0m   Windows                  : 1,942 (21.8%)\n"
-              << "\033[1;37m│\033[0m   macOS                    :   877  (9.8%)\n"
+              << "\033[1;37m│\033[0m \033[1;33mYour Local Terminal Activity\033[0m\n"
+              << "\033[1;37m│\033[0m   Total Commands Commanded : \033[1;32m" << user_cmd_count << "\033[0m\n"
+              << "\033[1;37m│\033[0m   Active Shell Engine      : \033[1;36mMeridian Shell (C++20 AST Engine)\033[0m\n"
+              << "\033[1;37m│\033[0m   History Database         : ~/.config/meridian/history.db\n"
               << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
               << "\033[1;37mCommands:\033[0m\n"
-              << "  \033[1;32mmeridian stats\033[0m               View global usage metrics overview\n"
-              << "  \033[1;32mmeridian stats --year 2026\033[0m   View metrics for specific year\n"
+              << "  \033[1;32mmeridian stats\033[0m               View live GitHub metrics and local command count\n"
+              << "  \033[1;32mmeridian history\033[0m             View detailed command history with execution times\n"
               << "  \033[1;32mmeridian stats --growth\033[0m      View yearly adoption growth rates\n";
 
     return 0;
