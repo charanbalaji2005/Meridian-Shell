@@ -307,7 +307,12 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
             try { target_height = std::stoi(argv[++i]); popts.max_height_rows = target_height; } catch (...) {}
         } else if (argv[i][0] != '-') {
-            filepath = argv[i];
+            if (argv[i][0] == '#' || argv[i].rfind("//", 0) == 0) {
+                break; // Ignore inline shell comments
+            }
+            if (filepath.empty()) {
+                filepath = argv[i];
+            }
         }
     }
 
