@@ -2,6 +2,7 @@
 #include "line_editor.hpp"
 #include "builtins.hpp"
 #include "../ai/command_analyzer.hpp"
+#include "../dev/github_integration.hpp"
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
 #include <termios.h>
@@ -239,6 +240,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
         if (executor_.exit_requested()) return executor_.exit_code();
 
         if (is_real_interactive && !trimmed.empty()) {
+            dev::GitHubIntegration::on_post_command_hint(trimmed, status);
             out << "\n";
             out.flush();
         }

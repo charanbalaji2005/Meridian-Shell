@@ -16,6 +16,7 @@
 #include "../dev/ssh_manager.hpp"
 #include "../dev/rich_history.hpp"
 #include "../dev/platform_manager.hpp"
+#include "../dev/github_integration.hpp"
 #include "../plugins/plugin_manager.hpp"
 #include "../workspace/pane_tree.hpp"
 
@@ -39,7 +40,7 @@ const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
     "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ssh-mgr", "plugins", "perf", "auth",
-    "vscode", "update", "stats", "telemetry"
+    "vscode", "update", "stats", "telemetry", "gh", "github"
 };
 } // namespace
 
@@ -686,6 +687,7 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "files") return builtin_files(argv);
     if (name == "ssh-mgr") return builtin_ssh(argv);
     if (name == "auth") return builtin_auth(argv);
+    if (name == "gh" || name == "github") return dev::GitHubIntegration::handle_gh_command(argv);
     if (name == "vscode") return dev::PlatformManager::handle_vscode(argv);
     if (name == "update" || name == "upgrade") return dev::PlatformManager::handle_update(argv);
     if (name == "stats" || name == "stat") return dev::PlatformManager::handle_stats(argv);

@@ -12,6 +12,7 @@
 #include "../ai/error_diagnostics.hpp"
 #include "../ai/intent_engine.hpp"
 #include "../dev/platform_manager.hpp"
+#include "../dev/github_integration.hpp"
 #include "../dev/command_palette.hpp"
 #include "../dev/file_explorer.hpp"
 #include "../dev/git_intel.hpp"
@@ -216,6 +217,12 @@ int main(int argc, char** argv) {
         std::vector<std::string> args;
         for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
         return dev::PlatformManager::handle_telemetry(args);
+    }
+
+    if (sub == "gh" || sub == "github") {
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
+        return dev::GitHubIntegration::handle_gh_command(args);
     }
 
     if (sub == "auth") {
