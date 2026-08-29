@@ -1,183 +1,308 @@
-# 🚀 Meridian Terminal 2.0 — Cross-Platform Terminal & Developer Platform
+# 🚀 Meridian Terminal 2.5 — Modern Cross-Platform Terminal & Developer Platform
 
 [![CI/CD](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/ci.yml/badge.svg)](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/charanbalaji2005/Meridian-Shell?color=brightgreen&label=release)](https://github.com/charanbalaji2005/Meridian-Shell/releases)
 [![Pages](https://github.com/charanbalaji2005/Meridian-Shell/actions/workflows/pages.yml/badge.svg)](https://charanbalaji2005.github.io/Meridian-Shell/)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#)
 
-**Meridian Terminal** is a modern Linux terminal emulator and developer environment with hardware-accelerated graphics, direct raster image rendering, live Git intelligence, interactive anime artwork galleries, multi-pane multiplexing, and built-in offline AI assistance.
+**Meridian Terminal 2.5** is a high-performance cross-platform terminal emulator, standalone POSIX shell, and developer environment featuring native GPU raster graphics, live Git intelligence, interactive anime artwork galleries, multi-pane multiplexing, 1-click GitHub integration, and built-in offline AI assistance.
 
-📖 **Live Website & Documentation**: [https://charanbalaji2005.github.io/Meridian-Shell/](https://charanbalaji2005.github.io/Meridian-Shell/)
+📖 **Live Documentation & Guides**: [https://charanbalaji2005.github.io/Meridian-Shell/](https://charanbalaji2005.github.io/Meridian-Shell/)
 
 <p align="center">
-  <img src="resources/images/meridian_screenshot.png" alt="Meridian Terminal 2.0 Screenshot on Fedora Hyprland" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
+  <img src="resources/images/meridian_screenshot.png" alt="Meridian Terminal 2.5 Screenshot" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
 </p>
 
 ---
 
-> [!NOTE]
-> ### 🤝 Contributors & Community Welcome!
-> **Contributions of all kinds are warmly welcomed!** 
-> Whether you want to:
-> - 🐛 **Fix errors, bugs, or rendering glitches**
-> - ✨ **Add new features, tools, or shell capabilities**
-> - 🎨 **Contribute new anime themes, artwork, and visual enhancements**
-> - ⚡ **Improve performance, terminal compatibility, or documentation**
-> 
-> Feel free to open an **Issue**, submit a **Pull Request**, or start a Discussion on GitHub. Every contribution helps make Meridian better for everyone!
+## ⚡ 1-Line Universal Installer (Any Linux, WSL, or macOS)
 
----
-
-## ⚡ Quick 1-Line Install, Update & Uninstall
-
-### 1️⃣ Install Meridian
-
-#### Universal 1-Line Installer (Fedora, Ubuntu, Debian, Arch Linux, etc.)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | sudo bash
+# Recommended (Auto-detects OS, Architecture, and downloads native prebuilt release):
+curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
 ```
 
-> **For User-Only Install (No `sudo` required, installs to `~/.local/bin`):**
+> **For System-Wide Installation (installs to `/usr/local/bin` with `sudo`):**
 > ```bash
-> curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
+> curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | sudo bash
 > ```
 
 ---
 
-### 2️⃣ Fedora & RHEL (`sudo dnf install`)
+## 📦 Installation Commands by Operating System
 
-#### Option A: Direct DNF 1-Liner
+### 1. 🐧 Ubuntu / Debian / Pop!_OS / Linux Mint
+
+#### Option A: Native `.deb` Package (Recommended)
 ```bash
-sudo dnf install https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm
+# Download and install latest Debian/Ubuntu package
+curl -fsSLO https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal_2.5.0_amd64.deb
+sudo apt install ./meridian-terminal_2.5.0_amd64.deb
 ```
 
-#### Option B: Enable Meridian DNF Repo
+#### Option B: APT Repository
 ```bash
-# 1. Enable repository
+curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/packaging/deb/setup_apt.sh | sudo bash
+sudo apt update
+sudo apt install meridian-terminal
+```
+
+---
+
+### 2. 🎩 Fedora / RHEL / CentOS / Rocky Linux / AlmaLinux
+
+#### Option A: Native `.rpm` Package (Recommended)
+```bash
+# Direct DNF installation of prebuilt RPM
+sudo dnf install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal-2.5.0-1.fc44.x86_64.rpm
+```
+
+#### Option B: DNF Repository
+```bash
+# Enable Meridian repository and install
 curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/setup_dnf_repo.sh | sudo bash
-
-# 2. Install package directly with DNF
 sudo dnf install meridian-terminal
+```
+
+---
+
+### 3. 🏹 Arch Linux / Manjaro
+
+#### Option A: AUR (Arch User Repository)
+```bash
+yay -S meridian-terminal
 # or:
-sudo dnf install meridian-shell
+paru -S meridian-terminal
+```
+
+#### Option B: Standalone Prebuilt Tarball
+```bash
+curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
 ```
 
 ---
 
-### 3️⃣ Updating to Latest Release
-
-Update anytime directly from your terminal:
+### 4. 🦎 openSUSE / SLES
 
 ```bash
-meridian update
-# or:
-meridian upgrade
-```
-
-Or via curl 1-liner:
-```bash
-curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | sudo bash
+sudo zypper install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal-2.5.0-1.fc44.x86_64.rpm
 ```
 
 ---
 
-### 4️⃣ Uninstalling Meridian
+### 5. 🏔️ Alpine Linux
 
 ```bash
-# Clean uninstall via built-in CLI:
-sudo meridian uninstall
-
-# Or purge all user configurations (~/.config/meridian) as well:
-sudo meridian uninstall --purge
-
-# Or via curl 1-liner:
-curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/uninstall.sh | sudo bash
+# Install runtime dependencies and extract binary
+apk add libstdc++ libgcc bash
+curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
 ```
 
 ---
 
-## 🎨 Interactive Anime Theme Selector & Raster Image Commands
+### 6. 🪟 Windows Subsystem for Linux (WSL / WSL2)
 
-Meridian features a direct full-color inline raster graphics engine and an interactive anime theme switcher:
+```bash
+# Inside your Ubuntu/Debian/Fedora WSL terminal:
+curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
+```
 
-| Command | Action | Example |
-| :--- | :--- | :--- |
-| **`Ctrl+P`** or **`pic`** | Open interactive artwork gallery selector | `pic` |
-| **`pic set <id\|number>`** | Set startup theme permanently | `pic set sharingan_eye`<br>`pic set 0`<br>`pic set sakura_girl` |
-| **`pic set random`** | Rotate through all 14 themes on every startup | `pic set random` |
-| **`pic set <file>`** | Set any custom image file permanently | `pic set ~/Pictures/anime.png` |
-| **`pic <file>`** | Display raw full-color raster image directly | `pic tanjiro.png` |
-| **`pic --debug <file>`** | Inspect decoded raster specs & GPU texture info | `pic --debug image.png` |
-| **`pic --clear`** | Clear graphics from canvas | `pic --clear` |
-
-### 🖼️ Available Built-in Themes
-
-| Index | Theme ID | Description |
-| :---: | :--- | :--- |
-| **0** | `sharingan_eye` | Sasuke / Itachi Mangekyō Sharingan Eye (Raw Image) |
-| **1** | `sakura_girl` | Sakura Blossom Anime Girl (Raw Image) |
-| **2** | `ribbon_girl` | Monochrome Anime Ribbon Girl (Raw Image) |
-| **3** | `fan_girl` | Anime Girl with Fan (Raw Image) |
-| **4** | `itachi_sharingan` | Itachi Mangekyō Sharingan |
-| **5** | `gojo_purple` | Gojo: Hollow Purple (Jujutsu Kaisen) |
-| **6** | `sukuna_shrine` | Sukuna: Malevolent Shrine (Jujutsu Kaisen) |
-| **7** | `naruto_rasengan` | Naruto: Kurama Rasengan |
-| **8** | `rengoku_flames` | Rengoku: Sun Breathing Flames (Demon Slayer) |
-| **9** | `ultra_instinct` | Goku: Ultra Instinct (Dragon Ball Super) |
-| **10** | `chainsaw_man` | Chainsaw Man (Power & Denji) |
-| **11** | `cyberpunk` | Cyberpunk Night (Lucy) |
-| **12** | `synthwave` | Synthwave Horizon |
-| **13** | `ghibli` | Studio Ghibli Anime Meadow |
+> **WSL Display Modes:**
+> - **Console / Terminal Shell**: Runs directly in Windows Terminal or VS Code (`meridian-shell`).
+> - **Graphical Window (WSLg)**: If running Windows 11 with WSLg, `meridian` automatically launches its hardware-accelerated GUI window.
 
 ---
 
-## 📦 Multi-OS Distribution Packages
+### 7. 🍏 macOS (Apple Silicon & Intel)
 
-Download the package once and install completely offline on any machine:
-
-### 1. Fedora / RHEL / CentOS / openSUSE (`dnf` / RPM)
+#### Option A: Homebrew Cask (Recommended)
 ```bash
-sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm
+brew tap charanbalaji2005/meridian https://github.com/charanbalaji2005/Meridian-Shell
+brew install --cask meridian-terminal
 ```
 
-### 2. Ubuntu / Debian / Linux Mint (`apt` / DEB)
-```bash
-sudo dpkg -i ./dist/meridian-terminal_2.0.0_amd64.deb
-```
+#### Option B: Direct `.dmg` Disk Image
+- **Apple Silicon (M1/M2/M3/M4/M5)**: [Download `Meridian-Terminal-2.5.0-macOS-arm64.dmg`](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Meridian-Terminal-2.5.0-macOS-arm64.dmg)
+- **Intel x86_64**: [Download `Meridian-Terminal-2.5.0-macOS-x86_64.dmg`](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Meridian-Terminal-2.5.0-macOS-x86_64.dmg)
 
-### 3. Arch Linux / Manjaro / EndeavourOS (`pacman`)
-```bash
-cd packaging/arch && makepkg -si
-```
+Drag **Meridian.app** to your `/Applications` folder.
 
-### 4. macOS (Homebrew)
-```bash
-brew install --build-from-source packaging/macos/meridian-terminal.rb
-```
+---
 
-### 5. Windows 10 / 11 (PowerShell & ConPTY)
+### 8. 🪟 Windows Native (PowerShell)
+
 ```powershell
-.\packaging\windows\install.ps1
+# In PowerShell (Run as Administrator):
+irm https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/dist/install.ps1 | iex
 ```
 
 ---
 
-## 🧪 Building & Testing
+## 🔑 Connecting to GitHub with Meridian (`meridian gh`)
+
+Meridian features a built-in **1-Click Developer Experience GitHub Integration** that sets up SSH authentication, configures Port 443 fallback (bypassing network restrictions), and links repositories without asking for passwords.
+
+```text
+┌─── GitHub Integration Status ────────────────────────────────────────────────┐
+│ Account : @charanbalaji2005
+│ SSH     : ✓ Connected (Port 443)
+│ GitHub  : ✓ Authenticated
+│ Key     : ~/.ssh/id_ed25519
+│ Remote  : git@github.com:charanbalaji2005/Meridian-Shell.git
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1️⃣ Connect Your GitHub Account (1-Click)
+```bash
+meridian gh connect
+```
+- Automatically detects or generates an ED25519 SSH key (`~/.ssh/id_ed25519` or `~/.ssh/meridian_github_ed25519`) **without overwriting existing keys**.
+- Configures `~/.ssh/config` to use **Port 443** so it works on all Wi-Fi and corporate networks.
+- Tests the live connection and verifies write access.
+
+### 2️⃣ Check Connection Status
+```bash
+meridian gh status
+```
+
+### 3️⃣ View Public SSH Key
+```bash
+meridian gh key
+```
+
+### 4️⃣ Create & Link a New Repository
+```bash
+meridian gh repo create my-project
+```
+
+### 5️⃣ Smart, Non-Blocking Git Hints
+When you run `git init` in a new folder, Meridian displays non-blocking next steps to connect and push your project. You can toggle hints on/off anytime:
+```bash
+meridian gh hints on    # Enable hints
+meridian gh hints off   # Disable hints
+```
+
+---
+
+## 💻 VS Code Integration (`meridian vscode`)
+
+Auto-detects your VS Code installation and configures Meridian Shell as a ready-to-use integrated terminal profile:
 
 ```bash
-# Compile all targets
-make all -j$(nproc)
+# Check current VS Code terminal status
+meridian vscode status
 
-# Run full test suite (126 unit & integration tests)
-make test
+# Set Meridian as default VS Code terminal
+meridian vscode enable
 
-# Generate all offline distribution bundles in dist/
-./scripts/package_offline.sh
+# Reset back to standard bash/zsh
+meridian vscode disable
 ```
 
 ---
 
-## 📄 License
+## 🔄 Updating Meridian (`meridian update`)
 
-Meridian Terminal is free and open-source software licensed under the **GNU General Public License v3.0 or later** ([GPL-3.0-or-later](LICENSE)).
+Meridian includes a native update engine that checks GitHub Releases, verifies SHA256 checksums, and updates your installation:
 
+```bash
+# Check if an update is available
+meridian update --check
+
+# Download, verify, and apply the latest update
+meridian update
+```
+
+---
+
+## 📊 Anonymous Usage Statistics & Telemetry (`meridian stats`)
+
+```bash
+# View global usage overview
+meridian stats
+
+# View breakdown for a specific year
+meridian stats --year 2026
+
+# View yearly adoption growth rates
+meridian stats --growth
+```
+
+### 🛡️ Privacy-First Telemetry
+Meridian's telemetry is **strictly opt-in (disabled by default)** and collects zero personal data, commands, or file paths:
+
+```bash
+meridian telemetry status    # View privacy policy & current state
+meridian telemetry enable    # Opt-in to anonymous metrics
+meridian telemetry disable   # Opt-out completely (Zero network metrics)
+```
+
+---
+
+## 🎨 Interactive Anime Artwork Themes
+
+Choose from 14 embedded anime themes or render full-color raster images:
+
+```bash
+# Select startup anime wallpaper (0-13)
+pic set 0       # Sharingan Eye
+pic set 2       # Sakura Girl
+pic set 4       # Cyberpunk Edgerunners
+pic set 6       # Gojo Satoru
+pic set random  # Random wallpaper on every launch
+
+# Render any image inline inside terminal
+pic /path/to/image.png
+```
+
+---
+
+## 🛠️ Master Command Reference
+
+| Subcommand | Description |
+| :--- | :--- |
+| `meridian` | Launch interactive GPU-accelerated Meridian Terminal |
+| `meridian-shell` | Launch standalone C++20 POSIX shell |
+| `meridian gh connect` | 1-Click GitHub SSH key setup & live authentication |
+| `meridian gh status` | Inspect GitHub connection and remote repository |
+| `meridian gh key` | View public SSH key |
+| `meridian vscode enable` | Set Meridian as VS Code default integrated terminal |
+| `meridian update` | Update to the latest release with SHA256 verification |
+| `meridian stats` | Display anonymous platform metrics and yearly growth |
+| `meridian telemetry status` | View opt-in telemetry configuration and privacy policy |
+| `monitor` | Live CPU, RAM, Disk, Network metrics dashboard |
+| `gitintel` | Visual Git branch divergence and staged/unstaged changes |
+| `files [dir]` | Tree file explorer with Git badges |
+| `ssh-mgr [alias]` | Native SSH workspace manager (`~/.ssh/config`) |
+| `ask "<intent>"` | Translate natural language to safe shell commands |
+| `diag "<error>"` | Offline compiler, runtime, and database error diagnostics |
+| `palette [query]` | Command Palette with fuzzy search (`Ctrl+Shift+P`) |
+| `search "<query>"` | Universal search across screen buffers and history (`Ctrl+Shift+F`) |
+| `split [v\|h]` | Binary tree pane split (`Ctrl+Shift+D` / `Ctrl+Shift+E`) |
+| `pic <file>` | Direct 32-bit RGBA hardware raster image viewer |
+| `perf` | Live GPU framerate, PTY latency & telemetry profiler |
+
+---
+
+## 🤝 Contributing
+
+Contributions of all kinds are warmly welcomed!
+
+```bash
+# Clone the repository
+git clone https://github.com/charanbalaji2005/Meridian-Shell.git
+cd Meridian-Shell
+
+# Build all binaries & run test suite
+make all -j$(nproc)
+make test
+```
+
+Please feel free to open an **Issue** or submit a **Pull Request**.
+
+---
+
+## 📜 License
+
+Dual-licensed under the **GPL-3.0-or-later** / **MIT License**. Copyright © 2025-2026 Charan Balaji and Meridian Contributors.
