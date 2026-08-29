@@ -1,26 +1,20 @@
 #include "file_explorer.hpp"
+#include "icon_provider.hpp"
 
 #include <algorithm>
 #include <dirent.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 namespace meridian::dev {
 
 std::string FileExplorer::get_file_icon(const std::string& filename, bool is_dir) {
-    if (is_dir) return "";
-    auto dot = filename.rfind('.');
-    if (dot != std::string::npos) {
-        std::string ext = filename.substr(dot + 1);
-        if (ext == "cpp" || ext == "hpp" || ext == "c" || ext == "h") return "";
-        if (ext == "py") return "";
-        if (ext == "rs") return "";
-        if (ext == "js" || ext == "ts") return "";
-        if (ext == "md" || ext == "txt") return "";
-        if (ext == "json" || ext == "toml" || ext == "yaml" || ext == "yml") return "";
-        if (ext == "sh") return "";
+    bool is_exec = false;
+    if (!is_dir) {
+        is_exec = (access(filename.c_str(), X_OK) == 0);
     }
-    return "";
+    return IconProvider::icon_for_file(filename, is_dir, is_exec, ' ');
 }
 
 FileNode FileExplorer::scan_directory(const std::string& root_path, int max_depth) {

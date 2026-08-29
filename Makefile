@@ -36,6 +36,7 @@ SHELL_SRC := \
     src/shell/parser.cpp \
     src/shell/executor.cpp \
     src/shell/builtins.cpp \
+    src/shell/autosuggest_engine.cpp \
     src/shell/line_editor.cpp \
     src/shell/shell.cpp
 
@@ -64,7 +65,8 @@ DEV_SRC := \
     src/dev/ssh_manager.cpp \
     src/dev/platform_manager.cpp \
     src/dev/github_integration.cpp \
-    src/dev/ide_detector.cpp
+    src/dev/ide_detector.cpp \
+    src/dev/icon_provider.cpp
 
 PLUGIN_SRC := \
     src/plugins/plugin_manager.cpp
@@ -100,7 +102,8 @@ TEST_SRC := \
     tests/test_ide_detector.cpp \
     tests/test_pixel_art_renderer.cpp \
     tests/test_native_graphics_pipeline.cpp \
-    tests/test_ascii_art_engine.cpp
+    tests/test_ascii_art_engine.cpp \
+    tests/test_prompt_and_autosuggest.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))

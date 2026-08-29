@@ -59,10 +59,11 @@ MTEST(git_intel_inspection) {
 }
 
 MTEST(file_explorer_scan_and_icons) {
-    ASSERT_EQ(FileExplorer::get_file_icon("main.cpp", false), "");
-    ASSERT_EQ(FileExplorer::get_file_icon("server.py", false), "");
-    ASSERT_EQ(FileExplorer::get_file_icon("cargo.rs", false), "");
-    ASSERT_EQ(FileExplorer::get_file_icon("src", true), "");
+    // Icons should be non-empty strings (exact value depends on terminal tier)
+    ASSERT_FALSE(FileExplorer::get_file_icon("main.cpp", false).empty());
+    ASSERT_FALSE(FileExplorer::get_file_icon("server.py", false).empty());
+    ASSERT_FALSE(FileExplorer::get_file_icon("cargo.rs", false).empty());
+    ASSERT_FALSE(FileExplorer::get_file_icon("src", true).empty());
 
     auto root = FileExplorer::scan_directory(".", 1);
     ASSERT_TRUE(root.is_directory);
