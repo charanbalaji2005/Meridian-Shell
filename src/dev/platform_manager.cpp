@@ -294,3 +294,4 @@ int PlatformManager::handle_telemetry(const std::vector<std::string>& argv) {
 }
 
 } // namespace meridian::dev
+

@@ -82,3 +82,4 @@ MTEST(platform_manager_telemetry_and_updates) {
 
     std::cout.rdbuf(orig_buf);
 }
+
