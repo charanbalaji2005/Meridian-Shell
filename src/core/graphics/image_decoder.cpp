@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -186,7 +187,50 @@ DecodedImage ImageDecoder::decode_file(const std::string& filepath) {
     DecodedImage out;
     if (filepath.empty()) return out;
 
-    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    std::string actual_path = filepath;
+    if (access(actual_path.c_str(), R_OK) != 0) {
+        std::string alias = filepath;
+        if (filepath == "itachi" || filepath == "sharingan") alias = "itachi_sharingan";
+        else if (filepath == "swordsman" || filepath == "shadow") alias = "shadow_swordsman";
+        else if (filepath == "ribbon") alias = "ribbon_girl";
+        else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
+        else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
+        else if (filepath == "sunset" || filepath == "sunset_girl" || filepath == "city") alias = "sunset_girl";
+        else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
+        else if (filepath == "sakura") alias = "sakura_girl";
+        else if (filepath == "fan") alias = "fan_girl";
+
+        const char* home = std::getenv("HOME");
+        std::string home_str = home ? home : "";
+        std::vector<std::string> candidates = {
+            home_str + "/.config/meridian/gallery/" + alias + ".png",
+            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
+            home_str + "/.config/meridian/gallery/" + alias + ".webp",
+            home_str + "/.config/meridian/gallery/" + alias,
+            "resources/images/gallery/" + alias + ".png",
+            "resources/images/gallery/" + alias + ".jpg",
+            "resources/images/gallery/" + alias + ".webp",
+            "resources/images/gallery/" + alias,
+            home_str + "/.config/meridian/gallery/" + filepath + ".png",
+            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
+            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
+            home_str + "/.config/meridian/gallery/" + filepath,
+            "resources/images/gallery/" + filepath + ".png",
+            "resources/images/gallery/" + filepath + ".jpg",
+            "resources/images/gallery/" + filepath + ".webp",
+            "resources/images/gallery/" + filepath,
+            "resources/images/" + filepath,
+            "resources/images/" + filepath + ".png"
+        };
+        for (const auto& c : candidates) {
+            if (access(c.c_str(), R_OK) == 0) {
+                actual_path = c;
+                break;
+            }
+        }
+    }
+
+    std::ifstream file(actual_path, std::ios::binary | std::ios::ate);
     if (!file.is_open()) return out;
 
     std::streamsize file_size = file.tellg();
@@ -196,7 +240,7 @@ DecodedImage ImageDecoder::decode_file(const std::string& filepath) {
     std::vector<uint8_t> buffer(static_cast<size_t>(file_size));
     if (!file.read(reinterpret_cast<char*>(buffer.data()), file_size)) return out;
 
-    return decode_memory(buffer.data(), buffer.size(), filepath);
+    return decode_memory(buffer.data(), buffer.size(), actual_path);
 }
 
 ImageDimensions ImageDecoder::calculate_fit(
