@@ -353,3 +353,4 @@ std::string AutosuggestEngine::get_suggestion(
 }
 
 } // namespace meridian::shell
+

@@ -783,3 +783,4 @@ std::string IconProvider::colored_icon_for_file(
 }
 
 } // namespace meridian::dev
+

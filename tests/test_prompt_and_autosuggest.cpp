@@ -567,3 +567,4 @@ MTEST(icon_all_file_types_unicode) {
     ASSERT_TRUE(std::string(IconSet::file_executable(t)).size() > 0);
     ASSERT_TRUE(std::string(IconSet::file_lock(t)).size() > 0);
 }
+
