@@ -323,6 +323,84 @@ std::string TerminalImage::render_kitty_graphics_artwork(int col, int row, int c
     return emit_chunked_kitty_payload(kChainsawManKittyBase64, cols_spanned, rows_spanned, 100);
 }
 
+std::string TerminalImage::render_hardware_image_escape(const std::string& filepath, int target_width_cols) {
+    if (filepath.empty()) return "";
+    std::string actual_path = filepath;
+    if (access(actual_path.c_str(), R_OK) != 0) {
+        std::string alias = filepath;
+        if (filepath == "itachi" || filepath == "sharingan") alias = "itachi_sharingan";
+        else if (filepath == "swordsman" || filepath == "shadow") alias = "shadow_swordsman";
+        else if (filepath == "ribbon") alias = "ribbon_girl";
+        else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
+        else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
+        else if (filepath == "sunset" || filepath == "sunset_girl" || filepath == "city") alias = "sunset_girl";
+        else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
+        else if (filepath == "sakura") alias = "sakura_girl";
+        else if (filepath == "fan") alias = "fan_girl";
+
+        const char* home = std::getenv("HOME");
+        std::string home_str = home ? home : "";
+        std::vector<std::string> candidates = {
+            home_str + "/.config/meridian/gallery/" + alias + ".png",
+            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
+            home_str + "/.config/meridian/gallery/" + alias + ".webp",
+            home_str + "/.config/meridian/gallery/" + alias,
+            "resources/images/gallery/" + alias + ".png",
+            "resources/images/gallery/" + alias + ".jpg",
+            "resources/images/gallery/" + alias + ".webp",
+            "resources/images/gallery/" + alias,
+            home_str + "/.config/meridian/gallery/" + filepath + ".png",
+            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
+            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
+            home_str + "/.config/meridian/gallery/" + filepath,
+            "resources/images/gallery/" + filepath + ".png",
+            "resources/images/gallery/" + filepath + ".jpg",
+            "resources/images/gallery/" + filepath + ".webp",
+            "resources/images/gallery/" + filepath,
+            "resources/images/" + filepath,
+            "resources/images/" + filepath + ".png"
+        };
+        for (const auto& c : candidates) {
+            if (access(c.c_str(), R_OK) == 0) {
+                actual_path = c;
+                break;
+            }
+        }
+    }
+
+    std::ifstream f(actual_path, std::ios::binary);
+    if (!f.is_open()) return "";
+    std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    if (buffer.empty()) return "";
+
+    static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string b64;
+    b64.reserve(((buffer.size() + 2) / 3) * 4);
+    for (size_t k = 0; k < buffer.size(); k += 3) {
+        uint32_t b = (buffer[k] << 16) | ((k + 1 < buffer.size() ? buffer[k + 1] : 0) << 8) | (k + 2 < buffer.size() ? buffer[k + 2] : 0);
+        b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
+        b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
+        b64.push_back((k + 1 < buffer.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
+        b64.push_back((k + 2 < buffer.size()) ? b64_tbl[b & 0x3F] : '=');
+    }
+
+    std::ostringstream ss;
+    // 1. iTerm2 inline image sequence (standard in VS Code terminal, Antigravity IDE, iTerm2, WezTerm)
+    ss << "\033]1337;File=inline=1;size=" << buffer.size();
+    if (target_width_cols > 0) {
+        ss << ";width=" << target_width_cols;
+    } else {
+        ss << ";width=auto";
+    }
+    ss << ";preserveAspectRatio=1:" << b64 << "\007\n";
+
+    // 2. Kitty Graphics protocol sequence (for Kitty, Ghostty, WezTerm)
+    int cols = (target_width_cols > 0) ? target_width_cols : 60;
+    ss << emit_chunked_kitty_payload(b64, cols, 0, 100);
+
+    return ss.str();
+}
+
 std::string TerminalImage::render_file_raster_escape(const std::string& filepath, int x, int y, int max_w, int max_h) {
     (void)x; (void)y;
     if (filepath.empty()) return "";

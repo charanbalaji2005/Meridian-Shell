@@ -58,7 +58,8 @@ public:
     // Renders the reference artwork as an array of ANSI terminal lines
     static std::vector<std::string> render_reference_artwork_lines(int max_rows = 11);
 
-    // Emits Kitty Graphics Protocol high-res picture escape sequence
+    // Emits native GPU hardware raster inline image escape sequence (iTerm2 OSC 1337 + Kitty protocol)
+    static std::string render_hardware_image_escape(const std::string& filepath, int target_width_cols = 0);
     static std::string render_kitty_graphics_artwork(int col = 2, int row = 1, int cols_spanned = 24, int rows_spanned = 10);
     static std::string render_file_raster_escape(const std::string& filepath, int x = 30, int y = 30, int max_w = 220, int max_h = 220);
     std::string to_kitty_graphics_escape(int x = 30, int y = 30, int cols_spanned = 28, int rows_spanned = 10) const;

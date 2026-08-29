@@ -369,23 +369,22 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // Direct GPU/Kitty hardware raster if explicitly requested via --truecolor / --raster
-    if (force_raster) {
-        auto decoded = graphics::ImageDecoder::decode_file(filepath);
-        if (decoded.is_valid()) {
-            const auto& frame = decoded.frame(0);
-            float scale = std::min(static_cast<float>(target_width) / frame.width, static_cast<float>(target_height) / frame.height);
-            int disp_w = std::max(1, static_cast<int>(std::round(frame.width * scale)));
-            int disp_h = std::max(1, static_cast<int>(std::round(frame.height * scale)));
-            std::string esc = core::TerminalImage::render_file_raster_escape(filepath, 30, 30, disp_w, disp_h);
-            if (!esc.empty()) {
-                std::cout << esc << "\n";
-                return 0;
-            }
-        }
+    // If user explicitly requests retro pixel/halfblock/ascii/braille representation
+    if (force_pixel) {
+        std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
+        std::cout << rendered;
+        return 0;
     }
 
-    // Direct High-Definition TrueColor Halfblock Presentation (no ASCII letters, works in all IDEs & terminals)
+    // Default: 100% Photorealistic Hardware Raster Graphic (iTerm2 OSC 1337 + Kitty Protocol)
+    // Renders the original uncompressed image directly inside VS Code, Antigravity IDE, iTerm2, Kitty, Ghostty, WezTerm
+    std::string hw_esc = core::TerminalImage::render_hardware_image_escape(filepath, target_width);
+    if (!hw_esc.empty()) {
+        std::cout << hw_esc;
+        return 0;
+    }
+
+    // Fallback: render high-definition halfblock
     std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
     std::cout << rendered;
     return 0;
