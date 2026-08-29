@@ -14,6 +14,7 @@ CORE_SRC := \
     src/core/vt/graphics.cpp \
     src/core/graphics/image_decoder.cpp \
     src/core/graphics/terminal_graphic.cpp \
+    src/core/graphics/pixel_art_renderer.cpp \
     src/core/pty/pty_manager.cpp \
     src/core/pty/pty_session.cpp \
     src/core/config.cpp \
@@ -91,7 +92,8 @@ TEST_SRC := \
     tests/test_advanced_protocols.cpp \
     tests/test_platform_manager.cpp \
     tests/test_github_integration.cpp \
-    tests/test_ide_detector.cpp
+    tests/test_ide_detector.cpp \
+    tests/test_pixel_art_renderer.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))

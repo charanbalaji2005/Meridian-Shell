@@ -4,6 +4,7 @@
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
 #include "../core/graphics/image_decoder.hpp"
+#include "../core/graphics/pixel_art_renderer.hpp"
 #include "../core/vt/screen_buffer.hpp"
 #include "../core/renderer/telemetry_profiler.hpp"
 #include "../ai/intent_engine.hpp"
@@ -231,16 +232,51 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // 6. pic <filepath> — DIRECT FULL-COLOR INLINE RASTER IMAGE
+    // 6. pic <filepath> — PIXEL ART & INLINE RASTER IMAGE PIPELINE
     std::string filepath;
     int target_width = 220;
     int target_height = 220;
+    graphics::PixelArtOptions popts;
+    bool force_pixel = false;
+    bool force_raster = false;
 
     for (size_t i = 1; i < argv.size(); ++i) {
-        if (argv[i] == "--width" && i + 1 < argv.size()) {
-            try { target_width = std::stoi(argv[++i]); } catch (...) {}
+        if (argv[i] == "--pixel") {
+            popts.style = graphics::PixelRenderStyle::PixelArt;
+            force_pixel = true;
+        } else if (argv[i] == "--halfblock") {
+            popts.style = graphics::PixelRenderStyle::HalfBlock;
+            force_pixel = true;
+        } else if (argv[i] == "--ascii") {
+            popts.style = graphics::PixelRenderStyle::Ascii;
+            force_pixel = true;
+        } else if (argv[i] == "--ascii-color") {
+            popts.style = graphics::PixelRenderStyle::AsciiColor;
+            force_pixel = true;
+        } else if (argv[i] == "--braille") {
+            popts.style = graphics::PixelRenderStyle::Braille;
+            force_pixel = true;
+        } else if (argv[i] == "--truecolor" || argv[i] == "--raster") {
+            force_raster = true;
+        } else if (argv[i] == "--scale" && i + 1 < argv.size()) {
+            try { popts.scale = std::stoi(argv[++i]); } catch (...) {}
+            force_pixel = true;
+        } else if (argv[i] == "--colors" && i + 1 < argv.size()) {
+            try { popts.num_colors = std::stoi(argv[++i]); } catch (...) {}
+            force_pixel = true;
+        } else if (argv[i] == "--sharpness" && i + 1 < argv.size()) {
+            try { popts.sharpness = std::stof(argv[++i]); } catch (...) {}
+            force_pixel = true;
+        } else if (argv[i] == "--dither") {
+            popts.dither = true;
+            force_pixel = true;
+        } else if (argv[i] == "--no-dither") {
+            popts.dither = false;
+            force_pixel = true;
+        } else if (argv[i] == "--width" && i + 1 < argv.size()) {
+            try { target_width = std::stoi(argv[++i]); popts.max_width_cols = target_width; } catch (...) {}
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
-            try { target_height = std::stoi(argv[++i]); } catch (...) {}
+            try { target_height = std::stoi(argv[++i]); popts.max_height_rows = target_height; } catch (...) {}
         } else if (argv[i][0] != '-') {
             filepath = argv[i];
         }
@@ -249,6 +285,13 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     if (filepath.empty()) {
         auto theme = core::ArtGallery::get_active_artwork(56, 22);
         std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
+        return 0;
+    }
+
+    // If pixel art mode requested or halfblock/ascii/braille mode requested
+    if (force_pixel && !force_raster) {
+        std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
+        std::cout << rendered;
         return 0;
     }
 
@@ -275,20 +318,9 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // Fallback direct RGBA transmission
-    std::vector<uint8_t> raw_rgba = frame.rgba;
-    static const char b64_tbl[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    std::string b64;
-    b64.reserve(((raw_rgba.size() + 2) / 3) * 4);
-    for (size_t k = 0; k < raw_rgba.size(); k += 3) {
-        uint32_t b = (raw_rgba[k] << 16) | ((k + 1 < raw_rgba.size() ? raw_rgba[k + 1] : 0) << 8) | (k + 2 < raw_rgba.size() ? raw_rgba[k + 2] : 0);
-        b64.push_back(b64_tbl[(b >> 18) & 0x3F]);
-        b64.push_back(b64_tbl[(b >> 12) & 0x3F]);
-        b64.push_back((k + 1 < raw_rgba.size()) ? b64_tbl[(b >> 6) & 0x3F] : '=');
-        b64.push_back((k + 2 < raw_rgba.size()) ? b64_tbl[b & 0x3F] : '=');
-    }
-
-    std::cout << "\033_Ga=d,d=a\033\\\033_Ga=T,f=32,s=" << src_w << ",v=" << src_h << ",x=30,y=30,c=" << (disp_w / 8) << ",r=" << (disp_h / 16) << ";" << b64 << "\033\\\n";
+    // Fallback: render via high-quality pixel art halfblock renderer
+    std::string rendered = graphics::PixelArtRenderer::render_image(decoded, popts);
+    std::cout << rendered;
     return 0;
 }
 
