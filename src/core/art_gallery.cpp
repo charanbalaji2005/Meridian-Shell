@@ -546,6 +546,7 @@ std::vector<std::pair<std::string, std::string>> ArtGallery::list_themes() {
         {"ribbon_girl",      "Monochrome Ribbon Girl by Window"},
         {"gojo_six_eyes",    "Gojo Satoru: Six Eyes & Red Spark"},
         {"gojo_awakening",   "Gojo Satoru: Honored One Awakening"},
+        {"sunset_girl",      "Sunset City Anime Girl on Balcony"},
         {"sharingan_eye",    "Sasuke Mangekyō Eye"},
         {"sakura_girl",      "Sakura Blossom Girl"},
         {"fan_girl",         "Anime Girl with Fan"},
@@ -553,8 +554,7 @@ std::vector<std::pair<std::string, std::string>> ArtGallery::list_themes() {
         {"sukuna_shrine",    "Sukuna: Malevolent Shrine (JJK)"},
         {"naruto_rasengan",  "Naruto: Kurama Rasengan"},
         {"rengoku_flames",   "Rengoku: Sun Breathing"},
-        {"ultra_instinct",   "Goku: Ultra Instinct"},
-        {"chainsaw_man",     "Chainsaw Man (Power & Denji)"}
+        {"ultra_instinct",   "Goku: Ultra Instinct"}
     };
 }
 
@@ -604,6 +604,7 @@ ArtworkTheme ArtGallery::get_artwork_by_id_or_file(const std::string& id_or_file
     if (id_or_file == "ribbon_girl" || id_or_file == "ribbon" || id_or_file == "window") return ArtworkTheme{"ribbon_girl", "Monochrome Ribbon Girl by Window", load_gallery_file("ribbon_girl.png", width, height)};
     if (id_or_file == "gojo_six_eyes" || id_or_file == "gojo" || id_or_file == "six_eyes") return ArtworkTheme{"gojo_six_eyes", "Gojo Satoru: Six Eyes & Red Spark", load_gallery_file("gojo_six_eyes.png", width, height)};
     if (id_or_file == "gojo_awakening" || id_or_file == "awakening" || id_or_file == "honored_one") return ArtworkTheme{"gojo_awakening", "Gojo Satoru: Honored One Awakening", load_gallery_file("gojo_awakening.png", width, height)};
+    if (id_or_file == "sunset_girl" || id_or_file == "sunset" || id_or_file == "city_girl") return ArtworkTheme{"sunset_girl", "Sunset City Anime Girl on Balcony", load_gallery_file("sunset_girl.png", width, height)};
     if (id_or_file == "sharingan_eye" || id_or_file == "eye" || id_or_file == "sasuke") return ArtworkTheme{"sharingan_eye", "Sasuke Mangekyō Eye", load_gallery_file("sharingan_eye.png", width, height)};
     if (id_or_file == "sakura_girl" || id_or_file == "sakura") return ArtworkTheme{"sakura_girl", "Sakura Blossom Girl", load_gallery_file("sakura_girl.png", width, height)};
     if (id_or_file == "fan_girl" || id_or_file == "fan") return ArtworkTheme{"fan_girl", "Anime Girl with Fan", load_gallery_file("fan_girl.png", width, height)};
@@ -649,15 +650,15 @@ ArtworkTheme ArtGallery::get_artwork_by_index(size_t index, int width, int heigh
         case 2: return ArtworkTheme{"ribbon_girl", "Monochrome Ribbon Girl by Window", load_gallery_file("ribbon_girl.png", width, height)};
         case 3: return ArtworkTheme{"gojo_six_eyes", "Gojo Satoru: Six Eyes & Red Spark", load_gallery_file("gojo_six_eyes.png", width, height)};
         case 4: return ArtworkTheme{"gojo_awakening", "Gojo Satoru: Honored One Awakening", load_gallery_file("gojo_awakening.png", width, height)};
-        case 5: return ArtworkTheme{"sharingan_eye", "Sasuke Mangekyō Eye", load_gallery_file("sharingan_eye.png", width, height)};
-        case 6: return ArtworkTheme{"sakura_girl", "Sakura Blossom Girl", load_gallery_file("sakura_girl.png", width, height)};
-        case 7: return ArtworkTheme{"fan_girl", "Anime Girl with Fan", load_gallery_file("fan_girl.png", width, height)};
-        case 8: return ArtworkTheme{"gojo_purple", "Gojo: Hollow Purple", make_gojo_hollow_purple_art(width, height)};
-        case 9: return ArtworkTheme{"sukuna_shrine", "Sukuna: Malevolent Shrine", make_sukuna_art(width, height)};
-        case 10: return ArtworkTheme{"naruto_rasengan", "Naruto: Kurama Rasengan", make_naruto_art(width, height)};
-        case 11: return ArtworkTheme{"rengoku_flames", "Rengoku: Sun Breathing", make_rengoku_art(width, height)};
-        case 12: return ArtworkTheme{"ultra_instinct", "Goku: Ultra Instinct", make_ultra_instinct_art(width, height)};
-        case 13: default: return ArtworkTheme{"chainsaw_man", "Chainsaw Man", make_chainsaw_man_art(width, height)};
+        case 5: return ArtworkTheme{"sunset_girl", "Sunset City Anime Girl on Balcony", load_gallery_file("sunset_girl.png", width, height)};
+        case 6: return ArtworkTheme{"sharingan_eye", "Sasuke Mangekyō Eye", load_gallery_file("sharingan_eye.png", width, height)};
+        case 7: return ArtworkTheme{"sakura_girl", "Sakura Blossom Girl", load_gallery_file("sakura_girl.png", width, height)};
+        case 8: return ArtworkTheme{"fan_girl", "Anime Girl with Fan", load_gallery_file("fan_girl.png", width, height)};
+        case 9: return ArtworkTheme{"gojo_purple", "Gojo: Hollow Purple", make_gojo_hollow_purple_art(width, height)};
+        case 10: return ArtworkTheme{"sukuna_shrine", "Sukuna: Malevolent Shrine", make_sukuna_art(width, height)};
+        case 11: return ArtworkTheme{"naruto_rasengan", "Naruto: Kurama Rasengan", make_naruto_art(width, height)};
+        case 12: return ArtworkTheme{"rengoku_flames", "Rengoku: Sun Breathing", make_rengoku_art(width, height)};
+        case 13: default: return ArtworkTheme{"ultra_instinct", "Goku: Ultra Instinct", make_ultra_instinct_art(width, height)};
     }
 }
 

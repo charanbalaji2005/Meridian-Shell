@@ -319,6 +319,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         else if (filepath == "ribbon") alias = "ribbon_girl";
         else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
         else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
+        else if (filepath == "sunset" || filepath == "sunset_girl" || filepath == "city") alias = "sunset_girl";
         else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
         else if (filepath == "sakura") alias = "sakura_girl";
         else if (filepath == "fan") alias = "fan_girl";
@@ -355,42 +356,32 @@ static int builtin_pic(const std::vector<std::string>& argv) {
 
     if (filepath.empty()) {
         auto theme = core::ArtGallery::get_active_artwork(56, 22);
-        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
+        std::cout << "\033[1;37mActive Theme:\033[0m \033[1;33m" << theme.title << "\033[0m\n";
+        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 48, 18);
+        for (const auto& line : lines) {
+            std::cout << line << "\n";
+        }
         return 0;
     }
 
-    // If pixel art mode requested or halfblock/ascii/braille mode requested
-    if (force_pixel && !force_raster) {
-        std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
-        std::cout << rendered;
-        return 0;
+    // Direct GPU/Kitty hardware raster if explicitly requested via --truecolor / --raster
+    if (force_raster) {
+        auto decoded = graphics::ImageDecoder::decode_file(filepath);
+        if (decoded.is_valid()) {
+            const auto& frame = decoded.frame(0);
+            float scale = std::min(static_cast<float>(target_width) / frame.width, static_cast<float>(target_height) / frame.height);
+            int disp_w = std::max(1, static_cast<int>(std::round(frame.width * scale)));
+            int disp_h = std::max(1, static_cast<int>(std::round(frame.height * scale)));
+            std::string esc = core::TerminalImage::render_file_raster_escape(filepath, 30, 30, disp_w, disp_h);
+            if (!esc.empty()) {
+                std::cout << esc << "\n";
+                return 0;
+            }
+        }
     }
 
-    // Decode original image into 32-bit RGBA8888 pixel buffer
-    auto decoded = graphics::ImageDecoder::decode_file(filepath);
-    if (!decoded.is_valid()) {
-        std::cerr << "meridian: image file not found or unsupported format: " << filepath << "\n";
-        return 1;
-    }
-
-    const auto& frame = decoded.frame(0);
-    int src_w = frame.width;
-    int src_h = frame.height;
-
-    // Calculate display dimensions preserving aspect ratio with contain behavior (max 220x220)
-    float scale = std::min(static_cast<float>(target_width) / src_w, static_cast<float>(target_height) / src_h);
-    int disp_w = std::max(1, static_cast<int>(std::round(src_w * scale)));
-    int disp_h = std::max(1, static_cast<int>(std::round(src_h * scale)));
-
-    // Emit direct hardware raster graphics sequence (x=30, y=30)
-    std::string esc = core::TerminalImage::render_file_raster_escape(filepath, 30, 30, disp_w, disp_h);
-    if (!esc.empty()) {
-        std::cout << esc << "\n";
-        return 0;
-    }
-
-    // Fallback: render via high-quality pixel art halfblock renderer
-    std::string rendered = graphics::PixelArtRenderer::render_image(decoded, popts);
+    // Direct High-Definition TrueColor Halfblock Presentation (no ASCII letters, works in all IDEs & terminals)
+    std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
     std::cout << rendered;
     return 0;
 }
