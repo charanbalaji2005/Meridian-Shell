@@ -6,6 +6,7 @@
 #include "../core/graphics/image_decoder.hpp"
 #include "../core/graphics/pixel_art_renderer.hpp"
 #include "../core/graphics/graphics_manager.hpp"
+#include "../core/graphics/ascii_art_engine.hpp"
 #include "../core/vt/screen_buffer.hpp"
 #include "../core/renderer/telemetry_profiler.hpp"
 #include "../ai/intent_engine.hpp"
@@ -274,49 +275,51 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // 7. pic <filepath|name> [options] — NATIVE GPU HARDWARE RASTER IMAGE RENDERING
+    // 7. pic <filepath|name> [options] — ULTRA-HIGH-QUALITY ASCII & UNICODE DUAL-PIXEL TERMINAL ART
     std::string filepath;
-    graphics::ImageObject img_cfg;
-    img_cfg.placement = graphics::ImagePlacementType::CursorRelative;
-    img_cfg.fit_mode = graphics::ImageFitMode::Contain;
-    img_cfg.filter = graphics::ImageScaleFilter::Smooth;
+    graphics::AsciiArtOptions aopts;
 
     for (size_t i = 1; i < argv.size(); ++i) {
-        if (argv[i] == "--fit" && i + 1 < argv.size()) {
-            std::string fit = argv[++i];
-            if (fit == "cover") img_cfg.fit_mode = graphics::ImageFitMode::Cover;
-            else if (fit == "stretch") img_cfg.fit_mode = graphics::ImageFitMode::Stretch;
-            else img_cfg.fit_mode = graphics::ImageFitMode::Contain;
+        if (argv[i] == "--mode" && i + 1 < argv.size()) {
+            std::string m = argv[++i];
+            if (m == "halfblock") aopts.mode = graphics::AsciiRenderMode::HalfBlock;
+            else if (m == "ansi") aopts.mode = graphics::AsciiRenderMode::Ansi;
+            else if (m == "ascii") aopts.mode = graphics::AsciiRenderMode::Ascii;
+            else aopts.mode = graphics::AsciiRenderMode::TrueColor;
+        } else if (argv[i] == "--quality" && i + 1 < argv.size()) {
+            std::string q = argv[++i];
+            if (q == "low") aopts.quality = graphics::AsciiQuality::Low;
+            else if (q == "medium") aopts.quality = graphics::AsciiQuality::Medium;
+            else if (q == "high") aopts.quality = graphics::AsciiQuality::High;
+            else aopts.quality = graphics::AsciiQuality::Ultra;
+        } else if (argv[i] == "--fit" && i + 1 < argv.size()) {
+            std::string f = argv[++i];
+            if (f == "cover") aopts.fit = graphics::AsciiFitMode::Cover;
+            else aopts.fit = graphics::AsciiFitMode::Contain;
         } else if (argv[i] == "--width" && i + 1 < argv.size()) {
-            std::string w_str = argv[++i];
-            if (!w_str.empty() && w_str.back() == '%') {
-                w_str.pop_back();
-                try { img_cfg.width_percentage = std::stof(w_str); } catch (...) {}
-            } else {
-                try { img_cfg.display_width = std::stof(w_str); } catch (...) {}
-            }
+            try { aopts.target_width = std::stoi(argv[++i]); } catch (...) {}
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
-            std::string h_str = argv[++i];
-            if (!h_str.empty() && h_str.back() == '%') {
-                h_str.pop_back();
-                try { img_cfg.height_percentage = std::stof(h_str); } catch (...) {}
-            } else {
-                try { img_cfg.display_height = std::stof(h_str); } catch (...) {}
-            }
-        } else if (argv[i] == "--x" && i + 1 < argv.size()) {
-            try {
-                img_cfg.x = std::stof(argv[++i]);
-                img_cfg.placement = graphics::ImagePlacementType::AbsolutePixels;
-            } catch (...) {}
-        } else if (argv[i] == "--y" && i + 1 < argv.size()) {
-            try {
-                img_cfg.y = std::stof(argv[++i]);
-                img_cfg.placement = graphics::ImagePlacementType::AbsolutePixels;
-            } catch (...) {}
-        } else if (argv[i] == "--opacity" && i + 1 < argv.size()) {
-            try { img_cfg.opacity = std::stof(argv[++i]); } catch (...) {}
-        } else if (argv[i] == "--z-index" && i + 1 < argv.size()) {
-            try { img_cfg.z_index = std::stoi(argv[++i]); } catch (...) {}
+            try { aopts.target_height = std::stoi(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--brightness" && i + 1 < argv.size()) {
+            try { aopts.brightness = std::stof(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--contrast" && i + 1 < argv.size()) {
+            try { aopts.contrast = std::stof(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--gamma" && i + 1 < argv.size()) {
+            try { aopts.gamma = std::stof(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--saturation" && i + 1 < argv.size()) {
+            try { aopts.saturation = std::stof(argv[++i]); } catch (...) {}
+        } else if ((argv[i] == "--edge" || argv[i] == "--sharpness") && i + 1 < argv.size()) {
+            try { aopts.edge_enhancement = std::stof(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--dither") {
+            aopts.dither = true;
+        } else if (argv[i] == "--no-dither") {
+            aopts.dither = false;
+        } else if (argv[i] == "--ascii") {
+            aopts.mode = graphics::AsciiRenderMode::Ascii;
+        } else if (argv[i] == "--halfblock" || argv[i] == "--pixel") {
+            aopts.mode = graphics::AsciiRenderMode::HalfBlock;
+        } else if (argv[i] == "--truecolor") {
+            aopts.mode = graphics::AsciiRenderMode::TrueColor;
         } else if (argv[i][0] != '-') {
             if (argv[i][0] == '#' || argv[i].rfind("//", 0) == 0) {
                 break; // Ignore inline shell comments
@@ -327,33 +330,61 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         }
     }
 
+    // Resolve name aliases and gallery directory paths
+    if (!filepath.empty() && access(filepath.c_str(), R_OK) != 0) {
+        std::string alias = filepath;
+        if (filepath == "itachi" || filepath == "sharingan") alias = "itachi_sharingan";
+        else if (filepath == "swordsman" || filepath == "shadow") alias = "shadow_swordsman";
+        else if (filepath == "ribbon") alias = "ribbon_girl";
+        else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
+        else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
+        else if (filepath == "sunset" || filepath == "sunset_girl" || filepath == "city") alias = "sunset_girl";
+        else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
+        else if (filepath == "sakura") alias = "sakura_girl";
+        else if (filepath == "fan") alias = "fan_girl";
+        else if (filepath == "purple") alias = "gojo_purple";
+        else if (filepath == "shrine") alias = "sukuna_shrine";
+        else if (filepath == "rasengan") alias = "naruto_rasengan";
+        else if (filepath == "flames") alias = "rengoku_flames";
+        else if (filepath == "ultra_instinct") alias = "ultra_instinct";
+
+        const char* home = std::getenv("HOME");
+        std::string home_str = home ? home : "";
+        std::vector<std::string> candidates = {
+            home_str + "/.config/meridian/gallery/" + alias + ".png",
+            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
+            home_str + "/.config/meridian/gallery/" + alias + ".webp",
+            home_str + "/.config/meridian/gallery/" + alias,
+            "resources/images/gallery/" + alias + ".png",
+            "resources/images/gallery/" + alias + ".jpg",
+            "resources/images/gallery/" + alias + ".webp",
+            "resources/images/gallery/" + alias,
+            home_str + "/.config/meridian/gallery/" + filepath + ".png",
+            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
+            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
+            home_str + "/.config/meridian/gallery/" + filepath,
+            "resources/images/gallery/" + filepath + ".png",
+            "resources/images/gallery/" + filepath + ".jpg",
+            "resources/images/gallery/" + filepath + ".webp",
+            "resources/images/gallery/" + filepath,
+            "resources/images/" + filepath,
+            "resources/images/" + filepath + ".png"
+        };
+        for (const auto& c : candidates) {
+            if (access(c.c_str(), R_OK) == 0) {
+                filepath = c;
+                break;
+            }
+        }
+    }
+
     if (filepath.empty()) {
         std::cerr << "meridian: please specify an image file to display (e.g. pic anime.png)\n";
         return 1;
     }
 
-    // Hardware GPU Graphics check
-    if (!gm.is_gpu_available()) {
-        std::cerr << "Meridian: native graphics rendering is unavailable.\n";
-        return 1;
-    }
-
-    // Register with native GraphicsManager
-    std::string err;
-    uint64_t image_id = gm.add_image_file(filepath, img_cfg, &err);
-    if (image_id == 0 && !err.empty()) {
-        std::cerr << err << "\n";
-        return 1;
-    }
-
-    // Emit Photorealistic Native Hardware Raster Stream (iTerm2 OSC 1337 + Kitty Protocol)
-    int target_cols = static_cast<int>(img_cfg.display_width > 0 ? (img_cfg.display_width / 9.0f) : 0);
-    std::string hw_esc = core::TerminalImage::render_hardware_image_escape(filepath, target_cols);
-    if (!hw_esc.empty()) {
-        std::cout << hw_esc;
-        return 0;
-    }
-
+    std::string rendered = graphics::AsciiArtEngine::render_file(filepath, aopts);
+    std::cout << rendered;
     return 0;
 }
 
