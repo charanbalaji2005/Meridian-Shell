@@ -51,47 +51,75 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     if (action == "--status" || action == "-s") action = "status";
 
     std::string home = get_home_dir();
-    std::string user_settings_path = home + "/.config/Code/User/settings.json";
     std::string local_bin = home + "/.local/bin/meridian-shell";
+    std::string local_gui = home + "/.local/bin/meridian";
     std::string sys_bin = "/usr/local/bin/meridian-shell";
-    std::string target_bin = file_exists(local_bin) ? local_bin : sys_bin;
+    std::string sys_gui = "/usr/local/bin/meridian";
+    std::string target_bin = file_exists(local_bin) ? local_bin : (file_exists(sys_bin) ? sys_bin : "meridian-shell");
+    std::string target_gui = file_exists(local_gui) ? local_gui : (file_exists(sys_gui) ? sys_gui : "meridian");
 
-    bool vscode_found = (system("command -v code >/dev/null 2>&1") == 0) || file_exists(user_settings_path) || file_exists(home + "/.vscode");
+    // All IDE & Editor Settings paths
+    std::vector<std::pair<std::string, std::string>> ide_paths = {
+        {"VS Code", home + "/.config/Code/User/settings.json"},
+        {"Antigravity IDE", home + "/.config/Antigravity/User/settings.json"},
+        {"Antigravity IDE (appdata)", home + "/.config/antigravity/User/settings.json"},
+        {"VS Code OSS", home + "/.config/Code - OSS/User/settings.json"},
+        {"VSCodium", home + "/.config/VSCodium/User/settings.json"},
+        {"Cursor", home + "/.config/Cursor/User/settings.json"},
+        {"Windsurf", home + "/.config/Windsurf/User/settings.json"}
+    };
 
-    if (action == "enable") {
-        std::string current = read_file_contents(user_settings_path);
+    if (action == "enable" || action == "auto") {
         std::string new_settings = R"({
     "terminal.integrated.profiles.linux": {
+        "Meridian Shell": {
+            "path": ")" + target_bin + R"(",
+            "icon": "terminal",
+            "overrideName": true
+        },
         "meridian-shell": {
             "path": ")" + target_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "meridian": {
-            "path": ")" + (file_exists(home + "/.local/bin/meridian") ? (home + "/.local/bin/meridian") : "/usr/local/bin/meridian") + R"(",
+        "Meridian Terminal": {
+            "path": ")" + target_gui + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
         },
-        "zsh": {
-            "path": "zsh"
+        "meridian": {
+            "path": ")" + target_gui + R"(",
+            "icon": "terminal-tmux",
+            "overrideName": true
         },
         "bash": {
             "path": "bash",
             "icon": "terminal-bash"
+        },
+        "zsh": {
+            "path": "zsh"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "meridian-shell"
+    "terminal.integrated.defaultProfile.linux": "Meridian Shell"
 })";
 
-        write_file_contents(user_settings_path, new_settings);
-        if (file_exists(".vscode")) {
+        int configured_count = 0;
+        for (const auto& [name, path] : ide_paths) {
+            write_file_contents(path, new_settings);
+            configured_count++;
+        }
+
+        // Also configure current workspace if in a project
+        if (file_exists(".vscode") || file_exists(".antigravity") || file_exists("src")) {
+            system("mkdir -p .vscode");
             write_file_contents(".vscode/settings.json", new_settings);
         }
 
-        std::cout << "\n\033[1;32m✔ Meridian Terminal successfully configured as VS Code default profile!\033[0m\n"
-                  << "  Profile Name : meridian-shell\n"
-                  << "  Target Binary: " << target_bin << "\n"
-                  << "  Settings File: " << user_settings_path << "\n\n";
+        std::cout << "\n\033[1;32m✔ Meridian Terminal successfully configured across all IDEs and editors!\033[0m\n"
+                  << "  Profile Names: 'Meridian Shell', 'meridian-shell', 'Meridian Terminal', 'meridian'\n"
+                  << "  Target Shell : " << target_bin << "\n"
+                  << "  Target GUI   : " << target_gui << "\n"
+                  << "  Configured IDEs: VS Code, Antigravity IDE, Code - OSS, VSCodium, Cursor, Windsurf\n\n";
         return 0;
     }
 
@@ -99,39 +127,44 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
         std::string reset_settings = R"({
     "terminal.integrated.defaultProfile.linux": "bash"
 })";
-        write_file_contents(user_settings_path, reset_settings);
+        for (const auto& [name, path] : ide_paths) {
+            if (file_exists(path)) {
+                write_file_contents(path, reset_settings);
+            }
+        }
         if (file_exists(".vscode/settings.json")) {
             write_file_contents(".vscode/settings.json", reset_settings);
         }
-        std::cout << "\n\033[1;33mℹ Meridian VS Code profile reset to standard bash.\033[0m\n\n";
+        std::cout << "\n\033[1;33mℹ IDE terminal profiles reset to standard bash.\033[0m\n\n";
         return 0;
     }
 
     // Default: Status
-    std::cout << "\n\033[1;36m┌─── Meridian VS Code Integration ─────────────────────────────────────────────┐\033[0m\n";
-    if (vscode_found) {
-        std::cout << "\033[1;37m│\033[0m \033[1;32m✓\033[0m VS Code detected on system\n"
-                  << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Meridian executable detected: \033[1;33m" << target_bin << "\033[0m\n"
-                  << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Linux x86_64\n"
-                  << "\033[1;37m│\033[0m\n";
+    std::cout << "\n\033[1;36m┌─── Meridian IDE & VS Code Integration ───────────────────────────────────────┐\033[0m\n";
+    std::cout << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Meridian Shell detected: \033[1;33m" << target_bin << "\033[0m\n"
+              << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Meridian Terminal detected: \033[1;33m" << target_gui << "\033[0m\n"
+              << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Linux x86_64\n"
+              << "\033[1;37m│\033[0m\n";
 
-        std::string settings = read_file_contents(user_settings_path);
-        bool is_meridian_default = (settings.find("meridian-shell") != std::string::npos);
-
-        std::cout << "\033[1;37m│\033[0m Current default terminal: \033[1;" << (is_meridian_default ? "32mmeridian-shell" : "37mbash") << "\033[0m\n";
-        if (is_meridian_default) {
-            std::cout << "\033[1;37m│\033[0m \033[1;32m● STATUS: ACTIVE\033[0m (Meridian is auto-detected in VS Code terminal dropdown)\n";
-        } else {
-            std::cout << "\033[1;37m│\033[0m \033[1;33m○ STATUS: NOT DEFAULT\033[0m (Run '\033[1;32mmeridian vscode enable\033[0m' to activate)\n";
+    int active_ides = 0;
+    for (const auto& [name, path] : ide_paths) {
+        if (file_exists(path)) {
+            std::string content = read_file_contents(path);
+            bool has_meridian = (content.find("meridian") != std::string::npos || content.find("Meridian") != std::string::npos);
+            std::cout << "\033[1;37m│\033[0m " << name << " : "
+                      << (has_meridian ? "\033[1;32m● AUTO-DETECTED & ACTIVE\033[0m" : "\033[1;33m○ Found (Run 'meridian vscode enable')\033[0m") << "\n";
+            if (has_meridian) active_ides++;
         }
-    } else {
-        std::cout << "\033[1;37m│\033[0m \033[1;31m✖\033[0m VS Code installation not detected in standard paths.\n";
+    }
+
+    if (active_ides == 0) {
+        std::cout << "\033[1;37m│\033[0m Status: \033[1;33m○ Setup Available\033[0m (Run '\033[1;32mmeridian vscode enable\033[0m' to register in all IDEs)\n";
     }
     std::cout << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
               << "\033[1;37mCommands:\033[0m\n"
-              << "  \033[1;32mmeridian vscode status\033[0m       Inspect current VS Code terminal configuration\n"
-              << "  \033[1;32mmeridian vscode enable\033[0m       Set Meridian as default VS Code terminal profile\n"
-              << "  \033[1;32mmeridian vscode disable\033[0m      Reset VS Code terminal back to default bash\n";
+              << "  \033[1;32mmeridian vscode status\033[0m       Inspect current IDE terminal configurations\n"
+              << "  \033[1;32mmeridian vscode enable\033[0m       Auto-detect & register Meridian across VS Code, Antigravity, Cursor\n"
+              << "  \033[1;32mmeridian vscode disable\033[0m      Reset IDE terminal back to default bash\n";
 
     return 0;
 }

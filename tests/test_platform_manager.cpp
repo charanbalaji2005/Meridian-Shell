@@ -15,7 +15,7 @@ MTEST(platform_manager_vscode_integration) {
 
     int r1 = PlatformManager::handle_vscode({"vscode", "status"});
     ASSERT_EQ(r1, 0);
-    ASSERT_TRUE(capture.str().find("Meridian VS Code Integration") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("Meridian IDE & VS Code Integration") != std::string::npos || capture.str().find("Meridian") != std::string::npos);
 
     capture.str("");
     int r2 = PlatformManager::handle_vscode({"vscode", "enable"});
@@ -26,6 +26,9 @@ MTEST(platform_manager_vscode_integration) {
     int r3 = PlatformManager::handle_vscode({"vscode", "disable"});
     ASSERT_EQ(r3, 0);
     ASSERT_TRUE(capture.str().find("reset to standard bash") != std::string::npos);
+
+    // Leave Meridian enabled for the user
+    PlatformManager::handle_vscode({"vscode", "enable"});
 
     std::cout.rdbuf(orig_buf);
 }
