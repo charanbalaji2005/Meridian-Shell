@@ -13,6 +13,10 @@ CORE_SRC := \
     src/core/vt/ansi_parser.cpp \
     src/core/vt/graphics.cpp \
     src/core/graphics/image_decoder.cpp \
+    src/core/graphics/gpu_texture_manager.cpp \
+    src/core/graphics/terminal_image_compositor.cpp \
+    src/core/graphics/graphics_protocol_parser.cpp \
+    src/core/graphics/graphics_manager.cpp \
     src/core/graphics/terminal_graphic.cpp \
     src/core/graphics/pixel_art_renderer.cpp \
     src/core/pty/pty_manager.cpp \
@@ -93,7 +97,8 @@ TEST_SRC := \
     tests/test_platform_manager.cpp \
     tests/test_github_integration.cpp \
     tests/test_ide_detector.cpp \
-    tests/test_pixel_art_renderer.cpp
+    tests/test_pixel_art_renderer.cpp \
+    tests/test_native_graphics_pipeline.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))

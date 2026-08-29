@@ -5,6 +5,7 @@
 #include "../core/art_gallery.hpp"
 #include "../core/graphics/image_decoder.hpp"
 #include "../core/graphics/pixel_art_renderer.hpp"
+#include "../core/graphics/graphics_manager.hpp"
 #include "../core/vt/screen_buffer.hpp"
 #include "../core/renderer/telemetry_profiler.hpp"
 #include "../ai/intent_engine.hpp"
@@ -143,41 +144,62 @@ static int builtin_type(const std::vector<std::string>& argv) {
 }
 
 static int builtin_pic(const std::vector<std::string>& argv) {
+    auto& gm = graphics::GraphicsManager::instance();
+
     // 1. pic --debug [filepath]
     if (argv.size() >= 2 && argv[1] == "--debug") {
-        std::string target = (argv.size() >= 3) ? argv[2] : "resources/images/gallery/sharingan_eye.png";
-        auto decoded = graphics::ImageDecoder::decode_file(target);
-        int src_w = decoded.original_width > 0 ? decoded.original_width : 1280;
-        int src_h = decoded.original_height > 0 ? decoded.original_height : 720;
-        float scale = std::min(220.0f / static_cast<float>(src_w), 220.0f / static_cast<float>(src_h));
-        int disp_w = std::max(1, static_cast<int>(std::round(src_w * scale)));
-        int disp_h = std::max(1, static_cast<int>(std::round(src_h * scale)));
+        std::string target = (argv.size() >= 3) ? argv[2] : "resources/images/gallery/gojo_awakening.png";
+        graphics::ImageDebugReport report;
+        if (!gm.generate_debug_report(target, report)) {
+            // Check alias candidates
+            auto decoded = graphics::ImageDecoder::decode_file(target);
+            if (!decoded.is_valid()) {
+                std::cerr << "meridian: failed to decode image: " << target << "\n";
+                return 1;
+            }
+            gm.generate_debug_report(target, report);
+        }
 
-        std::string fmt;
-        auto dot = target.find_last_of('.');
-        if (dot != std::string::npos) fmt = target.substr(dot + 1);
-        if (fmt.empty()) fmt = decoded.format;
-        for (auto& ch : fmt) ch = std::toupper(ch);
-
-        std::cout << "IMAGE MODE: RASTER\n"
-                  << "SOURCE: " << target << "\n"
-                  << "SOURCE SIZE: " << src_w << "x" << src_h << "\n"
-                  << "FORMAT: " << (fmt.empty() ? "PNG" : fmt) << "\n"
-                  << "PIXEL FORMAT: RGBA8888\n"
-                  << "RENDERER: GPU\n"
-                  << "TEXTURE: " << src_w << "x" << src_h << "\n"
-                  << "DISPLAY: " << disp_w << "x" << disp_h << "\n";
+        std::cout << "Image:\n"
+                  << "  Format: " << report.format << "\n"
+                  << "  Original: " << report.original_width << "x" << report.original_height << "\n"
+                  << "  Decoded: " << report.decoded_format << "\n"
+                  << "  Texture: " << report.texture_width << "x" << report.texture_height << "\n"
+                  << "  Position: " << static_cast<int>(report.position_x) << "," << static_cast<int>(report.position_y) << "\n"
+                  << "  Display: " << static_cast<int>(report.display_width) << "x" << static_cast<int>(report.display_height) << "\n"
+                  << "  GPU: " << (report.gpu_enabled ? "enabled" : "disabled") << "\n";
         return 0;
     }
 
-    // 2. pic --clear / pic clear
+    // 2. pic --clear [id] / pic clear
     if (argv.size() > 1 && (argv[1] == "--clear" || argv[1] == "clear")) {
-        std::cout << "\033_Ga=d,d=a\033\\\n";
+        if (argv.size() >= 3) {
+            try {
+                uint64_t id = std::stoull(argv[2]);
+                gm.remove_image(id);
+            } catch (...) {}
+        } else {
+            gm.clear_all_images();
+        }
+        std::cout << "\033_Ga=d,d=a\033\\\033]1337;File=inline=0:\007\n";
         return 0;
     }
 
-    // 3. pic list / pic (with no args): Show all themes and current selection
-    if (argv.size() <= 1 || (argv.size() == 2 && (argv[1] == "list" || argv[1] == "--list" || argv[1] == "help" || argv[1] == "-h"))) {
+    // 3. pic --list / pic list: Show active GPU image objects and gallery themes
+    if (argv.size() > 1 && (argv[1] == "--list" || argv[1] == "list")) {
+        auto active_images = gm.list_images();
+        if (!active_images.empty()) {
+            std::cout << "\033[1;36mActive GPU Image Layers (" << active_images.size() << "):\033[0m\n";
+            for (const auto& img : active_images) {
+                std::cout << "  \033[1;33m[ID " << img.id << "]\033[0m "
+                          << "\033[1;37m" << img.source_path << "\033[0m "
+                          << "(" << img.original_width << "x" << img.original_height << " " << img.format << ") "
+                          << "pos: (" << img.x << "," << img.y << ") "
+                          << "size: " << img.display_width << "x" << img.display_height << "\n";
+            }
+            return 0;
+        }
+
         auto themes = core::ArtGallery::list_themes();
         std::string current_choice = core::ArtGallery::get_configured_choice();
 
@@ -191,20 +213,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
                       << (is_active ? " \033[1;32m[ACTIVE]\033[0m" : "         ")
                       << " \033[1;36m│\033[0m\n";
         }
-        bool is_random = (current_choice == "random" || current_choice.empty());
-        std::cout << "\033[1;36m│\033[0m " << (is_random ? "\033[1;32m●\033[0m" : " ") << " \033[1;33m[r]\033[0m \033[1;37m" << std::left << std::setw(18) << "random" << "\033[0m - "
-                  << std::left << std::setw(36) << "Rotate to a new anime theme on startup"
-                  << (is_random ? " \033[1;32m[ACTIVE]\033[0m" : "         ") << " \033[1;36m│\033[0m\n";
         std::cout << "\033[1;36m└─────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
-        std::cout << "\033[1;37mCurrent Setting:\033[0m " << (is_random ? "\033[1;32mRandom / Rotating\033[0m" : ("\033[1;33m" + current_choice + "\033[0m (Permanent)")) << "\n\n"
-                  << "\033[0;37mCommands:\033[0m\n"
-                  << "  \033[1;32mpic <name|filepath>\033[0m         Display image directly (e.g. \033[1;33mpic itachi --pixel\033[0m or \033[1;33mpic gojo\033[0m)\n"
-                  << "  \033[1;32mpic add <file> [name]\033[0m       Add your own image directly to Meridian gallery\n"
-                  << "  \033[1;32mpic set <name|index|path>\033[0m   Set artwork permanently on startup (e.g. \033[1;33mpic set itachi\033[0m)\n"
-                  << "  \033[1;32mpic set random\033[0m             Enable random rotating anime on each startup\n"
-                  << "  \033[1;32mpic show <name|index|path>\033[0m  Preview artwork right now in the terminal\n"
-                  << "  \033[1;32mpic --debug <file>\033[0m         Inspect decoded raster metadata & GPU texture specs\n"
-                  << "  \033[1;32mpic --clear\033[0m                Clear all graphics from canvas\n";
         return 0;
     }
 
@@ -231,7 +240,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         std::string cmd = "cp -f \"" + src + "\" \"" + dest_file + "\"";
         system(cmd.c_str());
         std::cout << "\033[38;2;34;197;94m✔\033[0m Image successfully added to Meridian Gallery as '\033[1;33m" << name << "\033[0m'!\n"
-                  << "  \033[0;37m• View directly:\033[0m      pic " << name << " --pixel\n"
+                  << "  \033[0;37m• View directly:\033[0m      pic " << name << "\n"
                   << "  \033[0;37m• Set on startup:\033[0m     pic set " << name << "\n";
         return 0;
     }
@@ -248,64 +257,66 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
         core::ArtGallery::set_permanent_choice(choice);
         std::cout << "\033[38;2;34;197;94m✔\033[0m Artwork permanently set to: \033[1;33m" << theme.title << "\033[0m\n";
-        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
+        std::string hw_esc = core::TerminalImage::render_hardware_image_escape(choice, 60);
+        if (!hw_esc.empty()) std::cout << hw_esc;
         return 0;
     }
 
-    // 6. pic show <name|index|file>
-    if (argv.size() >= 3 && (argv[1] == "show" || argv[1] == "preview")) {
-        std::string choice = argv[2];
-        auto theme = core::ArtGallery::get_artwork_by_id_or_file(choice, 56, 22);
-        std::cout << "\033[1;37mPreviewing raster:\033[0m \033[1;33m" << theme.title << "\033[0m\n";
-        std::cout << theme.image.to_kitty_graphics_escape(30, 30, 28, 10) << "\n";
+    // 6. pic (with zero arguments) -> Show active theme raster
+    if (argv.size() <= 1) {
+        auto theme = core::ArtGallery::get_active_artwork(56, 22);
+        std::cout << "\033[1;37mActive Theme:\033[0m \033[1;33m" << theme.title << "\033[0m\n";
+        std::string hw_esc = core::TerminalImage::render_hardware_image_escape(theme.id, 60);
+        if (!hw_esc.empty()) {
+            std::cout << hw_esc;
+            return 0;
+        }
         return 0;
     }
 
-    // 7. pic <filepath|name> — PIXEL ART & INLINE RASTER IMAGE PIPELINE
+    // 7. pic <filepath|name> [options] — NATIVE GPU HARDWARE RASTER IMAGE RENDERING
     std::string filepath;
-    int target_width = 220;
-    int target_height = 220;
-    graphics::PixelArtOptions popts;
-    bool force_pixel = false;
-    bool force_raster = false;
+    graphics::ImageObject img_cfg;
+    img_cfg.placement = graphics::ImagePlacementType::CursorRelative;
+    img_cfg.fit_mode = graphics::ImageFitMode::Contain;
+    img_cfg.filter = graphics::ImageScaleFilter::Smooth;
 
     for (size_t i = 1; i < argv.size(); ++i) {
-        if (argv[i] == "--pixel") {
-            popts.style = graphics::PixelRenderStyle::PixelArt;
-            force_pixel = true;
-        } else if (argv[i] == "--halfblock") {
-            popts.style = graphics::PixelRenderStyle::HalfBlock;
-            force_pixel = true;
-        } else if (argv[i] == "--ascii") {
-            popts.style = graphics::PixelRenderStyle::Ascii;
-            force_pixel = true;
-        } else if (argv[i] == "--ascii-color") {
-            popts.style = graphics::PixelRenderStyle::AsciiColor;
-            force_pixel = true;
-        } else if (argv[i] == "--braille") {
-            popts.style = graphics::PixelRenderStyle::Braille;
-            force_pixel = true;
-        } else if (argv[i] == "--truecolor" || argv[i] == "--raster") {
-            force_raster = true;
-        } else if (argv[i] == "--scale" && i + 1 < argv.size()) {
-            try { popts.scale = std::stoi(argv[++i]); } catch (...) {}
-            force_pixel = true;
-        } else if (argv[i] == "--colors" && i + 1 < argv.size()) {
-            try { popts.num_colors = std::stoi(argv[++i]); } catch (...) {}
-            force_pixel = true;
-        } else if (argv[i] == "--sharpness" && i + 1 < argv.size()) {
-            try { popts.sharpness = std::stof(argv[++i]); } catch (...) {}
-            force_pixel = true;
-        } else if (argv[i] == "--dither") {
-            popts.dither = true;
-            force_pixel = true;
-        } else if (argv[i] == "--no-dither") {
-            popts.dither = false;
-            force_pixel = true;
+        if (argv[i] == "--fit" && i + 1 < argv.size()) {
+            std::string fit = argv[++i];
+            if (fit == "cover") img_cfg.fit_mode = graphics::ImageFitMode::Cover;
+            else if (fit == "stretch") img_cfg.fit_mode = graphics::ImageFitMode::Stretch;
+            else img_cfg.fit_mode = graphics::ImageFitMode::Contain;
         } else if (argv[i] == "--width" && i + 1 < argv.size()) {
-            try { target_width = std::stoi(argv[++i]); popts.max_width_cols = target_width; } catch (...) {}
+            std::string w_str = argv[++i];
+            if (!w_str.empty() && w_str.back() == '%') {
+                w_str.pop_back();
+                try { img_cfg.width_percentage = std::stof(w_str); } catch (...) {}
+            } else {
+                try { img_cfg.display_width = std::stof(w_str); } catch (...) {}
+            }
         } else if (argv[i] == "--height" && i + 1 < argv.size()) {
-            try { target_height = std::stoi(argv[++i]); popts.max_height_rows = target_height; } catch (...) {}
+            std::string h_str = argv[++i];
+            if (!h_str.empty() && h_str.back() == '%') {
+                h_str.pop_back();
+                try { img_cfg.height_percentage = std::stof(h_str); } catch (...) {}
+            } else {
+                try { img_cfg.display_height = std::stof(h_str); } catch (...) {}
+            }
+        } else if (argv[i] == "--x" && i + 1 < argv.size()) {
+            try {
+                img_cfg.x = std::stof(argv[++i]);
+                img_cfg.placement = graphics::ImagePlacementType::AbsolutePixels;
+            } catch (...) {}
+        } else if (argv[i] == "--y" && i + 1 < argv.size()) {
+            try {
+                img_cfg.y = std::stof(argv[++i]);
+                img_cfg.placement = graphics::ImagePlacementType::AbsolutePixels;
+            } catch (...) {}
+        } else if (argv[i] == "--opacity" && i + 1 < argv.size()) {
+            try { img_cfg.opacity = std::stof(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--z-index" && i + 1 < argv.size()) {
+            try { img_cfg.z_index = std::stoi(argv[++i]); } catch (...) {}
         } else if (argv[i][0] != '-') {
             if (argv[i][0] == '#' || argv[i].rfind("//", 0) == 0) {
                 break; // Ignore inline shell comments
@@ -316,77 +327,33 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         }
     }
 
-    // Resolve name aliases and gallery directory paths
-    if (!filepath.empty() && access(filepath.c_str(), R_OK) != 0) {
-        std::string alias = filepath;
-        if (filepath == "itachi" || filepath == "sharingan") alias = "itachi_sharingan";
-        else if (filepath == "swordsman" || filepath == "shadow") alias = "shadow_swordsman";
-        else if (filepath == "ribbon") alias = "ribbon_girl";
-        else if (filepath == "gojo" || filepath == "six_eyes") alias = "gojo_six_eyes";
-        else if (filepath == "awakening" || filepath == "honored_one") alias = "gojo_awakening";
-        else if (filepath == "sunset" || filepath == "sunset_girl" || filepath == "city") alias = "sunset_girl";
-        else if (filepath == "eye" || filepath == "sasuke") alias = "sharingan_eye";
-        else if (filepath == "sakura") alias = "sakura_girl";
-        else if (filepath == "fan") alias = "fan_girl";
-
-        const char* home = std::getenv("HOME");
-        std::string home_str = home ? home : "";
-        std::vector<std::string> candidates = {
-            home_str + "/.config/meridian/gallery/" + alias + ".png",
-            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
-            home_str + "/.config/meridian/gallery/" + alias + ".webp",
-            home_str + "/.config/meridian/gallery/" + alias,
-            "resources/images/gallery/" + alias + ".png",
-            "resources/images/gallery/" + alias + ".jpg",
-            "resources/images/gallery/" + alias + ".webp",
-            "resources/images/gallery/" + alias,
-            home_str + "/.config/meridian/gallery/" + filepath + ".png",
-            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
-            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
-            home_str + "/.config/meridian/gallery/" + filepath,
-            "resources/images/gallery/" + filepath + ".png",
-            "resources/images/gallery/" + filepath + ".jpg",
-            "resources/images/gallery/" + filepath + ".webp",
-            "resources/images/gallery/" + filepath,
-            "resources/images/" + filepath,
-            "resources/images/" + filepath + ".png"
-        };
-        for (const auto& c : candidates) {
-            if (access(c.c_str(), R_OK) == 0) {
-                filepath = c;
-                break;
-            }
-        }
-    }
-
     if (filepath.empty()) {
-        auto theme = core::ArtGallery::get_active_artwork(56, 22);
-        std::cout << "\033[1;37mActive Theme:\033[0m \033[1;33m" << theme.title << "\033[0m\n";
-        auto lines = core::ArtGallery::render_artwork_lines(theme.image, 48, 18);
-        for (const auto& line : lines) {
-            std::cout << line << "\n";
-        }
-        return 0;
+        std::cerr << "meridian: please specify an image file to display (e.g. pic anime.png)\n";
+        return 1;
     }
 
-    // If user explicitly requests retro pixel/halfblock/ascii/braille representation
-    if (force_pixel) {
-        std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
-        std::cout << rendered;
-        return 0;
+    // Hardware GPU Graphics check
+    if (!gm.is_gpu_available()) {
+        std::cerr << "Meridian: native graphics rendering is unavailable.\n";
+        return 1;
     }
 
-    // Default: 100% Photorealistic Hardware Raster Graphic (iTerm2 OSC 1337 + Kitty Protocol)
-    // Renders the original uncompressed image directly inside VS Code, Antigravity IDE, iTerm2, Kitty, Ghostty, WezTerm
-    std::string hw_esc = core::TerminalImage::render_hardware_image_escape(filepath, target_width);
+    // Register with native GraphicsManager
+    std::string err;
+    uint64_t image_id = gm.add_image_file(filepath, img_cfg, &err);
+    if (image_id == 0 && !err.empty()) {
+        std::cerr << err << "\n";
+        return 1;
+    }
+
+    // Emit Photorealistic Native Hardware Raster Stream (iTerm2 OSC 1337 + Kitty Protocol)
+    int target_cols = static_cast<int>(img_cfg.display_width > 0 ? (img_cfg.display_width / 9.0f) : 0);
+    std::string hw_esc = core::TerminalImage::render_hardware_image_escape(filepath, target_cols);
     if (!hw_esc.empty()) {
         std::cout << hw_esc;
         return 0;
     }
 
-    // Fallback: render high-definition halfblock
-    std::string rendered = graphics::PixelArtRenderer::render_file(filepath, popts);
-    std::cout << rendered;
     return 0;
 }
 

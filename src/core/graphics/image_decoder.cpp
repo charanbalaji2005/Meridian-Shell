@@ -159,11 +159,17 @@ DecodedImage ImageDecoder::decode_memory(const uint8_t* data, size_t size, const
     int w = 0, h = 0, channels = 0;
     stbi_uc* pixels = stbi_load_from_memory(data, static_cast<int>(size), &w, &h, &channels, 4);
     if (pixels && w > 0 && h > 0) {
+        // Enforce safety limit: max 16384 x 16384
+        if (w > 16384 || h > 16384 || static_cast<uint64_t>(w) * h > 67108864ULL) {
+            stbi_image_free(pixels);
+            return out;
+        }
+
         ImageFrame frame;
         frame.width = w;
         frame.height = h;
         frame.duration = 0.1;
-        frame.rgba.assign(pixels, pixels + (w * h * 4));
+        frame.rgba.assign(pixels, pixels + (static_cast<size_t>(w) * h * 4));
         stbi_image_free(pixels);
 
         out.original_width = w;
