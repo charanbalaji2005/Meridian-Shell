@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <algorithm>
+#include <glob.h>
 
 namespace meridian::dev {
 
@@ -21,6 +22,20 @@ std::string get_home_dir() {
 
 bool file_exists(const std::string& path) {
     return access(path.c_str(), F_OK) == 0;
+}
+
+std::vector<std::string> glob_paths(const std::string& pattern) {
+    std::vector<std::string> results;
+    glob_t g;
+    if (glob(pattern.c_str(), GLOB_TILDE | GLOB_NOCHECK, nullptr, &g) == 0) {
+        for (size_t i = 0; i < g.gl_pathc; ++i) {
+            if (file_exists(g.gl_pathv[i])) {
+                results.push_back(g.gl_pathv[i]);
+            }
+        }
+        globfree(&g);
+    }
+    return results;
 }
 
 std::string read_file(const std::string& path) {
@@ -62,7 +77,7 @@ std::string get_gui_binary_path() {
     return "meridian";
 }
 
-// Helper to safely merge VS Code style terminal profile into settings.json without clobbering user options
+// Safely merge VS Code style terminal profile into settings.json across Linux, macOS, and Windows/WSL
 std::string merge_vscode_profile(const std::string& existing_json, const std::string& shell_bin, const std::string& gui_bin) {
     if (existing_json.find("\"Meridian Shell\"") != std::string::npos && existing_json.find("\"Meridian Terminal\"") != std::string::npos) {
         return existing_json; // Already registered
@@ -92,6 +107,25 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
         },
         "zsh": {
             "path": "zsh"
+        }
+    },
+    "terminal.integrated.profiles.osx": {
+        "Meridian Shell": {
+            "path": ")" + shell_bin + R"(",
+            "icon": "terminal",
+            "overrideName": true
+        },
+        "Meridian Terminal": {
+            "path": ")" + gui_bin + R"(",
+            "icon": "terminal-tmux",
+            "overrideName": true
+        }
+    },
+    "terminal.integrated.profiles.windows": {
+        "Meridian Shell": {
+            "path": "wsl.exe",
+            "args": ["-e", "meridian-shell"],
+            "icon": "terminal"
         }
     },
     "terminal.integrated.defaultProfile.linux": "Meridian Shell"
@@ -135,6 +169,13 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
             "icon": "terminal-tmux",
             "overrideName": true
         }
+    },
+    "terminal.integrated.profiles.osx": {
+        "Meridian Shell": {
+            "path": ")" + shell_bin + R"(",
+            "icon": "terminal",
+            "overrideName": true
+        }
     }
 )";
         out.insert(last_brace, section);
@@ -145,7 +186,7 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
 } // namespace
 
 // -----------------------------------------------------------------------------
-// VS Code Adapter
+// VS Code Adapter (Linux / macOS / Windows / WSL)
 // -----------------------------------------------------------------------------
 class VSCodeAdapter : public IdeAdapter {
 public:
@@ -163,8 +204,14 @@ public:
         std::vector<std::string> candidates = {
             home + "/.config/Code/User/settings.json",
             home + "/.config/Code - OSS/User/settings.json",
-            home + "/.config/VSCodium/User/settings.json"
+            home + "/.config/VSCodium/User/settings.json",
+            home + "/Library/Application Support/Code/User/settings.json",
+            home + "/Library/Application Support/VSCodium/User/settings.json"
         };
+
+        // Check Windows / WSL paths
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Code/User/settings.json");
+        candidates.insert(candidates.end(), wsl_paths.begin(), wsl_paths.end());
 
         for (const auto& path : candidates) {
             if (file_exists(path) || system("command -v code >/dev/null 2>&1") == 0) {
@@ -183,8 +230,13 @@ public:
         std::vector<std::string> paths = {
             home + "/.config/Code/User/settings.json",
             home + "/.config/Code - OSS/User/settings.json",
-            home + "/.config/VSCodium/User/settings.json"
+            home + "/.config/VSCodium/User/settings.json",
+            home + "/Library/Application Support/Code/User/settings.json",
+            home + "/Library/Application Support/VSCodium/User/settings.json"
         };
+
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Code/User/settings.json");
+        paths.insert(paths.end(), wsl_paths.begin(), wsl_paths.end());
 
         bool ok = false;
         for (const auto& path : paths) {
@@ -198,7 +250,7 @@ public:
 };
 
 // -----------------------------------------------------------------------------
-// Google Antigravity Adapter
+// Google Antigravity Adapter (Linux / macOS / Windows / WSL)
 // -----------------------------------------------------------------------------
 class AntigravityAdapter : public IdeAdapter {
 public:
@@ -216,8 +268,12 @@ public:
         std::vector<std::string> candidates = {
             home + "/.config/Antigravity/User/settings.json",
             home + "/.config/antigravity/User/settings.json",
-            home + "/.gemini/antigravity"
+            home + "/.gemini/antigravity",
+            home + "/Library/Application Support/Antigravity/User/settings.json"
         };
+
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Antigravity/User/settings.json");
+        candidates.insert(candidates.end(), wsl_paths.begin(), wsl_paths.end());
 
         for (const auto& path : candidates) {
             if (file_exists(path)) {
@@ -235,8 +291,12 @@ public:
         std::string home = get_home_dir();
         std::vector<std::string> paths = {
             home + "/.config/Antigravity/User/settings.json",
-            home + "/.config/antigravity/User/settings.json"
+            home + "/.config/antigravity/User/settings.json",
+            home + "/Library/Application Support/Antigravity/User/settings.json"
         };
+
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Antigravity/User/settings.json");
+        paths.insert(paths.end(), wsl_paths.begin(), wsl_paths.end());
 
         for (const auto& path : paths) {
             std::string content = read_file(path);
@@ -248,7 +308,7 @@ public:
 };
 
 // -----------------------------------------------------------------------------
-// Cursor Adapter
+// Cursor Adapter (Linux / macOS / Windows / WSL)
 // -----------------------------------------------------------------------------
 class CursorAdapter : public IdeAdapter {
 public:
@@ -263,28 +323,45 @@ public:
         info.supports_terminal = true;
 
         std::string home = get_home_dir();
-        std::string path = home + "/.config/Cursor/User/settings.json";
-        if (file_exists(path) || system("command -v cursor >/dev/null 2>&1") == 0) {
-            info.is_installed = true;
-            info.config_path = path;
-            std::string contents = read_file(path);
-            info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+        std::vector<std::string> candidates = {
+            home + "/.config/Cursor/User/settings.json",
+            home + "/Library/Application Support/Cursor/User/settings.json"
+        };
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Cursor/User/settings.json");
+        candidates.insert(candidates.end(), wsl_paths.begin(), wsl_paths.end());
+
+        for (const auto& path : candidates) {
+            if (file_exists(path) || system("command -v cursor >/dev/null 2>&1") == 0) {
+                info.is_installed = true;
+                info.config_path = path;
+                std::string contents = read_file(path);
+                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                break;
+            }
         }
         return info;
     }
 
     bool register_profile(const std::string& shell_bin, const std::string& gui_bin) override {
         std::string home = get_home_dir();
-        std::string path = home + "/.config/Cursor/User/settings.json";
-        std::string content = read_file(path);
-        std::string updated = merge_vscode_profile(content, shell_bin, gui_bin);
-        write_file(path, updated);
+        std::vector<std::string> paths = {
+            home + "/.config/Cursor/User/settings.json",
+            home + "/Library/Application Support/Cursor/User/settings.json"
+        };
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Cursor/User/settings.json");
+        paths.insert(paths.end(), wsl_paths.begin(), wsl_paths.end());
+
+        for (const auto& path : paths) {
+            std::string content = read_file(path);
+            std::string updated = merge_vscode_profile(content, shell_bin, gui_bin);
+            write_file(path, updated);
+        }
         return true;
     }
 };
 
 // -----------------------------------------------------------------------------
-// Windsurf Adapter
+// Windsurf Adapter (Linux / macOS / Windows / WSL)
 // -----------------------------------------------------------------------------
 class WindsurfAdapter : public IdeAdapter {
 public:
@@ -299,22 +376,39 @@ public:
         info.supports_terminal = true;
 
         std::string home = get_home_dir();
-        std::string path = home + "/.config/Windsurf/User/settings.json";
-        if (file_exists(path) || system("command -v windsurf >/dev/null 2>&1") == 0) {
-            info.is_installed = true;
-            info.config_path = path;
-            std::string contents = read_file(path);
-            info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+        std::vector<std::string> candidates = {
+            home + "/.config/Windsurf/User/settings.json",
+            home + "/Library/Application Support/Windsurf/User/settings.json"
+        };
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Windsurf/User/settings.json");
+        candidates.insert(candidates.end(), wsl_paths.begin(), wsl_paths.end());
+
+        for (const auto& path : candidates) {
+            if (file_exists(path) || system("command -v windsurf >/dev/null 2>&1") == 0) {
+                info.is_installed = true;
+                info.config_path = path;
+                std::string contents = read_file(path);
+                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                break;
+            }
         }
         return info;
     }
 
     bool register_profile(const std::string& shell_bin, const std::string& gui_bin) override {
         std::string home = get_home_dir();
-        std::string path = home + "/.config/Windsurf/User/settings.json";
-        std::string content = read_file(path);
-        std::string updated = merge_vscode_profile(content, shell_bin, gui_bin);
-        write_file(path, updated);
+        std::vector<std::string> paths = {
+            home + "/.config/Windsurf/User/settings.json",
+            home + "/Library/Application Support/Windsurf/User/settings.json"
+        };
+        auto wsl_paths = glob_paths("/mnt/c/Users/*/AppData/Roaming/Windsurf/User/settings.json");
+        paths.insert(paths.end(), wsl_paths.begin(), wsl_paths.end());
+
+        for (const auto& path : paths) {
+            std::string content = read_file(path);
+            std::string updated = merge_vscode_profile(content, shell_bin, gui_bin);
+            write_file(path, updated);
+        }
         return true;
     }
 };
@@ -335,12 +429,19 @@ public:
         info.supports_terminal = true;
 
         std::string home = get_home_dir();
-        std::string path = home + "/.config/zed/settings.json";
-        if (file_exists(path) || system("command -v zed >/dev/null 2>&1") == 0) {
-            info.is_installed = true;
-            info.config_path = path;
-            std::string contents = read_file(path);
-            info.is_registered = (contents.find("meridian-shell") != std::string::npos);
+        std::vector<std::string> candidates = {
+            home + "/.config/zed/settings.json",
+            home + "/Library/Application Support/Zed/settings.json"
+        };
+
+        for (const auto& path : candidates) {
+            if (file_exists(path) || system("command -v zed >/dev/null 2>&1") == 0) {
+                info.is_installed = true;
+                info.config_path = path;
+                std::string contents = read_file(path);
+                info.is_registered = (contents.find("meridian-shell") != std::string::npos);
+                break;
+            }
         }
         return info;
     }
@@ -366,7 +467,7 @@ public:
 };
 
 // -----------------------------------------------------------------------------
-// JetBrains IDE Adapter (IntelliJ, PyCharm, CLion, Android Studio, WebStorm)
+// JetBrains IDE Suite (IntelliJ, PyCharm, CLion, Android Studio, WebStorm, GoLand)
 // -----------------------------------------------------------------------------
 class JetBrainsAdapter : public IdeAdapter {
 public:
@@ -384,6 +485,7 @@ public:
         std::vector<std::string> candidates = {
             home + "/.config/JetBrains",
             home + "/.local/share/JetBrains",
+            home + "/Library/Application Support/JetBrains",
             home + "/.AndroidStudio",
             home + "/.config/Google/AndroidStudio"
         };
@@ -399,11 +501,10 @@ public:
         return info;
     }
 
-    bool register_profile(const std::string& shell_bin, const std::string& /*gui_bin*/) override {
+    bool register_profile(const std::string& /*shell_bin*/, const std::string& /*gui_bin*/) override {
         std::string home = get_home_dir();
         std::string jb_cfg = home + "/.config/JetBrains";
         if (file_exists(jb_cfg)) {
-            // JetBrains automatically discovers shells listed in /etc/shells or PATH
             return true;
         }
         return false;
@@ -411,7 +512,7 @@ public:
 };
 
 // -----------------------------------------------------------------------------
-// Neovim Adapter
+// Neovim & Emacs
 // -----------------------------------------------------------------------------
 class NeovimAdapter : public IdeAdapter {
 public:
@@ -430,7 +531,7 @@ public:
         if (file_exists(nvim_dir) || system("command -v nvim >/dev/null 2>&1") == 0) {
             info.is_installed = true;
             info.config_path = nvim_dir;
-            info.is_registered = true; // Auto-inherits shell from environment
+            info.is_registered = true;
         }
         return info;
     }

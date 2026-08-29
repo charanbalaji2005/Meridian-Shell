@@ -13,6 +13,7 @@
 #include "../ai/intent_engine.hpp"
 #include "../dev/platform_manager.hpp"
 #include "../dev/github_integration.hpp"
+#include "../dev/ide_detector.hpp"
 #include "../dev/command_palette.hpp"
 #include "../dev/file_explorer.hpp"
 #include "../dev/git_intel.hpp"
@@ -52,8 +53,8 @@ void print_usage() {
         "Meridian 2.5 — Terminal + Developer Environment + AI Platform\n\n"
         "Usage: meridian [subcommand] [args]\n\n"
         "Terminal & System Lifecycle:\n"
-        "  (no args)                   launch interactive Meridian Terminal\n"
-        "  vscode [status|enable|off]  manage VS Code auto-detection & terminal profiles\n"
+        "  (no args)                   launch interactive Meridian Terminal & Shell\n"
+        "  -c \"<cmd>\"                  execute command in Meridian shell engine and exit\n"
         "  update [--check|--yes]      check and update Meridian to the latest release\n"
         "  stats [--year YYYY|--growth]view anonymous usage counts & yearly statistics\n"
         "  telemetry [status|on|off]   manage opt-in anonymous metrics and privacy\n"
@@ -160,7 +161,7 @@ int handle_ai_subcommand(int argc, char** argv) {
     if (cmd == "explain" && argc >= 4) {
         std::string line;
         join_argv(argc, argv, 3, &line);
-        std::cout << controller.explain_command(line);
+        std::cout << controller.explain_command(line) << "\n";
         return 0;
     }
 
@@ -177,6 +178,15 @@ int handle_ai_subcommand(int argc, char** argv) {
 } // namespace
 
 int main(int argc, char** argv) {
+    // Ensure automatic background IDE integration across Linux, macOS, Windows/WSL
+    dev::IdeDetector::ensure_first_run_registered();
+
+    // Direct command execution flag (-c "command")
+    if (argc >= 3 && std::string(argv[1]) == "-c") {
+        shell::Shell sh(false);
+        return sh.run_command(argv[2], std::cerr);
+    }
+
     if (argc < 2 || (argc >= 2 && (std::string(argv[1]) == "shell" || std::string(argv[1]) == "run"))) {
         shell::Shell sh(true);
         return sh.run_interactive(std::cin, std::cout, std::cerr);
@@ -195,10 +205,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    if (sub == "vscode") {
-        std::vector<std::string> args;
-        for (int i = 1; i < argc; ++i) args.push_back(argv[i]);
-        return dev::PlatformManager::handle_vscode(args);
+    if (sub == "vscode" || sub == "ide") {
+        dev::IdeDetector::print_ide_report();
+        return 0;
     }
 
     if (sub == "update" || sub == "upgrade") {
