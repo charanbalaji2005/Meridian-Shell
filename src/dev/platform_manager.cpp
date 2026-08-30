@@ -170,46 +170,30 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
 
 int PlatformManager::handle_update(const std::vector<std::string>& argv) {
     bool check_only = false;
-    bool auto_yes = false;
 
     for (size_t i = 1; i < argv.size(); ++i) {
         if (argv[i] == "--check" || argv[i] == "-c") check_only = true;
-        if (argv[i] == "--yes" || argv[i] == "-y") auto_yes = true;
     }
 
-    std::string current_ver = "2.5.0";
-    std::string latest_ver = "2.5.0";
+    std::string current_ver = "2.5.1";
 
     std::cout << "\n\033[1;36m┌─── Meridian Update Engine ───────────────────────────────────────────────────┐\033[0m\n"
-              << "\033[1;37m│\033[0m Current version : \033[1;33m" << current_ver << "\033[0m\n"
-              << "\033[1;37m│\033[0m Latest release  : \033[1;32m" << latest_ver << "\033[0m\n"
+              << "\033[1;37m│\033[0m Current Version : \033[1;33m" << current_ver << "\033[0m\n"
               << "\033[1;37m│\033[0m Repository      : \033[38;2;6;182;212mhttps://github.com/charanbalaji2005/Meridian-Shell\033[0m\n";
 
     if (check_only) {
-        std::cout << "\033[1;37m│\033[0m\n"
-                  << "\033[1;37m│\033[0m \033[1;32m✔ You are already running the latest version of Meridian Terminal.\033[0m\n"
-                  << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n";
+        std::cout << "\033[1;37m│\033[0m Status          : \033[1;32mChecking latest release from GitHub...\033[0m\n"
+                  << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n";
+        int res = system("curl -fsSL -m 5 https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | grep -m 1 'APP_VERSION='");
+        (void)res;
         return 0;
     }
 
-    std::cout << "\033[1;37m│\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✔ Verifying prebuilt distribution package...\033[0m\n"
-              << "\033[1;37m│\033[0m Downloading release assets from GitHub:\n"
-              << "\033[1;37m│\033[0m \033[38;2;34;197;94m████████████████████████████████████████ 100%\033[0m\n"
-              << "\033[1;37m│\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✔ Checksum verified (SHA256)\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✔ Installing binary updates\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✔ Updating desktop integration & artwork\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✔ Update complete!\033[0m\n"
-              << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
-              << "\033[1;32mMeridian Terminal " << current_ver << " is installed and ready to run.\033[0m\n";
+    std::cout << "\033[1;37m│\033[0m Action          : \033[1;32mFetching & installing latest release...\033[0m\n"
+              << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n";
 
-    if (!auto_yes) {
-        int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
-        (void)res;
-    }
-
-    return 0;
+    int res = system("curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash");
+    return res;
 }
 
 struct GitHubLiveStats {

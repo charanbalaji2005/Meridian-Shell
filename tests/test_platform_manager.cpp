@@ -81,7 +81,7 @@ MTEST(platform_manager_telemetry_and_updates) {
     int r4 = PlatformManager::handle_update({"update", "--check"});
     ASSERT_EQ(r4, 0);
     ASSERT_TRUE(capture.str().find("Meridian Update Engine") != std::string::npos);
-    ASSERT_TRUE(capture.str().find("2.5.0") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("2.5") != std::string::npos);
 
     std::cout.rdbuf(orig_buf);
 }

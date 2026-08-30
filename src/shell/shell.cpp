@@ -101,37 +101,45 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Picture graphic: Render high-definition TrueColor dual-pixel halfblocks
-    auto theme = core::ArtGallery::get_active_artwork(64, 32);
-    std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, 32, 10);
+    // 2. Picture graphic: Render high-definition TrueColor dual-pixel halfblocks (Full HD crisp subpixels)
+    int art_w = 40;
+    int art_h = 11;
+    auto theme = core::ArtGallery::get_active_artwork(art_w * 2, art_h * 2);
+    std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, art_w, art_h);
 
-    // 3. System info lines (sleek Nerd Font glyphs matching reference theme)
+    // 3. System info lines (sleek Nerd Font glyphs matching reference theme, external shell removed)
     std::vector<std::string> sys_lines = {
         "\033[1;37m" + user + "@" + hostname + "\033[0m",
         "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
         "\033[38;2;140;163;136m󰌽 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + kernel + "\033[0m",
         "\033[38;2;110;165;185m󰨇 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + wm + "\033[0m",
-        "\033[38;2;155;135;175m󰞷 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + shell_str + "\033[0m",
-        "\033[38;2;90;175;170m \033[38;2;170;180;200m→ \033[38;2;220;230;245mmeridian 2.5\033[0m",
+        "\033[38;2;90;175;170m \033[38;2;170;180;200m→ \033[38;2;220;230;245mmeridian 2.5.1\033[0m",
         "\033[38;2;215;185;135m󰘚 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + ram_str + "\033[0m",
         "\033[38;2;205;135;145m󱑂 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + uptime_str + "\033[0m",
         "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
         "\033[38;2;45;106;116m● \033[38;2;78;135;144m● \033[38;2;125;111;141m● \033[38;2;168;91;107m● \033[38;2;201;95;78m● \033[38;2;217;129;87m● \033[38;2;235;196;122m● \033[38;2;243;224;181m● \033[38;2;140;163;136m●\033[0m"
     };
 
+    // Vertically center system stats if art has more rows
+    std::vector<std::string> formatted_sys;
+    size_t pad_top = (art_lines.size() > sys_lines.size()) ? (art_lines.size() - sys_lines.size()) / 2 : 0;
+    for (size_t i = 0; i < pad_top; ++i) formatted_sys.push_back("");
+    for (const auto& l : sys_lines) formatted_sys.push_back(l);
+
     // 4. Print Side-by-Side Header with 2 spaces left margin, 4 spaces clean gap
-    size_t max_rows = std::max(art_lines.size(), sys_lines.size());
+    size_t max_rows = std::max(art_lines.size(), formatted_sys.size());
     out << "\n";
+    std::string empty_col(art_w, ' ');
     for (size_t r = 0; r < max_rows; ++r) {
         out << "  "; // 2 spaces left margin
         if (r < art_lines.size()) {
             out << art_lines[r];
         } else {
-            out << "                                ";
+            out << empty_col;
         }
         out << "    "; // 4 spaces clean gap
-        if (r < sys_lines.size()) {
-            out << sys_lines[r];
+        if (r < formatted_sys.size()) {
+            out << formatted_sys[r];
         }
         out << "\n";
     }

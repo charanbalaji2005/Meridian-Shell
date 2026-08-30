@@ -314,6 +314,18 @@ if [ ! -f "${MERIDIAN_BIN}" ]; then
 fi
 log_step "Binary verified: $(du -sh "${MERIDIAN_BIN}" | cut -f1) at ${MERIDIAN_BIN}"
 
+# ── 8b. Install High-Definition Artwork Gallery ───────────────────────────────
+log_step "Installing HD Anime & Theme Art Gallery..."
+GALLERY_DIR="${HOME}/.config/meridian/gallery"
+mkdir -p "${GALLERY_DIR}" 2>/dev/null || true
+if [ -d "resources/images/gallery" ]; then
+    cp -rf resources/images/gallery/* "${GALLERY_DIR}/" 2>/dev/null || true
+fi
+if [ "${USER_MODE}" = false ]; then
+    mkdir -p /usr/local/share/meridian/images/gallery 2>/dev/null || true
+    cp -rf resources/images/gallery/* /usr/local/share/meridian/images/gallery/ 2>/dev/null || true
+fi
+
 # ── 9. Desktop & OS-Specific App Integration ──────────────────────────────────
 if [ "${IS_MACOS}" = true ]; then
     log_step "Installing macOS Meridian.app bundle with official icon..."
