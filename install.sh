@@ -316,11 +316,17 @@ log_step "Binary verified: $(du -sh "${MERIDIAN_BIN}" | cut -f1) at ${MERIDIAN_B
 
 # ── 9. Desktop & OS-Specific App Integration ──────────────────────────────────
 if [ "${IS_MACOS}" = true ]; then
-    log_step "Installing macOS Meridian.app bundle..."
+    log_step "Installing macOS Meridian.app bundle with official icon..."
     APP_BUNDLE="${HOME}/Applications/Meridian.app"
     [ "${USER_MODE}" = false ] && APP_BUNDLE="/Applications/Meridian.app"
 
     mkdir -p "${APP_BUNDLE}/Contents/MacOS" "${APP_BUNDLE}/Contents/Resources" || true
+    
+    # Copy official macOS .icns icon
+    if [ -f "resources/icons/meridian-terminal.icns" ]; then
+        cp -f "resources/icons/meridian-terminal.icns" "${APP_BUNDLE}/Contents/Resources/meridian-terminal.icns" 2>/dev/null || true
+    fi
+
     cat > "${APP_BUNDLE}/Contents/Info.plist" << 'PLIST' || true
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -329,11 +335,15 @@ if [ "${IS_MACOS}" = true ]; then
     <key>CFBundleExecutable</key>
     <string>meridian_launcher</string>
     <key>CFBundleIdentifier</key>
-    <string>com.charanbalaji.meridian</string>
+    <string>org.meridian-terminal.MeridianTerminal</string>
     <key>CFBundleName</key>
+    <string>Meridian Terminal</string>
+    <key>CFBundleDisplayName</key>
     <string>Meridian Terminal</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>meridian-terminal.icns</string>
     <key>CFBundleShortVersionString</key>
     <string>2.5.1</string>
     <key>CFBundleVersion</key>
@@ -347,10 +357,10 @@ PLIST
 exec /usr/bin/osascript -e 'tell application "Terminal" to do script "${PREFIX}/bin/meridian"'
 LAUNCHER
     chmod +x "${APP_BUNDLE}/Contents/MacOS/meridian_launcher"
-    log_info "Meridian.app created at ${APP_BUNDLE}"
+    log_info "Meridian.app installed at ${APP_BUNDLE}"
 
 elif [ "${IS_WINDOWS}" = false ]; then
-    log_step "Installing desktop entry and icons..."
+    log_step "Installing desktop entry and modern Meridian app icons..."
 
     DESKTOP_DIR="${HOME}/.local/share/applications"
     ICON_DIR="${HOME}/.local/share/icons/hicolor/scalable/apps"
@@ -359,6 +369,22 @@ elif [ "${IS_WINDOWS}" = false ]; then
         ICON_DIR="/usr/share/icons/hicolor/scalable/apps"
     fi
     mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" || true
+
+    # Install scalable SVG and multi-resolution PNG icons
+    if [ -f "resources/icons/meridian-terminal.svg" ]; then
+        cp -f "resources/icons/meridian-terminal.svg" "${ICON_DIR}/meridian-terminal.svg" 2>/dev/null || true
+        cp -f "resources/icons/meridian-terminal.svg" "${ICON_DIR}/meridian.svg" 2>/dev/null || true
+    fi
+
+    for s in 16 24 32 48 64 128 256 512; do
+        target_dir="${HOME}/.local/share/icons/hicolor/${s}x${s}/apps"
+        [ "${USER_MODE}" = false ] && target_dir="/usr/share/icons/hicolor/${s}x${s}/apps"
+        mkdir -p "${target_dir}" 2>/dev/null || true
+        if [ -f "resources/icons/meridian_${s}.png" ]; then
+            cp -f "resources/icons/meridian_${s}.png" "${target_dir}/meridian-terminal.png" 2>/dev/null || true
+            cp -f "resources/icons/meridian_${s}.png" "${target_dir}/meridian.png" 2>/dev/null || true
+        fi
+    done
 
     # Write desktop entry inline with Terminal=true for instant graphical launching
     cat > "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null << DESKTOP || true
@@ -369,7 +395,7 @@ Name=Meridian Terminal
 GenericName=Terminal Emulator & AI Dev Shell
 Comment=Modern AI developer shell with autosuggestions and live Git intelligence
 Exec=${PREFIX}/bin/meridian
-Icon=utilities-terminal
+Icon=meridian-terminal
 Terminal=true
 Categories=System;TerminalEmulator;Development;
 Keywords=terminal;shell;console;ai;meridian;
@@ -399,6 +425,9 @@ CMD
             cat > "${win_bin_dir}/meridian.ps1" 2>/dev/null << 'PS1' || true
 wsl.exe -e meridian-shell $args
 PS1
+            if [ -f "resources/icons/meridian.ico" ]; then
+                cp -f "resources/icons/meridian.ico" "${win_bin_dir}/meridian.ico" 2>/dev/null || true
+            fi
         fi
     done
 fi
