@@ -6,6 +6,7 @@
 #include "../dev/ide_detector.hpp"
 #include "../core/terminal_image.hpp"
 #include "../core/art_gallery.hpp"
+#include "../core/graphics/ascii_art_engine.hpp"
 #include <termios.h>
 
 #include <algorithm>
@@ -101,9 +102,23 @@ void render_reference_layout_header(std::ostream& out) {
         uptime_str = std::to_string(hours) + (hours == 1 ? " hour, " : " hours, ") + std::to_string(mins) + " mins";
     }
 
-    // 2. Picture graphic: Render high-definition TrueColor dual-pixel halfblocks (Full HD crisp subpixels)
-    int art_w = 40;
-    int art_h = 11;
+    // 2. Picture graphic: Dynamic Full HD TrueColor dual-pixel halfblocks (880 - 1,700+ crisp micro-pixels)
+    int term_cols = 80, term_rows = 24;
+    meridian::graphics::AsciiArtEngine::get_terminal_dimensions(term_cols, term_rows);
+
+    int art_w = 48;
+    int art_h = 14;
+    if (term_cols >= 120) {
+        art_w = 54;
+        art_h = 15;
+    } else if (term_cols >= 100) {
+        art_w = 48;
+        art_h = 14;
+    } else if (term_cols < 85) {
+        art_w = 38;
+        art_h = 11;
+    }
+
     auto theme = core::ArtGallery::get_active_artwork(art_w * 2, art_h * 2);
     std::vector<std::string> art_lines = core::ArtGallery::render_artwork_lines(theme.image, art_w, art_h);
 
