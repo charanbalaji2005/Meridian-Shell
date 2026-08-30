@@ -1,351 +1,423 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Meridian Terminal 2.5 — Universal Prebuilt Multi-Distribution Installer
+# Meridian Terminal 2.5 — Universal Installer
 # Repository: https://github.com/charanbalaji2005/Meridian-Shell
 #
-# Usage:
+# Usage (Linux / macOS / WSL):
 #   curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
-#   or with sudo:
+#   or:
 #   curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | sudo bash
+#
+# What this script does:
+#   1. Detect OS / Architecture / WSL
+#   2. Try to download a prebuilt binary from GitHub Releases
+#   3. If no prebuilt exists: install build tools and compile from source
+#   4. Install to ~/.local/bin (user mode) or /usr/local/bin (root mode)
+#   5. Register desktop entry and shell integration
 # ==============================================================================
 set -euo pipefail
 
-APP_VERSION="2.5.0"
-REPO_OWNER="charanbalaji2005"
-REPO_NAME="Meridian-Shell"
-GITHUB_REPO="${REPO_OWNER}/${REPO_NAME}"
-RELEASE_BASE_URL="https://github.com/${GITHUB_REPO}/releases/download/v${APP_VERSION}"
-RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
+APP_VERSION="2.5.1"
+REPO="charanbalaji2005/Meridian-Shell"
+RELEASE_URL="https://github.com/${REPO}/releases/download/v${APP_VERSION}"
+SOURCE_URL="https://github.com/${REPO}/archive/refs/heads/main.tar.gz"
 
-# ------------------------------------------------------------------------------
-# Colors & Formatting
-# ------------------------------------------------------------------------------
+# ── Colors ────────────────────────────────────────────────────────────────────
 if [ -t 1 ]; then
-    BOLD="\033[1m"
-    DIM="\033[2m"
-    GREEN="\033[38;2;34;197;94m"
-    YELLOW="\033[38;2;234;179;8m"
-    CYAN="\033[38;2;6;182;212m"
+    BOLD="\033[1m"; DIM="\033[2m"; RESET="\033[0m"
+    GREEN="\033[38;2;34;197;94m"; YELLOW="\033[38;2;234;179;8m"
+    CYAN="\033[38;2;6;182;212m"; RED="\033[38;2;239;68;68m"
     BLUE="\033[38;2;59;130;246m"
-    RED="\033[38;2;239;68;68m"
-    RESET="\033[0m"
 else
-    BOLD=""
-    DIM=""
-    GREEN=""
-    YELLOW=""
-    CYAN=""
-    BLUE=""
-    RED=""
-    RESET=""
+    BOLD=""; DIM=""; RESET=""; GREEN=""; YELLOW=""; CYAN=""; RED=""; BLUE=""
 fi
 
-log_step()    { echo -e " ${GREEN}✓${RESET} ${BOLD}$*${RESET}"; }
-log_info()    { echo -e " ${CYAN}ℹ${RESET} $*"; }
-log_warn()    { echo -e " ${YELLOW}⚠${RESET} $*"; }
-log_error()   { echo -e " ${RED}✖ ERROR:${RESET} $*" >&2; }
+log_step()  { echo -e " ${GREEN}✓${RESET} ${BOLD}$*${RESET}"; }
+log_info()  { echo -e " ${CYAN}ℹ${RESET} $*"; }
+log_warn()  { echo -e " ${YELLOW}⚠${RESET} $*"; }
+log_error() { echo -e " ${RED}✖ ERROR:${RESET} $*" >&2; }
+log_die()   { log_error "$*"; exit 1; }
 
-echo -e "${CYAN}"
-cat << "EOF"
+echo -e "${CYAN}${BOLD}"
+cat << 'EOF'
 ╔══════════════════════════════════════════════════════════╗
 ║              Meridian Terminal 2.5 Installer             ║
+║        https://github.com/charanbalaji2005/Meridian-Shell║
 ╚══════════════════════════════════════════════════════════╝
 EOF
 echo -e "${RESET}"
 
-# ------------------------------------------------------------------------------
-# 1. Architecture & OS Detection
-# ------------------------------------------------------------------------------
-OS_TYPE="$(uname -s)"
-ARCH_TYPE="$(uname -m)"
+# ── 1. OS, Architecture & Environment Detection ───────────────────────────────
+OS="$(uname -s)"         # Linux | Darwin | MINGW* | MSYS* | CYGWIN*
+ARCH="$(uname -m)"       # x86_64 | aarch64 | arm64
 
-case "${ARCH_TYPE}" in
-    x86_64|amd64)
-        PKG_ARCH_DEB="amd64"
-        PKG_ARCH_RPM="x86_64"
-        PKG_ARCH_RAW="x86_64"
-        ;;
-    aarch64|arm64)
-        PKG_ARCH_DEB="arm64"
-        PKG_ARCH_RPM="aarch64"
-        PKG_ARCH_RAW="aarch64"
-        ;;
-    *)
-        log_error "Unsupported CPU architecture: ${ARCH_TYPE}"
-        exit 1
-        ;;
+# Normalise ARCH
+case "${ARCH}" in
+    x86_64|amd64)   ARCH="x86_64"; DEB_ARCH="amd64"; RPM_ARCH="x86_64" ;;
+    aarch64|arm64)  ARCH="aarch64"; DEB_ARCH="arm64"; RPM_ARCH="aarch64" ;;
+    *) log_die "Unsupported CPU architecture: ${ARCH}" ;;
 esac
 
-DISTRO="unknown"
-DISTRO_VERSION=""
+# Windows detection (Git Bash / Cygwin / MSYS2)
+IS_WINDOWS=false
+case "${OS}" in
+    MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=true ;;
+esac
+
+# WSL detection
+IS_WSL=false
+WSL_VER=0
+if [ -f /proc/version ] && grep -qi microsoft /proc/version 2>/dev/null; then
+    IS_WSL=true
+    if grep -qi "wsl2\|microsoft-standard" /proc/version 2>/dev/null; then
+        WSL_VER=2
+    else
+        WSL_VER=1
+    fi
+fi
+[ -n "${WSL_DISTRO_NAME:-}" ] && IS_WSL=true
+
+# macOS detection
+IS_MACOS=false
+[ "${OS}" = "Darwin" ] && IS_MACOS=true
+
+# Linux distro detection
+DISTRO="linux"
+DISTRO_NAME="Linux"
+PKG_MANAGER=""
 if [ -f /etc/os-release ]; then
     # shellcheck disable=SC1091
     . /etc/os-release
-    DISTRO="${ID:-unknown}"
-    DISTRO_VERSION="${VERSION_ID:-}"
-    DISTRO_NAME="${NAME:-Linux}"
-elif [ "${OS_TYPE}" = "Darwin" ]; then
-    DISTRO="macos"
-    DISTRO_NAME="macOS $(sw_vers -productVersion 2>/dev/null || true)"
-else
-    DISTRO_NAME="Generic Linux"
+    DISTRO="${ID:-linux}"
+    DISTRO_NAME="${PRETTY_NAME:-${NAME:-Linux}}"
 fi
 
-log_step "Detected: ${DISTRO_NAME} ${DISTRO_VERSION}"
-log_step "Architecture: ${ARCH_TYPE}"
-
-# ------------------------------------------------------------------------------
-# 2. WSL Environment Check
-# ------------------------------------------------------------------------------
-IS_WSL=false
-if grep -qi microsoft /proc/version 2>/dev/null || [ -n "${WSL_DISTRO_NAME:-}" ]; then
-    IS_WSL=true
-    log_info "WSL environment detected (${WSL_DISTRO_NAME:-Ubuntu/Debian WSL})"
-    if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-        log_info "Display server: Headless / Terminal only (Meridian Shell will run directly)"
-    else
-        log_step "WSLg graphical display server active (${DISPLAY:-${WAYLAND_DISPLAY}})"
-    fi
+# Package manager detection
+if command -v apt-get >/dev/null 2>&1; then   PKG_MANAGER="apt";
+elif command -v dnf >/dev/null 2>&1;   then   PKG_MANAGER="dnf";
+elif command -v yum >/dev/null 2>&1;   then   PKG_MANAGER="yum";
+elif command -v pacman >/dev/null 2>&1; then  PKG_MANAGER="pacman";
+elif command -v zypper >/dev/null 2>&1; then  PKG_MANAGER="zypper";
+elif command -v brew >/dev/null 2>&1;  then   PKG_MANAGER="brew";
+elif command -v apk >/dev/null 2>&1;   then   PKG_MANAGER="apk";
 fi
 
-# ------------------------------------------------------------------------------
-# 3. Determine Installation Mode & Prefix
-# ------------------------------------------------------------------------------
+log_step "Detected: ${DISTRO_NAME} | ${OS} ${ARCH}"
+[ "${IS_WSL}" = true ]   && log_info "WSL${WSL_VER} environment (Windows Subsystem for Linux)"
+[ "${IS_MACOS}" = true ] && log_info "macOS $(sw_vers -productVersion 2>/dev/null || true)"
+[ "${PKG_MANAGER}" != "" ] && log_info "Package manager: ${PKG_MANAGER}"
+
+# ── 2. Installation Prefix ────────────────────────────────────────────────────
 USER_MODE=false
-PREFIX="/usr/local"
+PREFIX=""
+EUID_VAL="${EUID:-$(id -u)}"
 
-if [ "${EUID}" -ne 0 ]; then
+if [ "${EUID_VAL}" -ne 0 ]; then
     USER_MODE=true
     PREFIX="${HOME}/.local"
-    log_info "Non-root user: Installing locally to ${PREFIX}/bin"
+    mkdir -p "${PREFIX}/bin"
+    log_info "Non-root: installing to ${PREFIX}/bin"
 else
-    log_info "Root/sudo user: Installing system-wide to ${PREFIX}/bin"
+    PREFIX="/usr/local"
+    mkdir -p "${PREFIX}/bin"
+    log_info "Root: installing system-wide to ${PREFIX}/bin"
 fi
 
-# ------------------------------------------------------------------------------
-# 4. Download & Install Prebuilt Release Package
-# ------------------------------------------------------------------------------
+# ── 3. Download Helper ────────────────────────────────────────────────────────
 WORK_DIR="$(mktemp -d /tmp/meridian-install-XXXXXX)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
-
 cd "${WORK_DIR}"
-INSTALLED=false
 
-download_file() {
-    local url="$1"
-    local dest="$2"
+dl() {
+    local url="$1" dest="$2"
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "${url}" -o "${dest}"
+        curl -fsSL --retry 3 --retry-delay 2 "${url}" -o "${dest}"
     elif command -v wget >/dev/null 2>&1; then
-        wget -q "${url}" -O "${dest}"
+        wget -q --tries=3 --waitretry=2 "${url}" -O "${dest}"
     else
-        log_error "Neither curl nor wget is installed."
-        exit 1
+        log_die "Neither curl nor wget found. Install one and retry."
     fi
 }
 
-log_step "Downloading Meridian Terminal ${APP_VERSION} for ${ARCH_TYPE}..."
-
-# Case A: Ubuntu / Debian (.deb package)
-if [ "${USER_MODE}" = false ] && { [ "${DISTRO}" = "ubuntu" ] || [ "${DISTRO}" = "debian" ] || [ "${DISTRO}" = "pop" ] || [ "${DISTRO}" = "mint" ]; }; then
-    DEB_URL="${RELEASE_BASE_URL}/meridian-terminal_${APP_VERSION}_${PKG_ARCH_DEB}.deb"
-    if download_file "${DEB_URL}" "meridian.deb" 2>/dev/null; then
-        log_step "Installing native Debian/Ubuntu package via apt..."
-        if apt-get update -qq && apt-get install -y -qq ./meridian.deb >/dev/null 2>&1; then
-            INSTALLED=true
-        elif dpkg -i ./meridian.deb >/dev/null 2>&1 || apt-get install -f -y -qq >/dev/null 2>&1; then
-            INSTALLED=true
-        fi
-    fi
-fi
-
-# Case B: Fedora / RHEL / CentOS / Alma / Rocky (.rpm package)
-if [ "${INSTALLED}" = false ] && [ "${USER_MODE}" = false ] && { [ "${DISTRO}" = "fedora" ] || [ "${DISTRO}" = "rhel" ] || [ "${DISTRO}" = "centos" ] || [ "${DISTRO}" = "almalinux" ] || [ "${DISTRO}" = "rocky" ]; }; then
-    RPM_URL="${RELEASE_BASE_URL}/meridian-terminal-${APP_VERSION}-1.fc44.${PKG_ARCH_RPM}.rpm"
-    if download_file "${RPM_URL}" "meridian.rpm" 2>/dev/null || download_file "${RELEASE_BASE_URL}/meridian-terminal-${APP_VERSION}.${PKG_ARCH_RPM}.rpm" "meridian.rpm" 2>/dev/null; then
-        log_step "Installing native RPM package via dnf..."
-        if dnf install -y -q ./meridian.rpm >/dev/null 2>&1 || rpm -Uvh --replacepkgs ./meridian.rpm >/dev/null 2>&1; then
-            INSTALLED=true
-        fi
-    fi
-fi
-
-# Case C: Standalone Prebuilt Binary Tarball (Universal Linux & User Mode)
-if [ "${INSTALLED}" = false ]; then
-    TARBALL_NAME="meridian-terminal-${APP_VERSION}-linux-${PKG_ARCH_RAW}.tar.gz"
-    TARBALL_URL="${RELEASE_BASE_URL}/${TARBALL_NAME}"
-
-    if download_file "${TARBALL_URL}" "${TARBALL_NAME}" 2>/dev/null; then
-        log_step "Extracting standalone prebuilt release archive..."
-        tar -xzf "${TARBALL_NAME}"
-        EXTRACTED_DIR="$(find . -maxdepth 1 -type d -name "meridian-terminal*" | head -n 1)"
-
-        mkdir -p "${PREFIX}/bin" "${PREFIX}/share/applications" "${PREFIX}/share/icons/hicolor/scalable/apps"
-        if [ -d "${EXTRACTED_DIR}/bin" ]; then
-            cp -f "${EXTRACTED_DIR}/bin/meridian"* "${PREFIX}/bin/"
-            chmod 755 "${PREFIX}/bin/meridian"*
-        fi
-        INSTALLED=true
-    fi
-fi
-
-# Case D: Fallback Local Build (if release asset not yet published on GitHub)
-if [ "${INSTALLED}" = false ]; then
-    log_info "Prebuilt binary asset not reached; building Meridian 2.5 from source..."
-    if [ -f "Makefile" ] && [ -d "src" ]; then
-        make all -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)"
+# Silent download — returns 0 on success, 1 on 404/error
+dl_try() {
+    local url="$1" dest="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL --retry 2 "${url}" -o "${dest}" 2>/dev/null
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q --tries=2 "${url}" -O "${dest}" 2>/dev/null
     else
-        download_file "https://github.com/${GITHUB_REPO}/archive/refs/heads/main.tar.gz" "source.tar.gz"
-        tar -xzf "source.tar.gz"
-        SRC_DIR="$(find . -maxdepth 1 -type d -name "*Meridian-Shell*" | head -n 1)"
-        cd "${SRC_DIR}"
-        make all -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)"
+        return 1
+    fi
+}
+
+# ── 4. Install Build Dependencies (for source build fallback) ─────────────────
+install_build_deps() {
+    log_info "Installing build dependencies (g++, make)..."
+    case "${PKG_MANAGER}" in
+        apt)
+            local pkgs="g++ make git"
+            if [ "${EUID_VAL}" -eq 0 ]; then
+                DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>/dev/null || true
+                DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ${pkgs} 2>/dev/null || true
+            else
+                log_warn "Need sudo to install build deps. Attempting..."
+                sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>/dev/null || true
+                sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ${pkgs} 2>/dev/null || true
+            fi
+            ;;
+        dnf|yum)
+            local pkgs="gcc-c++ make git"
+            if [ "${EUID_VAL}" -eq 0 ]; then
+                "${PKG_MANAGER}" install -y -q ${pkgs} 2>/dev/null || true
+            else
+                sudo "${PKG_MANAGER}" install -y -q ${pkgs} 2>/dev/null || true
+            fi
+            ;;
+        pacman)
+            if [ "${EUID_VAL}" -eq 0 ]; then
+                pacman -Sy --noconfirm base-devel git 2>/dev/null || true
+            else
+                sudo pacman -Sy --noconfirm base-devel git 2>/dev/null || true
+            fi
+            ;;
+        zypper)
+            if [ "${EUID_VAL}" -eq 0 ]; then
+                zypper install -y gcc-c++ make git 2>/dev/null || true
+            else
+                sudo zypper install -y gcc-c++ make git 2>/dev/null || true
+            fi
+            ;;
+        apk)
+            if [ "${EUID_VAL}" -eq 0 ]; then
+                apk add --no-cache g++ make git 2>/dev/null || true
+            else
+                sudo apk add --no-cache g++ make git 2>/dev/null || true
+            fi
+            ;;
+        brew)
+            brew install gcc make git 2>/dev/null || true
+            ;;
+        *)
+            log_warn "Unknown package manager. Please manually install: g++, make, git"
+            ;;
+    esac
+
+    # Verify
+    if ! command -v make >/dev/null 2>&1 || ! command -v g++ >/dev/null 2>&1; then
+        log_warn "Build tools not available. Trying alternatives..."
+        # Try clang as fallback on macOS or minimal Linux
+        if command -v clang++ >/dev/null 2>&1; then
+            log_info "Found clang++ — will use it as CXX"
+        fi
+    fi
+}
+
+# ── 5. Source Build Function ──────────────────────────────────────────────────
+build_from_source() {
+    log_info "Building Meridian 2.5 from source..."
+
+    # Install build deps first
+    install_build_deps
+
+    # Check for make/compiler
+    if ! command -v make >/dev/null 2>&1; then
+        log_die "make is not available and could not be installed. Please run: sudo apt install build-essential (Ubuntu/Debian) or sudo dnf install make gcc-c++ (Fedora/RHEL) and re-run this installer."
+    fi
+    if ! command -v g++ >/dev/null 2>&1 && ! command -v c++ >/dev/null 2>&1; then
+        log_die "C++ compiler not found. Please install g++ and retry."
+    fi
+
+    # Download source
+    log_info "Downloading source code from GitHub..."
+    dl "${SOURCE_URL}" "meridian-source.tar.gz"
+    tar -xzf "meridian-source.tar.gz"
+    SRC_DIR="$(find . -maxdepth 1 -type d -name "*Meridian-Shell*" -o -name "*meridian*" | head -n 1)"
+    if [ -z "${SRC_DIR}" ]; then
+        log_die "Could not find extracted source directory."
+    fi
+
+    log_step "Compiling... (this takes 30–90 seconds)"
+    cd "${SRC_DIR}"
+    NCPU=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)
+
+    # Use clang++ if g++ unavailable (macOS Xcode)
+    CXX_CMD="g++"
+    command -v g++ >/dev/null 2>&1 || CXX_CMD="c++"
+
+    make all -j"${NCPU}" CXX="${CXX_CMD}" 2>&1 | tail -5 || \
+        log_die "Build failed. Check errors above. Ensure g++ >= 10 and make are installed."
+
+    log_step "Build complete!"
+    cd "${WORK_DIR}"
+    echo "${SRC_DIR}"
+}
+
+# ── 6. Try Prebuilt Binary Download ──────────────────────────────────────────
+INSTALLED=false
+
+log_step "Checking for prebuilt release v${APP_VERSION}..."
+
+# Try the Linux tarball asset
+TARBALL="meridian-terminal-${APP_VERSION}-linux-${ARCH}.tar.gz"
+if dl_try "${RELEASE_URL}/${TARBALL}" "${TARBALL}"; then
+    log_step "Downloaded prebuilt binary tarball!"
+    tar -xzf "${TARBALL}" 2>/dev/null || true
+    EXTRACT_DIR="$(find . -maxdepth 1 -type d -name "meridian-terminal*" | head -n 1)"
+    if [ -n "${EXTRACT_DIR}" ] && [ -f "${EXTRACT_DIR}/bin/meridian-shell" ]; then
+        mkdir -p "${PREFIX}/bin"
+        cp -f "${EXTRACT_DIR}/bin/meridian"  "${PREFIX}/bin/meridian"  2>/dev/null || true
+        cp -f "${EXTRACT_DIR}/bin/meridian-shell" "${PREFIX}/bin/meridian-shell" 2>/dev/null || true
+        chmod 755 "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell" 2>/dev/null || true
+        INSTALLED=true
+        log_step "Prebuilt binary installed from release tarball."
+    fi
+fi
+
+# Try .deb (apt-based, root only)
+if [ "${INSTALLED}" = false ] && [ "${USER_MODE}" = false ] && [ "${PKG_MANAGER}" = "apt" ]; then
+    DEB_FILE="meridian-terminal_${APP_VERSION}_${DEB_ARCH}.deb"
+    if dl_try "${RELEASE_URL}/${DEB_FILE}" "${DEB_FILE}"; then
+        if command -v dpkg >/dev/null 2>&1; then
+            log_step "Installing via dpkg..."
+            dpkg -i "./${DEB_FILE}" 2>/dev/null && apt-get install -f -y -qq 2>/dev/null && INSTALLED=true || true
+        fi
+    fi
+fi
+
+# ── 7. Source Build Fallback ──────────────────────────────────────────────────
+if [ "${INSTALLED}" = false ]; then
+    log_info "Prebuilt binary not available. Building from source..."
+    SRC_BUILD_DIR="$(build_from_source)"
+    if [ -n "${SRC_BUILD_DIR}" ] && [ -d "${WORK_DIR}/${SRC_BUILD_DIR}" ]; then
+        BUILD_OUT="${WORK_DIR}/${SRC_BUILD_DIR}/build"
+    elif [ -n "${SRC_BUILD_DIR}" ] && [ -d "${SRC_BUILD_DIR}" ]; then
+        BUILD_OUT="${SRC_BUILD_DIR}/build"
+    else
+        log_die "Build output directory not found."
     fi
 
     mkdir -p "${PREFIX}/bin"
-    cp -f build/meridian "${PREFIX}/bin/meridian"
-    cp -f build/meridian-shell "${PREFIX}/bin/meridian-shell"
+    cp -f "${BUILD_OUT}/meridian"       "${PREFIX}/bin/meridian"       2>/dev/null || log_die "meridian binary not built."
+    cp -f "${BUILD_OUT}/meridian-shell" "${PREFIX}/bin/meridian-shell" 2>/dev/null || log_die "meridian-shell binary not built."
     chmod 755 "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"
     INSTALLED=true
 fi
 
-# ------------------------------------------------------------------------------
-# 5. Desktop Entry & Artwork Assets
-# ------------------------------------------------------------------------------
-log_step "Installing desktop integration & artwork gallery assets..."
+# ── 8. Verify Installation ────────────────────────────────────────────────────
+MERIDIAN_BIN="${PREFIX}/bin/meridian-shell"
+if [ ! -f "${MERIDIAN_BIN}" ]; then
+    MERIDIAN_BIN="${HOME}/.local/bin/meridian-shell"
+fi
+if [ ! -f "${MERIDIAN_BIN}" ]; then
+    log_die "Installation failed — binary not found at ${PREFIX}/bin/meridian-shell"
+fi
+log_step "Binary verified: $(du -sh "${MERIDIAN_BIN}" | cut -f1) at ${MERIDIAN_BIN}"
 
-DESKTOP_DIR="${HOME}/.local/share/applications"
-ICON_DIR="${HOME}/.local/share/icons/hicolor/scalable/apps"
-GALLERY_DIR="${HOME}/.config/meridian/gallery"
+# ── 9. Desktop Integration ────────────────────────────────────────────────────
+if [ "${IS_WINDOWS}" = false ]; then
+    log_step "Installing desktop entry and icons..."
 
-if [ "${USER_MODE}" = false ]; then
-    DESKTOP_DIR="/usr/share/applications"
-    ICON_DIR="/usr/share/icons/hicolor/scalable/apps"
+    DESKTOP_DIR="${HOME}/.local/share/applications"
+    ICON_DIR="${HOME}/.local/share/icons/hicolor/scalable/apps"
+    if [ "${USER_MODE}" = false ]; then
+        DESKTOP_DIR="/usr/share/applications"
+        ICON_DIR="/usr/share/icons/hicolor/scalable/apps"
+    fi
+    mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" || true
+
+    # Write desktop entry inline (in case packaging dir not present)
+    cat > "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null << 'DESKTOP' || true
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=Meridian Terminal
+GenericName=Terminal Emulator & AI Dev Shell
+Comment=Modern AI developer shell with autosuggestions and live Git intelligence
+Exec=meridian
+Icon=meridian-terminal
+Terminal=false
+Categories=System;TerminalEmulator;Development;
+Keywords=terminal;shell;console;ai;meridian;
+StartupNotify=true
+DESKTOP
+
+    # Register shell paths
+    if [ "${USER_MODE}" = false ] && [ -w /etc/shells ]; then
+        for bp in "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"; do
+            grep -qxF "${bp}" /etc/shells 2>/dev/null || echo "${bp}" >> /etc/shells || true
+        done
+    fi
 fi
 
-mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" "${GALLERY_DIR}"
+# ── 10. PATH Configuration ────────────────────────────────────────────────────
+NEEDS_PATH=false
+echo ":${PATH}:" | grep -q ":${PREFIX}/bin:" || NEEDS_PATH=true
 
-if [ -f "packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop" ]; then
-    cp -f packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null || true
-elif [ -f "meridian.desktop" ]; then
-    cp -f meridian.desktop "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null || true
-fi
-
-if [ -f "resources/icons/meridian-terminal.svg" ]; then
-    cp -f resources/icons/meridian-terminal.svg "${ICON_DIR}/meridian-terminal.svg" 2>/dev/null || true
-fi
-
-if [ -d "resources/images/gallery" ]; then
-    cp -rf resources/images/gallery/* "${GALLERY_DIR}/" 2>/dev/null || true
-fi
-
-# Register in /etc/shells if root
-if [ "${USER_MODE}" = false ] && [ -w /etc/shells ]; then
-    for bin_path in "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"; do
-        if ! grep -Fxq "${bin_path}" /etc/shells 2>/dev/null; then
-            echo "${bin_path}" >> /etc/shells
+# Auto-add to common shell configs if in user mode
+if [ "${USER_MODE}" = true ] && [ "${NEEDS_PATH}" = true ]; then
+    EXPORT_LINE="export PATH=\"\$HOME/.local/bin:\$PATH\""
+    for rcfile in "${HOME}/.bashrc" "${HOME}/.zshrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
+        if [ -f "${rcfile}" ] && ! grep -q '.local/bin' "${rcfile}" 2>/dev/null; then
+            echo "" >> "${rcfile}"
+            echo "# Meridian Terminal" >> "${rcfile}"
+            echo "${EXPORT_LINE}" >> "${rcfile}"
+            log_info "Added PATH to ${rcfile}"
+            break
         fi
     done
 fi
 
-# ------------------------------------------------------------------------------
-# 6. Automatic IDE & Development Environment Detection
-# ------------------------------------------------------------------------------
+# ── 11. IDE Detection & Registration ─────────────────────────────────────────
 echo ""
-echo -e "${CYAN}Detecting development environments...${RESET}"
+log_info "Scanning for development environments..."
 
-DETECTED_IDES=()
+detect_and_register() {
+    local name="$1"; shift
+    for loc in "$@"; do
+        if command -v "${loc}" >/dev/null 2>&1 || [ -d "${HOME}/.config/${loc}" ] || [ -d "${HOME}/.config/${name}" ]; then
+            echo -e "   ${GREEN}✓${RESET} ${name}"
+            return 0
+        fi
+    done
+    return 0
+}
 
-# Visual Studio Code & Forks
-if command -v code >/dev/null 2>&1 || [ -d "${HOME}/.config/Code" ] || [ -d "${HOME}/.config/Code - OSS" ] || [ -d "${HOME}/.config/VSCodium" ]; then
-    echo -e " ${GREEN}✓${RESET} Visual Studio Code"
-    DETECTED_IDES+=("VS Code")
-fi
+detect_and_register "Visual Studio Code"  "code"          "Code"
+detect_and_register "Cursor"              "cursor"        "Cursor"
+detect_and_register "Windsurf"            "windsurf"      "Windsurf"
+detect_and_register "Zed"                 "zed"           "zed"
+detect_and_register "Neovim"              "nvim"          "nvim"
+detect_and_register "JetBrains"           ""              "JetBrains"
+[ -d "${HOME}/.gemini/antigravity" ] && echo -e "   ${GREEN}✓${RESET} Google Antigravity"
+[ -n "${WSL_DISTRO_NAME:-}" ]        && echo -e "   ${CYAN}ℹ${RESET} Windows Terminal (WSL) — Meridian runs natively inside WSL"
 
-# Cursor AI Editor
-if command -v cursor >/dev/null 2>&1 || [ -d "${HOME}/.config/Cursor" ]; then
-    echo -e " ${GREEN}✓${RESET} Cursor"
-    DETECTED_IDES+=("Cursor")
-fi
-
-# Windsurf AI IDE
-if command -v windsurf >/dev/null 2>&1 || [ -d "${HOME}/.config/Windsurf" ]; then
-    echo -e " ${GREEN}✓${RESET} Windsurf"
-    DETECTED_IDES+=("Windsurf")
-fi
-
-# Google Antigravity
-if [ -d "${HOME}/.config/Antigravity" ] || [ -d "${HOME}/.config/antigravity" ] || [ -d "${HOME}/.gemini/antigravity" ]; then
-    echo -e " ${GREEN}✓${RESET} Google Antigravity"
-    DETECTED_IDES+=("Google Antigravity")
-fi
-
-# Zed Editor
-if command -v zed >/dev/null 2>&1 || [ -d "${HOME}/.config/zed" ]; then
-    echo -e " ${GREEN}✓${RESET} Zed"
-    DETECTED_IDES+=("Zed")
-fi
-
-# JetBrains Suite (IntelliJ, PyCharm, CLion, Android Studio)
-if [ -d "${HOME}/.config/JetBrains" ] || [ -d "${HOME}/.local/share/JetBrains" ] || [ -d "${HOME}/.AndroidStudio" ]; then
-    echo -e " ${GREEN}✓${RESET} JetBrains (IntelliJ / PyCharm / CLion / Android Studio)"
-    DETECTED_IDES+=("JetBrains")
-fi
-
-# Neovim
-if command -v nvim >/dev/null 2>&1 || [ -d "${HOME}/.config/nvim" ]; then
-    echo -e " ${GREEN}✓${RESET} Neovim"
-    DETECTED_IDES+=("Neovim")
-fi
-
+# ── 12. Success Banner ────────────────────────────────────────────────────────
 echo ""
-echo -e "${CYAN}Registering Meridian terminal integrations...${RESET}"
-for ide in "${DETECTED_IDES[@]}"; do
-    echo -e " ${GREEN}✓${RESET} ${ide}"
-done
-
-# Perform profile registrations
-SHELL_EXEC="${PREFIX}/bin/meridian-shell"
-GUI_EXEC="${PREFIX}/bin/meridian"
-if [ ! -f "${SHELL_EXEC}" ]; then
-    SHELL_EXEC="${HOME}/.local/bin/meridian-shell"
-    GUI_EXEC="${HOME}/.local/bin/meridian"
-fi
-
-if [ -f "${GUI_EXEC}" ]; then
-    "${GUI_EXEC}" vscode enable >/dev/null 2>&1 || true
-fi
-
+echo -e "${GREEN}${BOLD}══════════════════════════════════════════════════════════${RESET}"
+echo -e " ${GREEN}${BOLD}✔  Meridian Terminal ${APP_VERSION} installed successfully!${RESET}"
+echo -e "${GREEN}${BOLD}══════════════════════════════════════════════════════════${RESET}"
 echo ""
-echo -e "${GREEN}Meridian is now available as an integrated terminal where supported.${RESET}"
-
-# ------------------------------------------------------------------------------
-# 7. PATH Configuration Check
-# ------------------------------------------------------------------------------
-PATH_OK=false
-if echo ":${PATH}:" | grep -q ":${PREFIX}/bin:"; then
-    PATH_OK=true
-fi
-
-log_step "PATH verified (${PREFIX}/bin)"
-
+echo -e "Run these commands to get started:"
 echo ""
-echo -e "${GREEN}══════════════════════════════════════════════════════════${RESET}"
-echo -e " ${GREEN}✔ Meridian Terminal ${APP_VERSION} installed successfully!${RESET}"
-echo -e "${GREEN}══════════════════════════════════════════════════════════${RESET}"
-echo ""
-echo "Run:"
-echo -e "   ${CYAN}meridian${RESET}              (Launch Meridian Terminal)"
-echo -e "   ${CYAN}meridian-shell${RESET}        (Launch standalone shell)"
-echo -e "   ${CYAN}meridian vscode${RESET}       (Manage VS Code terminal integration)"
-echo -e "   ${CYAN}meridian update${RESET}       (Check and download latest releases)"
-echo -e "   ${CYAN}meridian stats${RESET}        (View anonymous platform statistics)"
-echo -e "   ${CYAN}auth github${RESET}           (1-click GitHub authentication & SSH setup)"
+echo -e "   ${CYAN}meridian-shell${RESET}         Launch Meridian Shell (interactive)"
+echo -e "   ${CYAN}meridian${RESET}               Launch full Meridian Terminal"
+echo -e "   ${CYAN}meridian update${RESET}        Check for updates"
+echo -e "   ${CYAN}meridian stats${RESET}         View session statistics"
 echo ""
 
-if [ "${PATH_OK}" = false ] && [ "${USER_MODE}" = true ]; then
-    echo -e "${YELLOW}Note: Add ~/.local/bin to your PATH if not already present:${RESET}"
+if [ "${NEEDS_PATH}" = true ] && [ "${USER_MODE}" = true ]; then
+    echo -e "${YELLOW}${BOLD}⚠  Add Meridian to your PATH:${RESET}"
+    echo ""
     echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
     echo ""
+    echo -e "   ${DIM}Or restart your terminal — it was auto-added to your shell RC file.${RESET}"
+    echo ""
 fi
-EOF
+
+if [ "${IS_WSL}" = true ]; then
+    echo -e "${CYAN}ℹ  WSL Note:${RESET} Run ${CYAN}meridian-shell${RESET} directly inside your WSL terminal."
+    echo -e "   For Windows Terminal integration, add it as a new profile:"
+    echo -e "   ${DIM}Profile → New → Command: wsl.exe -e meridian-shell${RESET}"
+    echo ""
+fi
