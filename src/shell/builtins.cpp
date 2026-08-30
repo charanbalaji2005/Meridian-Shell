@@ -7,6 +7,9 @@
 #include "../core/graphics/pixel_art_renderer.hpp"
 #include "../core/graphics/graphics_manager.hpp"
 #include "../core/graphics/ascii_art_engine.hpp"
+#include "../core/graphics/animation_engine.hpp"
+#include "../core/icons/icon_registry.hpp"
+#include "../core/icons/animated_glyph.hpp"
 #include "../core/vt/screen_buffer.hpp"
 #include "../core/renderer/telemetry_profiler.hpp"
 #include "../ai/intent_engine.hpp"
@@ -28,6 +31,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -42,7 +46,7 @@ namespace {
 const char* kBuiltinNames[] = {
     "cd", "pwd", "echo", "exit", "export", "unset", "env",
     "history", "jobs", "fg", "bg", "help", "type", "which", "clear", "alias",
-    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ssh-mgr", "plugins", "perf", "auth",
+    "pic", "ai", "palette", "search", "split", "zoom", "pane", "monitor", "gitintel", "files", "ls", "ssh-mgr", "plugins", "perf", "auth",
     "vscode", "update", "stats", "telemetry", "gh", "github"
 };
 } // namespace
@@ -178,25 +182,48 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             try {
                 uint64_t id = std::stoull(argv[2]);
                 gm.remove_image(id);
+                graphics::AnimationEngine::instance().remove_animation(id);
             } catch (...) {}
         } else {
             gm.clear_all_images();
+            graphics::AnimationEngine::instance().clear_all();
         }
         std::cout << "\033_Ga=d,d=a\033\\\033]1337;File=inline=0:\007\n";
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Cleared all GPU image layers and active animations.\n";
         return 0;
     }
 
-    // 3. pic --list / pic list: Show active GPU image objects and gallery themes
+    // 3. pic --list / pic list: Show active GPU image objects, animations, and gallery themes
     if (argv.size() > 1 && (argv[1] == "--list" || argv[1] == "list")) {
         auto active_images = gm.list_images();
-        if (!active_images.empty()) {
-            std::cout << "\033[1;36mActive GPU Image Layers (" << active_images.size() << "):\033[0m\n";
-            for (const auto& img : active_images) {
-                std::cout << "  \033[1;33m[ID " << img.id << "]\033[0m "
-                          << "\033[1;37m" << img.source_path << "\033[0m "
-                          << "(" << img.original_width << "x" << img.original_height << " " << img.format << ") "
-                          << "pos: (" << img.x << "," << img.y << ") "
-                          << "size: " << img.display_width << "x" << img.display_height << "\n";
+        auto active_anims = graphics::AnimationEngine::instance().list_active_animations();
+
+        if (!active_images.empty() || !active_anims.empty()) {
+            if (!active_images.empty()) {
+                std::cout << "\033[1;36mActive GPU Image Layers (" << active_images.size() << "):\033[0m\n";
+                for (const auto& img : active_images) {
+                    std::cout << "  \033[1;33m[ID " << img.id << "]\033[0m "
+                              << "\033[1;37m" << img.source_path << "\033[0m "
+                              << "(" << img.original_width << "x" << img.original_height << " " << img.format << ") "
+                              << "pos: (" << img.x << "," << img.y << ") "
+                              << "size: " << img.display_width << "x" << img.display_height << "\n";
+                }
+            }
+            if (!active_anims.empty()) {
+                std::cout << "\033[1;35mActive Animation Objects (" << active_anims.size() << "):\033[0m\n";
+                for (uint64_t aid : active_anims) {
+                    const auto* a = graphics::AnimationEngine::instance().get_animation(aid);
+                    if (a) {
+                        std::string state_str = a->controller.is_playing() ? "PLAYING" :
+                                               (a->controller.is_paused() ? "PAUSED" : "STOPPED");
+                        std::cout << "  \033[1;35m[ANIM " << aid << "]\033[0m "
+                                  << "\033[1;37m" << a->source_path << "\033[0m "
+                                  << "(" << a->canvas_width << "x" << a->canvas_height << " " << a->format << ") "
+                                  << "frames: " << a->frames.size() << " "
+                                  << "duration: " << std::fixed << std::setprecision(2) << a->controller.total_duration() << "s "
+                                  << "[" << state_str << "]\n";
+                    }
+                }
             }
             return 0;
         }
@@ -275,12 +302,33 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    // 7. pic <filepath|name> [options] — ULTRA-HIGH-QUALITY ASCII & UNICODE DUAL-PIXEL TERMINAL ART
+    // 7. pic <filepath|name> [options]
     std::string filepath;
     graphics::AsciiArtOptions aopts;
+    bool flag_animate = false;
+    bool flag_pause = false;
+    bool flag_stop = false;
+    int custom_loop = -1;
+    double custom_fps = 0.0;
+    int target_frame = -1;
 
     for (size_t i = 1; i < argv.size(); ++i) {
-        if (argv[i] == "--mode" && i + 1 < argv.size()) {
+        if (argv[i] == "--animate" || argv[i] == "-a") {
+            flag_animate = true;
+        } else if (argv[i] == "--pause") {
+            flag_pause = true;
+        } else if (argv[i] == "--stop") {
+            flag_stop = true;
+        } else if (argv[i] == "--loop") {
+            custom_loop = 0; // infinite
+            if (i + 1 < argv.size() && argv[i + 1].find_first_not_of("0123456789") == std::string::npos) {
+                try { custom_loop = std::stoi(argv[++i]); } catch (...) {}
+            }
+        } else if (argv[i] == "--fps" && i + 1 < argv.size()) {
+            try { custom_fps = std::stod(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--frame" && i + 1 < argv.size()) {
+            try { target_frame = std::stoi(argv[++i]); } catch (...) {}
+        } else if (argv[i] == "--mode" && i + 1 < argv.size()) {
             std::string m = argv[++i];
             if (m == "halfblock") aopts.mode = graphics::AsciiRenderMode::HalfBlock;
             else if (m == "ansi") aopts.mode = graphics::AsciiRenderMode::Ansi;
@@ -383,8 +431,130 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         return 1;
     }
 
+    // Check if animation file (e.g. .gif) or animation controls requested
+    bool is_gif = false;
+    size_t dot = filepath.find_last_of('.');
+    if (dot != std::string::npos) {
+        std::string ext = filepath.substr(dot);
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        if (ext == ".gif" || ext == ".apng") is_gif = true;
+    }
+
+    if (flag_animate || is_gif || custom_loop >= 0 || custom_fps > 0.1 || target_frame >= 0 || flag_pause || flag_stop) {
+        std::string err;
+        uint64_t anim_id = graphics::AnimationEngine::instance().load_file(filepath, &err);
+        if (anim_id != 0) {
+            if (custom_loop >= 0) graphics::AnimationEngine::instance().setLoopCount(anim_id, custom_loop);
+            if (custom_fps > 0.1) graphics::AnimationEngine::instance().setFrameRate(anim_id, custom_fps);
+            if (target_frame >= 0) graphics::AnimationEngine::instance().seek_frame(anim_id, static_cast<size_t>(target_frame));
+
+            if (flag_pause) graphics::AnimationEngine::instance().pause(anim_id);
+            else if (flag_stop) graphics::AnimationEngine::instance().stop(anim_id);
+            else graphics::AnimationEngine::instance().play(anim_id);
+
+            const auto* anim = graphics::AnimationEngine::instance().get_animation(anim_id);
+            if (anim) {
+                std::cout << "\033[38;2;168;85;247m󰡨 Animation Layer Loaded [ID " << anim_id << "]\033[0m: "
+                          << anim->canvas_width << "x" << anim->canvas_height << " "
+                          << "• " << anim->frames.size() << " frames "
+                          << "• " << std::fixed << std::setprecision(2) << anim->controller.total_duration() << "s\n";
+            }
+        }
+    }
+
     std::string rendered = graphics::AsciiArtEngine::render_file(filepath, aopts);
     std::cout << rendered;
+    return 0;
+}
+
+static int builtin_ls(const std::vector<std::string>& argv) {
+    std::string target_dir = ".";
+    bool show_all = false;
+    bool show_long = false;
+
+    for (size_t i = 1; i < argv.size(); ++i) {
+        if (argv[i] == "-a" || argv[i] == "--all") show_all = true;
+        else if (argv[i] == "-l" || argv[i] == "--long") show_long = true;
+        else if (argv[i] == "-la" || argv[i] == "-al") { show_all = true; show_long = true; }
+        else if (argv[i][0] != '-') target_dir = argv[i];
+    }
+
+    DIR* d = opendir(target_dir.c_str());
+    if (!d) {
+        std::cerr << "meridian: ls: cannot access '" << target_dir << "': No such file or directory\n";
+        return 1;
+    }
+
+    struct Entry {
+        std::string name;
+        std::string icon_str;
+        bool is_dir = false;
+        bool is_exec = false;
+        off_t size = 0;
+    };
+    std::vector<Entry> entries;
+
+    struct dirent* ent;
+    while ((ent = readdir(d)) != nullptr) {
+        std::string name = ent->d_name;
+        if (!show_all && name.front() == '.') continue;
+
+        std::string full_path = target_dir + "/" + name;
+        struct stat st;
+        bool is_dir = false;
+        bool is_exec = false;
+        off_t fsize = 0;
+
+        if (stat(full_path.c_str(), &st) == 0) {
+            is_dir = S_ISDIR(st.st_mode);
+            is_exec = (st.st_mode & S_IXUSR) || (st.st_mode & S_IXGRP) || (st.st_mode & S_IXOTH);
+            fsize = st.st_size;
+        }
+
+        icons::FileInfo fi;
+        fi.filename = name;
+        fi.path = full_path;
+        fi.is_directory = is_dir;
+        fi.is_executable = is_exec;
+
+        icons::Icon ic = icons::IconRegistry::instance().getIcon(fi);
+        entries.push_back({name, ic.to_string(true), is_dir, is_exec, fsize});
+    }
+    closedir(d);
+
+    // Sort: directories first, then alphabetical
+    std::sort(entries.begin(), entries.end(), [](const Entry& a, const Entry& b) {
+        if (a.name == "." || a.name == "..") return true;
+        if (b.name == "." || b.name == "..") return false;
+        if (a.is_dir != b.is_dir) return a.is_dir > b.is_dir;
+        return a.name < b.name;
+    });
+
+    if (show_long) {
+        for (const auto& e : entries) {
+            std::cout << (e.is_dir ? "d" : "-") << "rw-r--r-- "
+                      << std::setw(8) << e.size << "  "
+                      << e.icon_str << " "
+                      << (e.is_dir ? ("\033[1;34m" + e.name + "/\033[0m") :
+                          (e.is_exec ? ("\033[1;32m" + e.name + "*\033[0m") : e.name))
+                      << "\n";
+        }
+    } else {
+        // Multi-column compact grid
+        for (size_t i = 0; i < entries.size(); ++i) {
+            const auto& e = entries[i];
+            std::string disp = e.icon_str + " " +
+                (e.is_dir ? ("\033[1;34m" + e.name + "/\033[0m") :
+                 (e.is_exec ? ("\033[1;32m" + e.name + "*\033[0m") : e.name));
+
+            std::cout << disp;
+            if ((i + 1) % 4 == 0 || i + 1 == entries.size()) {
+                std::cout << "\n";
+            } else {
+                std::cout << "    ";
+            }
+        }
+    }
     return 0;
 }
 
@@ -781,6 +951,7 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     if (name == "monitor") return builtin_monitor();
     if (name == "gitintel") return builtin_git();
     if (name == "files") return builtin_files(argv);
+    if (name == "ls") return builtin_ls(argv);
     if (name == "ssh-mgr") return builtin_ssh(argv);
     if (name == "auth") return builtin_auth(argv);
     if (name == "gh" || name == "github") return dev::GitHubIntegration::handle_gh_command(argv);

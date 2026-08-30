@@ -2,7 +2,8 @@
 // src/core/graphics/graphics_protocol_parser.hpp
 //
 // Protocol-independent graphics stream parser for Meridian Terminal.
-// Supports Kitty Graphics Protocol, iTerm2 OSC 1337, and Sixel formats.
+// Supports Kitty Graphics Protocol (including animation frames & playback control),
+// iTerm2 OSC 1337, and Sixel formats.
 
 #include "image_object.hpp"
 #include <cstdint>
@@ -20,8 +21,8 @@ enum class GraphicsProtocolType {
 
 struct ParsedGraphicsCommand {
     GraphicsProtocolType protocol = GraphicsProtocolType::None;
-    std::string action;          // "transmit", "display", "delete", "query"
-    int format = 32;             // 32 = RGBA, 24 = RGB, 100 = PNG/JPEG
+    std::string action;          // "transmit", "display", "delete", "query", "animate"
+    int format = 32;             // 32 = RGBA, 24 = RGB, 100 = PNG/JPEG/GIF
     int width = 0;
     int height = 0;
     int cols = 0;
@@ -36,6 +37,13 @@ struct ParsedGraphicsCommand {
     bool preserve_aspect = true;
     std::string filename;
     std::vector<uint8_t> payload; // Raw binary payload or decoded RGBA8
+
+    // Kitty Animation Control
+    bool is_animation = false;
+    int frame_index = 0;         // 'r' or 'c' in Kitty animation protocol
+    int frame_delay_ms = 100;    // 'z' delay in milliseconds
+    int loop_count = 0;          // 'v' or 'l' loops (0 = infinite)
+    std::string animation_state; // "play", "pause", "stop", "seek"
 };
 
 class GraphicsProtocolParser {
@@ -60,4 +68,3 @@ public:
 };
 
 } // namespace meridian::graphics
-

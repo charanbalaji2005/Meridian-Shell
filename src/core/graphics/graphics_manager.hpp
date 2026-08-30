@@ -2,13 +2,16 @@
 // src/core/graphics/graphics_manager.hpp
 //
 // Central Native GPU Graphics Subsystem for Meridian Terminal.
-// Unifies ImageDecoder, GpuTextureManager, TerminalImageCompositor, and GraphicsProtocolParser.
+// Unifies ImageDecoder, GpuTextureManager, TerminalImageCompositor,
+// GraphicsProtocolParser, and AnimationEngine.
 
 #include "image_decoder.hpp"
 #include "image_object.hpp"
 #include "gpu_texture_manager.hpp"
 #include "terminal_image_compositor.hpp"
 #include "graphics_protocol_parser.hpp"
+#include "animation_engine.hpp"
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -68,6 +71,7 @@ public:
     const TerminalImageCompositor& compositor() const { return compositor_; }
 
     GraphicsProtocolParser& protocol_parser() { return protocol_parser_; }
+    AnimationEngine& animation_engine() { return AnimationEngine::instance(); }
 
     // Lifecycle, Scroll, & Resize events
     void tick(double dt);
@@ -93,4 +97,3 @@ private:
 };
 
 } // namespace meridian::graphics
-

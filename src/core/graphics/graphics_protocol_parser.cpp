@@ -117,6 +117,10 @@ bool GraphicsProtocolParser::parse_kitty_sequence(const std::string& seq, Parsed
                 else if (val == "p" || val == "P") out.action = "display";
                 else if (val == "d" || val == "D") out.action = "delete";
                 else if (val == "q" || val == "Q") out.action = "query";
+                else if (val == "a" || val == "A") {
+                    out.action = "animate";
+                    out.is_animation = true;
+                }
                 break;
             case 'f':
                 try { out.format = std::stoi(val); } catch (...) {}
@@ -129,9 +133,11 @@ bool GraphicsProtocolParser::parse_kitty_sequence(const std::string& seq, Parsed
                 break;
             case 'c':
                 try { out.cols = std::stoi(val); } catch (...) {}
+                try { out.frame_index = std::stoi(val); } catch (...) {}
                 break;
             case 'r':
                 try { out.rows = std::stoi(val); } catch (...) {}
+                try { out.loop_count = std::stoi(val); } catch (...) {}
                 break;
             case 'i':
                 try { out.image_id = static_cast<uint32_t>(std::stoul(val)); } catch (...) {}
@@ -141,6 +147,7 @@ bool GraphicsProtocolParser::parse_kitty_sequence(const std::string& seq, Parsed
                 break;
             case 'z':
                 try { out.z_index = std::stoi(val); } catch (...) {}
+                try { out.frame_delay_ms = std::stoi(val); } catch (...) {}
                 break;
             case 'm':
                 out.more_chunks = (val == "1");

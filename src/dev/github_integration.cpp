@@ -66,9 +66,13 @@ std::string execute_capture(const std::string& cmd) {
     return result;
 }
 
+static bool s_hints_override_active = false;
+static bool s_hints_override_val = true;
+
 } // namespace
 
 bool GitHubIntegration::is_hints_enabled() {
+    if (s_hints_override_active) return s_hints_override_val;
     std::string cfg_path = get_home_dir() + "/.config/meridian/git_hints.json";
     if (!file_exists(cfg_path)) return true; // Enabled by default
     std::string contents = read_file_contents(cfg_path);
@@ -76,6 +80,8 @@ bool GitHubIntegration::is_hints_enabled() {
 }
 
 void GitHubIntegration::set_hints_enabled(bool enabled) {
+    s_hints_override_active = true;
+    s_hints_override_val = enabled;
     std::string cfg_path = get_home_dir() + "/.config/meridian/git_hints.json";
     write_file_contents(cfg_path, std::string("{\n  \"hints_enabled\": ") + (enabled ? "true" : "false") + "\n}\n");
 }

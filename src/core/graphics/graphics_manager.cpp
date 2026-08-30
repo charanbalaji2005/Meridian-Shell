@@ -148,6 +148,7 @@ void GraphicsManager::tick(double dt) {
             img.frame_elapsed += dt;
         }
     }
+    AnimationEngine::instance().tick(dt);
 }
 
 void GraphicsManager::on_scroll(int lines) {
