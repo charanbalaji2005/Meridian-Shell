@@ -5,6 +5,7 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
+#include <unistd.h>
 
 namespace meridian::dev {
 
@@ -43,13 +44,28 @@ std::string GitIntel::run_git(const std::string& dir, const std::string& args) {
 GitRepoStatus GitIntel::inspect_directory(const std::string& start_dir) {
     GitRepoStatus status;
 
-    std::string toplevel = trim(run_git(start_dir, "rev-parse --show-toplevel"));
-    if (toplevel.empty()) {
-        // Fallback: walk filesystem up to find .git
-        std::string dir = start_dir;
-        for (int depth = 0; depth < 64 && !dir.empty(); ++depth) {
-            std::string git_path = dir + "/.git";
-            std::ifstream head_file(git_path + "/HEAD");
+    // Fast-path: Walk up filesystem to find .git directory directly without forking subprocess
+    std::string dir = start_dir.empty() ? "." : start_dir;
+    std::string toplevel;
+    std::string branch_from_head;
+
+    for (int depth = 0; depth < 64 && !dir.empty(); ++depth) {
+        std::string git_path = dir + "/.git";
+        std::string head_path = git_path + "/HEAD";
+        if (access(head_path.c_str(), F_OK) != 0) {
+            // Could be a worktree/submodule with gitdir: in .git file
+            std::ifstream git_file(git_path);
+            if (git_file.is_open()) {
+                std::string line;
+                if (std::getline(git_file, line) && line.rfind("gitdir:", 0) == 0) {
+                    toplevel = dir;
+                    status.is_git_repo = true;
+                    status.root_dir = dir;
+                    break;
+                }
+            }
+        } else {
+            std::ifstream head_file(head_path);
             if (head_file.is_open()) {
                 toplevel = dir;
                 status.is_git_repo = true;
@@ -58,34 +74,28 @@ GitRepoStatus GitIntel::inspect_directory(const std::string& start_dir) {
                 if (std::getline(head_file, line)) {
                     line = trim(line);
                     std::string prefix = "ref: refs/heads/";
-                    if (line.rfind(prefix, 0) == 0) status.branch_name = line.substr(prefix.size());
-                    else if (!line.empty()) status.branch_name = line;
+                    if (line.rfind(prefix, 0) == 0) {
+                        branch_from_head = line.substr(prefix.size());
+                    } else if (!line.empty()) {
+                        branch_from_head = line.substr(0, 7); // Short commit hash
+                    }
                 }
                 break;
             }
-            dir = parent_directory(dir);
         }
-        if (!status.is_git_repo) {
-            status.is_git_repo = false;
-            return status;
-        }
-    } else {
-        status.is_git_repo = true;
-        status.root_dir = toplevel;
+        std::string p = parent_directory(dir);
+        if (p == dir) break;
+        dir = p;
     }
 
-    // Branch
-    std::string branch = trim(run_git(toplevel, "branch --show-current"));
-    if (!branch.empty()) {
-        status.branch_name = branch;
-    } else if (status.branch_name.empty()) {
-        std::string head_hash = trim(run_git(toplevel, "rev-parse --short HEAD"));
-        if (!head_hash.empty()) {
-            status.branch_name = "HEAD detached at " + head_hash;
-        } else {
-            status.branch_name = "main";
-        }
+    if (!status.is_git_repo) {
+        status.is_git_repo = false;
+        return status;
     }
+
+    status.branch_name = branch_from_head.empty() ? "main" : branch_from_head;
+
+    // Fast upstream counts
     std::string rev_count = trim(run_git(toplevel, "rev-list --left-right --count @{u}...HEAD"));
     if (!rev_count.empty()) {
         std::istringstream ss(rev_count);

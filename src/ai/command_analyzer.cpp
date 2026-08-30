@@ -77,11 +77,18 @@ bool CommandAnalyzer::is_known(const std::string& name) const {
         return access(name.c_str(), X_OK) == 0;
     }
     if (std::find(builtins_.begin(), builtins_.end(), name) != builtins_.end()) return true;
+    if (path_executables_.empty()) {
+        const_cast<CommandAnalyzer*>(this)->refresh_path_index();
+    }
     return std::binary_search(path_executables_.begin(), path_executables_.end(), name);
 }
 
 std::optional<Suggestion> CommandAnalyzer::analyze(const std::string& command_name) const {
     if (command_name.empty() || is_known(command_name)) return std::nullopt;
+
+    if (path_executables_.empty()) {
+        const_cast<CommandAnalyzer*>(this)->refresh_path_index();
+    }
 
     std::string best;
     int best_distance = -1;

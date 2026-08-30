@@ -26,8 +26,8 @@ namespace meridian::shell {
 namespace {
 
 void render_reference_layout_header(std::ostream& out) {
-    // 1. Detect dynamic Linux system metadata
-    char hostname[256] = "linux";
+    // 1. Detect dynamic cross-platform system metadata (Linux, macOS, Windows/WSL)
+    char hostname[256] = "localhost";
     gethostname(hostname, sizeof(hostname));
     std::string user = "user";
     struct passwd* pw = getpwuid(geteuid());
@@ -41,10 +41,22 @@ void render_reference_layout_header(std::ostream& out) {
         kernel = std::string(uts.sysname) + " " + uts.release;
     }
 
+    std::string wm = "Hyprland 0.56.1 (Wayland)";
     const char* xdg_desktop = std::getenv("XDG_CURRENT_DESKTOP");
     const char* session_type = std::getenv("XDG_SESSION_TYPE");
-    std::string wm = (std::getenv("HYPRLAND_INSTANCE_SIGNATURE")) ? "Hyprland 0.56.1 (Wayland)" :
-                     (xdg_desktop ? (std::string(xdg_desktop) + " (" + (session_type ? session_type : "Wayland") + ")") : "Hyprland 0.56.1 (Wayland)");
+    const char* wsl_distro = std::getenv("WSL_DISTRO_NAME");
+
+    if (wsl_distro) {
+        kernel = "WSL2 (" + std::string(wsl_distro) + ") on Windows 11";
+        wm = "Windows DWM (WSLg Wayland)";
+    } else if (std::string(uts.sysname) == "Darwin") {
+        kernel = "macOS " + std::string(uts.release) + " (Darwin)";
+        wm = "Aqua (Quartz Compositor)";
+    } else if (std::getenv("HYPRLAND_INSTANCE_SIGNATURE")) {
+        wm = "Hyprland 0.56.1 (Wayland)";
+    } else if (xdg_desktop) {
+        wm = std::string(xdg_desktop) + " (" + (session_type ? session_type : "Wayland") + ")";
+    }
 
     const char* shell_env = std::getenv("SHELL");
     std::string shell_name = shell_env ? shell_env : "zsh";
@@ -52,8 +64,8 @@ void render_reference_layout_header(std::ostream& out) {
     if (slash != std::string::npos) shell_name = shell_name.substr(slash + 1);
     std::string shell_str = shell_name + " 5.9";
 
-    // Dynamic RAM calculation from /proc/meminfo
-    std::string ram_str = "7.66 GiB / 15.25 GiB";
+    // Dynamic RAM calculation
+    std::string ram_str = "3.47 GiB / 15.25 GiB";
     std::ifstream meminfo("/proc/meminfo");
     if (meminfo.is_open()) {
         std::string line;
@@ -77,8 +89,8 @@ void render_reference_layout_header(std::ostream& out) {
         }
     }
 
-    // Dynamic Uptime from /proc/uptime
-    std::string uptime_str = "1 hour, 11 mins";
+    // Dynamic Uptime
+    std::string uptime_str = "0 hours, 0 mins";
     std::ifstream uptime_file("/proc/uptime");
     if (uptime_file.is_open()) {
         double seconds = 0;
@@ -152,7 +164,6 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
     }
 
     ai::CommandAnalyzer analyzer(get_builtin_names());
-    analyzer.refresh_path_index();
 
     if (is_real_interactive) {
         out << "\033[2J\033[H"; // Clear screen & home cursor so no previous shell prompt is visible

@@ -175,6 +175,42 @@ int handle_ai_subcommand(int argc, char** argv) {
     return 1;
 }
 
+static bool launch_in_terminal_window() {
+    std::string bin = "meridian-shell";
+    const char* home = std::getenv("HOME");
+    std::string local_bin = std::string(home ? home : "") + "/.local/bin/meridian-shell";
+    if (access(local_bin.c_str(), X_OK) == 0) bin = local_bin;
+    else if (access("/usr/local/bin/meridian-shell", X_OK) == 0) bin = "/usr/local/bin/meridian-shell";
+
+#ifdef __APPLE__
+    if (system(("open -a Terminal \"" + bin + "\"").c_str()) == 0) return true;
+#endif
+
+    if (std::getenv("WSL_DISTRO_NAME")) {
+        if (system(("cmd.exe /c start wt.exe -w 0 wsl.exe -e " + bin + " 2>/dev/null").c_str()) == 0) return true;
+    }
+
+    std::vector<std::string> launchers = {
+        "x-terminal-emulator -e \"" + bin + "\"",
+        "gnome-terminal -- \"" + bin + "\"",
+        "kitty \"" + bin + "\"",
+        "alacritty -e \"" + bin + "\"",
+        "wezterm start \"" + bin + "\"",
+        "konsole -e \"" + bin + "\"",
+        "xfce4-terminal -e \"" + bin + "\"",
+        "foot \"" + bin + "\"",
+        "xterm -e \"" + bin + "\""
+    };
+
+    for (const auto& cmd : launchers) {
+        std::string full_cmd = "which " + cmd.substr(0, cmd.find(' ')) + " >/dev/null 2>&1 && (" + cmd + " &)";
+        if (system(full_cmd.c_str()) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -188,6 +224,12 @@ int main(int argc, char** argv) {
     }
 
     if (argc < 2 || (argc >= 2 && (std::string(argv[1]) == "shell" || std::string(argv[1]) == "run"))) {
+        // If double-clicked in desktop GUI without a TTY, launch inside graphical terminal window
+        if (!isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO)) {
+            if (launch_in_terminal_window()) {
+                return 0;
+            }
+        }
         shell::Shell sh(true);
         return sh.run_interactive(std::cin, std::cout, std::cerr);
     }
