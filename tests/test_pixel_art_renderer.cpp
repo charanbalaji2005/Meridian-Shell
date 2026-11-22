@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-using namespace meridian::graphics;
+using namespace zephyr::graphics;
 
 MTEST(pixel_art_sobel_edge_detection) {
     int w = 10, h = 10;

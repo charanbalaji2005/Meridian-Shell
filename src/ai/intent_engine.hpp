@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / ai / intent_engine.hpp
+// zephyr-terminal / ai / intent_engine.hpp
 //
 // Natural language intent-to-command engine. Translates English queries
 // into robust, safe shell commands with safety analysis and explanations.
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 struct IntentResult {
     std::string prompt;
@@ -34,5 +34,5 @@ private:
     RiskClassifier risk_classifier_;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

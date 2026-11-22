@@ -6,7 +6,7 @@ status: "implemented"
 ---
 
 <h2 id="keymap-json">keybindings.json Specification</h2>
-<p>Location: <code>~/.config/meridian/keybindings.json</code></p>
+<p>Location: <code>~/.config/zephyr/keybindings.json</code></p>
 <pre><code class="language-json">{
   "new_tab": "Ctrl+Shift+T",
   "close_tab": "Ctrl+Shift+W",

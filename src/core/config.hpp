@@ -1,5 +1,5 @@
 #pragma once
-// meridian-core / config.hpp
+// zephyr-core / config.hpp
 //
 // A deliberately minimal flat key=value config store — NOT a full TOML
 // parser, even though the spec's example configs look like TOML
@@ -13,7 +13,7 @@
 #include <map>
 #include <string>
 
-namespace meridian {
+namespace zephyr {
 
 class Config {
 public:
@@ -26,6 +26,7 @@ public:
 
     std::string get(const std::string& key, const std::string& default_value = "") const;
     void set(const std::string& key, const std::string& value);
+    void remove(const std::string& key);
     bool get_bool(const std::string& key, bool default_value) const;
     void set_bool(const std::string& key, bool value);
 
@@ -36,4 +37,4 @@ private:
     std::map<std::string, std::string> values_;
 };
 
-} // namespace meridian
+} // namespace zephyr

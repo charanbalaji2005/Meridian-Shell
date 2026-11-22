@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -52,12 +52,12 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     if (action == "--status" || action == "-s") action = "status";
 
     std::string home = get_home_dir();
-    std::string local_bin = home + "/.local/bin/meridian-shell";
-    std::string local_gui = home + "/.local/bin/meridian";
-    std::string sys_bin = "/usr/local/bin/meridian-shell";
-    std::string sys_gui = "/usr/local/bin/meridian";
-    std::string target_bin = file_exists(local_bin) ? local_bin : (file_exists(sys_bin) ? sys_bin : "meridian-shell");
-    std::string target_gui = file_exists(local_gui) ? local_gui : (file_exists(sys_gui) ? sys_gui : "meridian");
+    std::string local_bin = home + "/.local/bin/zephyr-shell";
+    std::string local_gui = home + "/.local/bin/zephyr";
+    std::string sys_bin = "/usr/local/bin/zephyr-shell";
+    std::string sys_gui = "/usr/local/bin/zephyr";
+    std::string target_bin = file_exists(local_bin) ? local_bin : (file_exists(sys_bin) ? sys_bin : "zephyr-shell");
+    std::string target_gui = file_exists(local_gui) ? local_gui : (file_exists(sys_gui) ? sys_gui : "zephyr");
 
     // All IDE & Editor Settings paths
     std::vector<std::pair<std::string, std::string>> ide_paths = {
@@ -73,22 +73,22 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     if (action == "enable" || action == "auto") {
         std::string new_settings = R"({
     "terminal.integrated.profiles.linux": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + target_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "meridian-shell": {
+        "zephyr-shell": {
             "path": ")" + target_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "Meridian Terminal": {
+        "Zephyr Terminal": {
             "path": ")" + target_gui + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
         },
-        "meridian": {
+        "zephyr": {
             "path": ")" + target_gui + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
@@ -101,7 +101,7 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
             "path": "zsh"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "Meridian Shell"
+    "terminal.integrated.defaultProfile.linux": "Zephyr Shell"
 })";
 
         for (const auto& [name, path] : ide_paths) {
@@ -114,8 +114,8 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
             write_file_contents(".vscode/settings.json", new_settings);
         }
 
-        std::cout << "\n\033[1;32m✔ Meridian Terminal successfully configured across all IDEs and editors!\033[0m\n"
-                  << "  Profile Names: 'Meridian Shell', 'meridian-shell', 'Meridian Terminal', 'meridian'\n"
+        std::cout << "\n\033[1;32m✔ Zephyr Terminal successfully configured across all IDEs and editors!\033[0m\n"
+                  << "  Profile Names: 'Zephyr Shell', 'zephyr-shell', 'Zephyr Terminal', 'zephyr'\n"
                   << "  Target Shell : " << target_bin << "\n"
                   << "  Target GUI   : " << target_gui << "\n"
                   << "  Configured IDEs: VS Code, Antigravity IDE, Code - OSS, VSCodium, Cursor, Windsurf\n\n";
@@ -139,9 +139,9 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     }
 
     // Default: Status
-    std::cout << "\n\033[1;36m┌─── Meridian IDE & VS Code Integration ───────────────────────────────────────┐\033[0m\n";
-    std::cout << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Meridian Shell detected: \033[1;33m" << target_bin << "\033[0m\n"
-              << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Meridian Terminal detected: \033[1;33m" << target_gui << "\033[0m\n"
+    std::cout << "\n\033[1;36m┌─── Zephyr IDE & VS Code Integration ───────────────────────────────────────┐\033[0m\n";
+    std::cout << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Zephyr Shell detected: \033[1;33m" << target_bin << "\033[0m\n"
+              << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Zephyr Terminal detected: \033[1;33m" << target_gui << "\033[0m\n"
               << "\033[1;37m│\033[0m \033[1;32m✓\033[0m Linux x86_64\n"
               << "\033[1;37m│\033[0m\n";
 
@@ -149,21 +149,21 @@ int PlatformManager::handle_vscode(const std::vector<std::string>& argv) {
     for (const auto& [name, path] : ide_paths) {
         if (file_exists(path)) {
             std::string content = read_file_contents(path);
-            bool has_meridian = (content.find("meridian") != std::string::npos || content.find("Meridian") != std::string::npos);
+            bool has_zephyr = (content.find("zephyr") != std::string::npos || content.find("Zephyr") != std::string::npos);
             std::cout << "\033[1;37m│\033[0m " << name << " : "
-                      << (has_meridian ? "\033[1;32m● AUTO-DETECTED & ACTIVE\033[0m" : "\033[1;33m○ Found (Run 'meridian vscode enable')\033[0m") << "\n";
-            if (has_meridian) active_ides++;
+                      << (has_zephyr ? "\033[1;32m● AUTO-DETECTED & ACTIVE\033[0m" : "\033[1;33m○ Found (Run 'zephyr vscode enable')\033[0m") << "\n";
+            if (has_zephyr) active_ides++;
         }
     }
 
     if (active_ides == 0) {
-        std::cout << "\033[1;37m│\033[0m Status: \033[1;33m○ Setup Available\033[0m (Run '\033[1;32mmeridian vscode enable\033[0m' to register in all IDEs)\n";
+        std::cout << "\033[1;37m│\033[0m Status: \033[1;33m○ Setup Available\033[0m (Run '\033[1;32mzephyr vscode enable\033[0m' to register in all IDEs)\n";
     }
     std::cout << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
               << "\033[1;37mCommands:\033[0m\n"
-              << "  \033[1;32mmeridian vscode status\033[0m       Inspect current IDE terminal configurations\n"
-              << "  \033[1;32mmeridian vscode enable\033[0m       Auto-detect & register Meridian across VS Code, Antigravity, Cursor\n"
-              << "  \033[1;32mmeridian vscode disable\033[0m      Reset IDE terminal back to default bash\n";
+              << "  \033[1;32mzephyr vscode status\033[0m       Inspect current IDE terminal configurations\n"
+              << "  \033[1;32mzephyr vscode enable\033[0m       Auto-detect & register Zephyr across VS Code, Antigravity, Cursor\n"
+              << "  \033[1;32mzephyr vscode disable\033[0m      Reset IDE terminal back to default bash\n";
 
     return 0;
 }
@@ -177,7 +177,7 @@ int PlatformManager::handle_update(const std::vector<std::string>& argv) {
 
     std::string current_ver = "2.5.1";
 
-    std::cout << "\n\033[1;36m┌─── Meridian Update Engine ───────────────────────────────────────────────────┐\033[0m\n"
+    std::cout << "\n\033[1;36m┌─── Zephyr Update Engine ───────────────────────────────────────────────────┐\033[0m\n"
               << "\033[1;37m│\033[0m Current Version : \033[1;33m" << current_ver << "\033[0m\n"
               << "\033[1;37m│\033[0m Repository      : \033[38;2;6;182;212mhttps://github.com/charanbalaji2005/Meridian-Shell\033[0m\n";
 
@@ -208,7 +208,7 @@ struct GitHubLiveStats {
 
 static GitHubLiveStats query_github_live_stats() {
     GitHubLiveStats stats;
-    FILE* fp = popen("curl -fsSL -m 3 -H \"User-Agent: Meridian-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell/releases 2>/dev/null", "r");
+    FILE* fp = popen("curl -fsSL -m 3 -H \"User-Agent: Zephyr-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell/releases 2>/dev/null", "r");
     if (fp) {
         char buf[4096];
         std::string json;
@@ -254,7 +254,7 @@ static GitHubLiveStats query_github_live_stats() {
         }
     }
 
-    FILE* fp2 = popen("curl -fsSL -m 3 -H \"User-Agent: Meridian-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell 2>/dev/null", "r");
+    FILE* fp2 = popen("curl -fsSL -m 3 -H \"User-Agent: Zephyr-Terminal\" https://api.github.com/repos/charanbalaji2005/Meridian-Shell 2>/dev/null", "r");
     if (fp2) {
         char buf[4096];
         std::string json;
@@ -296,7 +296,7 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
     size_t user_cmd_count = history.size();
 
     if (growth) {
-        std::cout << "\n\033[1;36m┌─── Meridian Growth & Adoption ───────────────────────────────────────────────┐\033[0m\n"
+        std::cout << "\n\033[1;36m┌─── Zephyr Growth & Adoption ───────────────────────────────────────────────┐\033[0m\n"
                   << "\033[1;37m│\033[0m \033[1;33mYear      Installations    Growth\033[0m\n"
                   << "\033[1;37m│\033[0m 2024                 0        -\n"
                   << "\033[1;37m│\033[0m 2025             1,842    +100%\n"
@@ -309,7 +309,7 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
     }
 
     if (!year.empty()) {
-        std::cout << "\n\033[1;36m┌─── Meridian Usage — " << year << " ─────────────────────────────────────────────┐\033[0m\n"
+        std::cout << "\n\033[1;36m┌─── Zephyr Usage — " << year << " ─────────────────────────────────────────────┐\033[0m\n"
                   << "\033[1;37m│\033[0m Total Installations      : \033[1;32m8,921\033[0m\n"
                   << "\033[1;37m│\033[0m Active Installations     : \033[1;33m6,417\033[0m\n"
                   << "\033[1;37m│\033[0m New Installations (" << year << ")  : \033[1;36m8,921\033[0m\n"
@@ -325,7 +325,7 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    std::cout << "\n\033[1;36m┌─── Meridian Live Usage & Community Statistics ──────────────────────────────┐\033[0m\n"
+    std::cout << "\n\033[1;36m┌─── Zephyr Live Usage & Community Statistics ──────────────────────────────┐\033[0m\n"
               << "\033[1;37m│\033[0m \033[1;33mGitHub Live Release Downloads (charanbalaji2005/Meridian-Shell)\033[0m\n"
               << "\033[1;37m│\033[0m   Total Release Downloads  : \033[1;32m" << gh.total_downloads << "\033[0m" << (gh.is_live ? " \033[1;36m(Live from GitHub)\033[0m" : "") << "\n"
               << "\033[1;37m│\033[0m   Linux Packages (.deb/.rpm): \033[1;32m" << gh.linux_downloads << "\033[0m\n"
@@ -336,13 +336,13 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
               << "\033[1;37m│\033[0m\n"
               << "\033[1;37m│\033[0m \033[1;33mYour Local Terminal Activity\033[0m\n"
               << "\033[1;37m│\033[0m   Total Commands Commanded : \033[1;32m" << user_cmd_count << "\033[0m\n"
-              << "\033[1;37m│\033[0m   Active Shell Engine      : \033[1;36mMeridian Shell (C++20 AST Engine)\033[0m\n"
-              << "\033[1;37m│\033[0m   History Database         : ~/.config/meridian/history.db\n"
+              << "\033[1;37m│\033[0m   Active Shell Engine      : \033[1;36mZephyr Shell (C++20 AST Engine)\033[0m\n"
+              << "\033[1;37m│\033[0m   History Database         : ~/.config/zephyr/history.db\n"
               << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
               << "\033[1;37mCommands:\033[0m\n"
-              << "  \033[1;32mmeridian stats\033[0m               View live GitHub metrics and local command count\n"
-              << "  \033[1;32mmeridian history\033[0m             View detailed command history with execution times\n"
-              << "  \033[1;32mmeridian stats --growth\033[0m      View yearly adoption growth rates\n";
+              << "  \033[1;32mzephyr stats\033[0m               View live GitHub metrics and local command count\n"
+              << "  \033[1;32mzephyr history\033[0m             View detailed command history with execution times\n"
+              << "  \033[1;32mzephyr stats --growth\033[0m      View yearly adoption growth rates\n";
 
     return 0;
 }
@@ -350,13 +350,13 @@ int PlatformManager::handle_stats(const std::vector<std::string>& argv) {
 int PlatformManager::handle_telemetry(const std::vector<std::string>& argv) {
     std::string action = (argv.size() >= 2) ? argv[1] : "status";
     std::string home = get_home_dir();
-    std::string cfg_dir = home + "/.config/meridian";
+    std::string cfg_dir = home + "/.config/zephyr";
     std::string cfg_file = cfg_dir + "/telemetry.json";
 
     if (action == "enable" || action == "--enable" || action == "on") {
         system(("mkdir -p \"" + cfg_dir + "\"").c_str());
         write_file_contents(cfg_file, "{\n  \"telemetry_enabled\": true,\n  \"version\": \"2.5.0\"\n}\n");
-        std::cout << "\n\033[1;32m✔ Anonymous telemetry enabled. Thank you for supporting open-source Meridian!\033[0m\n\n";
+        std::cout << "\n\033[1;32m✔ Anonymous telemetry enabled. Thank you for supporting open-source Zephyr!\033[0m\n\n";
         return 0;
     }
 
@@ -374,7 +374,7 @@ int PlatformManager::handle_telemetry(const std::vector<std::string>& argv) {
         is_enabled = true;
     }
 
-    std::cout << "\n\033[1;36m┌─── Meridian Telemetry & Privacy Center ──────────────────────────────────────┐\033[0m\n"
+    std::cout << "\n\033[1;36m┌─── Zephyr Telemetry & Privacy Center ──────────────────────────────────────┐\033[0m\n"
               << "\033[1;37m│\033[0m Status: \033[1;" << (is_enabled ? "32mOPT-IN (Enabled)" : "33mOPT-IN (Disabled by default)") << "\033[0m\n"
               << "\033[1;37m│\033[0m Current setting: " << (is_enabled ? "\033[1;32mEnabled\033[0m" : "\033[1;37mDisabled\033[0m") << "\n"
               << "\033[1;37m│\033[0m\n"
@@ -392,12 +392,12 @@ int PlatformManager::handle_telemetry(const std::vector<std::string>& argv) {
               << "\033[1;37m│\033[0m   \033[1;31m✖\033[0m NO environment variables or tokens\n"
               << "\033[1;36m└──────────────────────────────────────────────────────────────────────────────┘\033[0m\n\n"
               << "\033[1;37mCommands:\033[0m\n"
-              << "  \033[1;32mmeridian telemetry status\033[0m     Display telemetry configuration and privacy policy\n"
-              << "  \033[1;32mmeridian telemetry enable\033[0m     Opt-in to anonymous usage counts\n"
-              << "  \033[1;32mmeridian telemetry disable\033[0m    Opt-out completely (Zero telemetry)\n";
+              << "  \033[1;32mzephyr telemetry status\033[0m     Display telemetry configuration and privacy policy\n"
+              << "  \033[1;32mzephyr telemetry enable\033[0m     Opt-in to anonymous usage counts\n"
+              << "  \033[1;32mzephyr telemetry disable\033[0m    Opt-out completely (Zero telemetry)\n";
 
     return 0;
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

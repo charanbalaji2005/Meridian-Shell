@@ -1,6 +1,6 @@
 #include "damage_tracker.hpp"
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 void DamageRect::merge(const DamageRect& other) {
     if (other.empty()) return;
@@ -85,5 +85,5 @@ DamageRect DamageTracker::consume_damage() {
     return rect;
 }
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

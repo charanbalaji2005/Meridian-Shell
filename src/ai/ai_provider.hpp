@@ -1,9 +1,9 @@
 #pragma once
-// meridian-ai-core / ai_provider.hpp
+// zephyr-ai-core / ai_provider.hpp
 //
 // NOT YET IMPLEMENTED. This header exists to pin down the shape of the
 // AIProvider interface described in the spec (§47-48) so the rest of the
-// architecture — Meridian AI's controller, the popup UI, command
+// architecture — Zephyr AI's controller, the popup UI, command
 // correction/explain/generate/diagnose — can be built against a stable
 // contract later without redesigning it. There is no .cpp file for this
 // header, no HTTP client, and nothing here has been compiled against a
@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 enum class RiskLevel { Low, Medium, High, Critical };
 
@@ -74,4 +74,4 @@ public:
     virtual bool health_check() = 0;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

@@ -1,34 +1,34 @@
-name: meridian-terminal
+name: zephyr-terminal
 base: core24
 version: '0.1.0'
 summary: Independently engineered Linux terminal emulator with built-in shell and local AI
 description: |
-  Meridian Terminal is an independently engineered Linux terminal emulator (C++20),
-  featuring an ANSI/VT screen engine, an optional standalone Meridian Shell with
-  full POSIX job control, and an offline local-only Meridian AI assistant.
+  Zephyr Terminal is an independently engineered Linux terminal emulator (C++20),
+  featuring an ANSI/VT screen engine, an optional standalone Zephyr Shell with
+  full POSIX job control, and an offline local-only Zephyr AI assistant.
 
 grade: stable
 confinement: classic
 
 apps:
-  meridian-terminal:
-    command: usr/bin/meridian-shell
+  zephyr-terminal:
+    command: usr/bin/zephyr-shell
     plugs:
       - home
       - network
       - removable-media
-  meridian:
-    command: usr/bin/meridian
+  zephyr:
+    command: usr/bin/zephyr
     plugs:
       - home
-  meridian-shell:
-    command: usr/bin/meridian-shell
+  zephyr-shell:
+    command: usr/bin/zephyr-shell
     plugs:
       - home
       - network
 
 parts:
-  meridian-terminal:
+  zephyr-terminal:
     plugin: make
     source: .
     build-packages:

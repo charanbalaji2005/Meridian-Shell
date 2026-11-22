@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / workspace / pane_tree.hpp
+// zephyr-terminal / workspace / pane_tree.hpp
 //
 // Binary Space Partitioning (BSP) tree for terminal pane multiplexing.
 // Supports drag-to-resize, pane zoom, swap, directional navigation,
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 enum class SplitDirection {
     Horizontal, // Split top / bottom
@@ -111,5 +111,5 @@ private:
 // Global session pane tree instance shared across the interactive shell and builtins
 PaneTree& get_session_pane_tree();
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

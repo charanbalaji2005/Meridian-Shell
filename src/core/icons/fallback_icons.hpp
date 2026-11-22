@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 struct UnicodeFallbackGlyphs {
     // Directories
@@ -148,5 +148,5 @@ struct AsciiFallbackGlyphs {
     static constexpr const char* STATUS_INFO                   = "INFO";
 };
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

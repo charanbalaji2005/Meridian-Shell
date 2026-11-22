@@ -6,7 +6,7 @@ status: "development"
 ---
 
 <h2 id="sixel-spec">DEC Sixel Graphics Decoding</h2>
-<p>Meridian decodes DCS Sixel streams (<code>\033Pq...\033\\</code>), converting 6-pixel vertical slivers into hardware bitmap textures.</p>
+<p>Zephyr decodes DCS Sixel streams (<code>\033Pq...\033\\</code>), converting 6-pixel vertical slivers into hardware bitmap textures.</p>
 
 <h2 id="gnuplot-compat">Compatibility with Gnuplot & CLI Plotting</h2>
 <pre><code class="language-bash"># Render inline scientific plots directly in terminal

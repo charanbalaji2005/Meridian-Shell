@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal-core / pty / pty_session.hpp
+// zephyr-terminal-core / pty / pty_session.hpp
 //
 // Real POSIX PTY Terminal Session.
 // Launches the user's actual login shell ($SHELL, /bin/zsh, /bin/bash, /bin/fish)
@@ -11,7 +11,7 @@
 #include <vector>
 #include <sys/types.h>
 
-namespace meridian::pty {
+namespace zephyr::pty {
 
 class PtySession {
 public:
@@ -41,5 +41,5 @@ private:
     pid_t child_pid_ = -1;
 };
 
-} // namespace meridian::pty
+} // namespace zephyr::pty
 

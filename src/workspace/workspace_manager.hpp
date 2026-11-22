@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / workspace / workspace_manager.hpp
+// zephyr-terminal / workspace / workspace_manager.hpp
 //
 // Persistent workspace management engine. Saves and restores complete
 // multi-pane development environments (panes, working directories,
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 struct WorkspacePaneConfig {
     uint32_t id = 1;
@@ -62,5 +62,5 @@ private:
     std::string workspace_file_path(const std::string& name) const;
 };
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

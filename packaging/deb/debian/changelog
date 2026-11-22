@@ -1,18 +1,28 @@
-meridian-terminal (2.5.0-1) unstable; urgency=medium
+zephyr-terminal (2.6.0-1) unstable; urgency=medium
 
-  * Release Meridian Terminal 2.5.0.
+  * New Qt 6 graphical terminal (zephyr-terminal): tabs, split panes,
+    scrollback search, shell and SSH profiles, command palette, settings
+    window and session restore.
+  * Build with CMake (debhelper cmake+ninja); install desktop entry,
+    AppStream metadata and hicolor icons.
+
+ -- Charan Balaji <charanbalaji@zephyr.dev>  Mon, 16 Nov 2026 12:00:00 +0000
+
+zephyr-terminal (2.5.0-1) unstable; urgency=medium
+
+  * Release Zephyr Terminal 2.5.0.
   * Universal prebuilt multi-distro installer for Ubuntu/Debian/Fedora/Arch/WSL.
   * VS Code auto-detection and default terminal integration.
   * Anonymous usage statistics and opt-in privacy telemetry.
   * Built-in GitHub authentication manager.
 
- -- Charan Balaji <charanbalaji@meridian.dev>  Sat, 29 Aug 2026 12:00:00 +0000
+ -- Charan Balaji <charanbalaji@zephyr.dev>  Sat, 29 Aug 2026 12:00:00 +0000
 
-meridian-terminal (0.1.0-1) unstable; urgency=medium
+zephyr-terminal (0.1.0-1) unstable; urgency=medium
 
-  * Initial release of Meridian Terminal (C++20).
-  * Includes Meridian Shell with POSIX job control.
-  * Includes local-only Meridian AI engine.
+  * Initial release of Zephyr Terminal (C++20).
+  * Includes Zephyr Shell with POSIX job control.
+  * Includes local-only Zephyr AI engine.
 
  -- Charan Balaji <charan@example.com>  Tue, 25 Aug 2026 00:00:00 +0000
 

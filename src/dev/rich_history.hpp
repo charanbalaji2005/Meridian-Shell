@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / rich_history.hpp
+// zephyr-terminal / dev / rich_history.hpp
 //
 // Rich command history database. Captures timestamps, working directories,
 // exit status codes, execution durations, and Git branch context.
@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct HistoryRecord {
     uint64_t id = 0;
@@ -51,5 +51,5 @@ private:
     static std::string default_db_path();
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

@@ -1,7 +1,7 @@
 // src/shell/autosuggest_engine.hpp
 #pragma once
 //
-// Meridian Autosuggestion Engine
+// Zephyr Autosuggestion Engine
 //
 // Provides real-time ghost (dim inline) autosuggestions for the line editor.
 // Never executes commands, never blocks input, and never contacts the network.
@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 struct SuggestionSource {
     enum class Kind { HISTORY, FILESYSTEM, COMMAND };
@@ -88,5 +88,5 @@ private:
     static std::vector<std::string> find_commands_with_prefix(const std::string& prefix);
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell
 

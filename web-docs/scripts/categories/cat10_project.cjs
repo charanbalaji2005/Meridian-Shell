@@ -30,9 +30,9 @@ module.exports = function(addArt) {
 <ul>
   <li><strong>Direct Raster Image Rendering:</strong> Added <code>pic</code> command supporting PNG, JPEG, WebP, GIF, BMP with 32-bit RGBA hardware decoding (zero ASCII).</li>
   <li><strong>Advanced Protocol Suite:</strong> Implemented OSC 8 Hyperlinks, OSC 52 Remote Clipboard sync, OSC 7 Working Directory tracking, and OSC 133 semantic prompt markers.</li>
-  <li><strong>Native SSH Workspace Manager:</strong> Added <code>meridian ssh</code> for direct host launching from <code>~/.ssh/config</code>.</li>
-  <li><strong>Extensible Plugin Engine:</strong> Integrated lifecycle hooks (pre/post execution, background watchers) under <code>~/.config/meridian/plugins/</code>.</li>
-  <li><strong>GPU Telemetry Profiler:</strong> Integrated live framerate, frame time, glyph cache hits, and VRAM monitoring (<code>meridian --performance</code>).</li>
+  <li><strong>Native SSH Workspace Manager:</strong> Added <code>zephyr ssh</code> for direct host launching from <code>~/.ssh/config</code>.</li>
+  <li><strong>Extensible Plugin Engine:</strong> Integrated lifecycle hooks (pre/post execution, background watchers) under <code>~/.config/zephyr/plugins/</code>.</li>
+  <li><strong>GPU Telemetry Profiler:</strong> Integrated live framerate, frame time, glyph cache hits, and VRAM monitoring (<code>zephyr --performance</code>).</li>
   <li><strong>Automated Test Suite:</strong> Reached 133 comprehensive unit and integration tests passing with 435 assertions.</li>
 </ul>
 
@@ -53,7 +53,7 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="license-spec">GNU General Public License v3.0</h2>
-<p>Meridian Shell is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later (GPL-3.0-or-later)</strong>.</p>
+<p>Zephyr Shell is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later (GPL-3.0-or-later)</strong>.</p>
 
 <h2 id="permissions-conditions">Summary of Permissions & Obligations</h2>
 <table class="doc-table">

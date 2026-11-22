@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / core / vt / graphics.hpp
+// zephyr-terminal / core / vt / graphics.hpp
 //
 // Complete high-performance Sixel raster and Kitty Graphics Protocol engine.
 // Implements chunked transfers, z-index layering, cell anchoring, and DEC Sixel decoding.
@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace meridian::vt {
+namespace zephyr::vt {
 
 enum class ImageFormat {
     Rgba32,
@@ -108,4 +108,4 @@ private:
     void send_kitty_response(uint32_t image_id, uint32_t placement_id, const std::string& msg);
 };
 
-} // namespace meridian::vt
+} // namespace zephyr::vt

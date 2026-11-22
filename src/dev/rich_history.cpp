@@ -7,7 +7,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -21,12 +21,12 @@ void ensure_parent_dir(const std::string& path) {
 } // namespace
 
 std::string RichHistory::default_db_path() {
-    if (const char* override_dir = std::getenv("MERIDIAN_CONFIG_HOME")) {
+    if (const char* override_dir = std::getenv("ZEPHYR_CONFIG_HOME")) {
         return std::string(override_dir) + "/history.db";
     }
     const char* home = std::getenv("HOME");
     std::string base = home ? home : ".";
-    return base + "/.config/meridian/history.db";
+    return base + "/.config/zephyr/history.db";
 }
 
 RichHistory::RichHistory(std::string db_path)
@@ -81,7 +81,7 @@ bool RichHistory::save() const {
     std::ofstream out(db_path_, std::ios::trunc);
     if (!out.is_open()) return false;
 
-    out << "# Meridian Rich Command History DB\n";
+    out << "# Zephyr Rich Command History DB\n";
     for (const auto& r : records_) {
         out << r.id << "|"
             << r.timestamp << "|"
@@ -131,5 +131,5 @@ bool RichHistory::load() {
     return true;
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

@@ -1,26 +1,50 @@
-# Maintainer: Charan Balaji <charanbalaji@meridian.dev>
-pkgname=meridian-terminal
-pkgver=2.0.0
+# Maintainer: Charan Balaji <charanbalaji@zephyr.dev>
+#
+# Release build: downloads the v$pkgver tag from GitHub.
+# Local build from a checkout: packaging/arch/build_pkg.sh (places a
+# tarball of the working tree next to this file; makepkg then uses it).
+# AUR: run `makepkg --printsrcinfo > .SRCINFO` and fill sha256sums.
+
+pkgname=zephyr-terminal
+pkgver=2.6.0
 pkgrel=1
-pkgdesc="Modern Linux Terminal & Unified Developer Environment"
+pkgdesc="Fast, modern terminal emulator with tabs, splits, profiles and a built-in shell"
 arch=('x86_64' 'aarch64')
 url="https://github.com/charanbalaji2005/Meridian-Shell"
 license=('GPL-3.0-or-later')
-depends=('glibc' 'gcc-libs')
-makedepends=('gcc' 'make' 'cmake')
-source=("$pkgname-$pkgver.tar.gz")
+depends=('qt6-base' 'qt6-svg' 'hicolor-icon-theme' 'gcc-libs' 'glibc')
+makedepends=('cmake' 'ninja')
+checkdepends=('desktop-file-utils' 'appstream')
+optdepends=('qt6-wayland: native Wayland windows (otherwise runs via XWayland)'
+            'openssh: SSH connection profiles')
+provides=('zephyr-shell')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 
+_srcdir() {
+    # GitHub archives unpack to Meridian-Shell-<ver>; local tarballs to zephyr-terminal-<ver>.
+    if [[ -d "$srcdir/Meridian-Shell-$pkgver" ]]; then
+        echo "$srcdir/Meridian-Shell-$pkgver"
+    else
+        echo "$srcdir/$pkgname-$pkgver"
+    fi
+}
+
 build() {
-    cd "$srcdir/$pkgname-$pkgver"
-    make all
+    cmake -B build -S "$(_srcdir)" -G Ninja \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DZEPHYR_BUILD_GUI=ON \
+        -DZEPHYR_BUILD_TESTS=ON
+    cmake --build build
+}
+
+check() {
+    desktop-file-validate "$(_srcdir)/packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop"
+    appstreamcli validate --no-net "$(_srcdir)/packaging/desktop/org.zephyr_terminal.ZephyrTerminal.metainfo.xml"
+    ctest --test-dir build --output-on-failure
 }
 
 package() {
-    cd "$srcdir/$pkgname-$pkgver"
-    install -Dm755 build/meridian-shell "$pkgdir/usr/bin/meridian-shell"
-    install -Dm755 build/meridian "$pkgdir/usr/bin/meridian"
-    install -Dm644 meridian.desktop "$pkgdir/usr/share/applications/meridian.desktop"
-    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    DESTDIR="$pkgdir" cmake --install build
 }
-

@@ -9,7 +9,7 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="gpu-pipeline">GPU Render Pipeline Architecture</h2>
-<p>Meridian's GPU renderer transforms terminal cell matrices into instanced draw calls executed on OpenGL 3.3 Core and Vulkan backends. By offloading text glyph blitting, background colors, and raster images to dedicated shader pipelines, Meridian sustains fluid 144Hz+ rendering without consuming significant CPU resources.</p>
+<p>Zephyr's GPU renderer transforms terminal cell matrices into instanced draw calls executed on OpenGL 3.3 Core and Vulkan backends. By offloading text glyph blitting, background colors, and raster images to dedicated shader pipelines, Zephyr sustains fluid 144Hz+ rendering without consuming significant CPU resources.</p>
 
 <div class="arch-diagram-block"><pre><code class="language-text">ScreenBuffer Grid Cells
         │ (dirty lines)
@@ -29,12 +29,12 @@ module.exports = function(addArt) {
 <p><code>renderer::GlyphAtlas</code> rasterizes character glyphs with sub-pixel anti-aliasing into a high-density 2048x2048 texture atlas, achieving sub-millisecond glyph retrieval.</p>
 
 <h2 id="instancing-dev">Instanced Quad Rendering</h2>
-<p>Rather than issuing individual draw calls for each character cell, Meridian batches up to 20,000 glyphs into a single instanced quad array buffer, achieving ultra-low render latency under 1.2ms per frame.</p>
+<p>Rather than issuing individual draw calls for each character cell, Zephyr batches up to 20,000 glyphs into a single instanced quad array buffer, achieving ultra-low render latency under 1.2ms per frame.</p>
 `
   );
 
   addArt('graphics-inline-images', 'Inline Images', 'GRAPHICS', 'implemented',
-    "Display real raster images directly inside Meridian Shell without converting them into ASCII characters or Unicode blocks. Meridian Shell's graphics system allows images to be rendered at full color and resolution using GPU acceleration.",
+    "Display real raster images directly inside Zephyr Shell without converting them into ASCII characters or Unicode blocks. Zephyr Shell's graphics system allows images to be rendered at full color and resolution using GPU acceleration.",
     [
       { id: 'pic-command', text: 'The pic Command', level: 2 },
       { id: 'rendering-pipeline', text: 'Rendering Pipeline', level: 2 },
@@ -56,7 +56,7 @@ module.exports = function(addArt) {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00A8B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
     <span class="callout-title">Important</span>
   </div>
-  <p>Meridian Shell renders images as true raster graphics. Images are not converted into ASCII art, Unicode blocks, or other character-based representations.</p>
+  <p>Zephyr Shell renders images as true raster graphics. Images are not converted into ASCII art, Unicode blocks, or other character-based representations.</p>
 </div>
 
 <h2 id="rendering-pipeline">Rendering Pipeline</h2>
@@ -115,7 +115,7 @@ module.exports = function(addArt) {
 <p>This ensures smooth rendering, proper scaling, and efficient memory usage.</p>
 
 <h2 id="image-formats">Image Formats</h2>
-<p>Meridian natively parses standard compressed raster files using <code>graphics::ImageDecoder</code>:</p>
+<p>Zephyr natively parses standard compressed raster files using <code>graphics::ImageDecoder</code>:</p>
 <table class="doc-table">
   <thead><tr><th>Format</th><th>Status</th><th>Channels</th><th>Notes</th></tr></thead>
   <tbody>
@@ -128,7 +128,7 @@ module.exports = function(addArt) {
 </table>
 
 <h2 id="configuration">Configuration</h2>
-<p>Adjust max texture sizes and caching behavior in <code>~/.config/meridian/config.json</code>:</p>
+<p>Adjust max texture sizes and caching behavior in <code>~/.config/zephyr/config.json</code>:</p>
 <pre><code class="language-json">{
   "graphics": {
     "max_inline_width": 1920,
@@ -157,7 +157,7 @@ pic --clear</code></pre>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
   <li><strong>Image not found:</strong> Verify the absolute or relative file path.</li>
-  <li><strong>GPU Texture Allocation Error:</strong> Ensure OpenGL 3.3 Core or Vulkan drivers are active (<code>meridian --performance</code>).</li>
+  <li><strong>GPU Texture Allocation Error:</strong> Ensure OpenGL 3.3 Core or Vulkan drivers are active (<code>zephyr --performance</code>).</li>
   <li><strong>Unsupported File:</strong> Convert esoteric vector formats (SVG) or RAW camera files to standard PNG/JPEG.</li>
 </ul>
 `
@@ -220,7 +220,7 @@ pic animation.gif --loop 3  # Play GIF for 3 iterations then pause</code></pre>
     ],
     `
 <h2 id="kitty-protocol">Kitty Graphics Protocol Specification</h2>
-<p>Meridian parses Kitty Graphics escape sequences (<code>\\033_G...\\033\\\\</code>) for seamless compatibility with tools like <code>icat</code>, <code>yazi</code>, and <code>ranger</code>.</p>
+<p>Zephyr parses Kitty Graphics escape sequences (<code>\\033_G...\\033\\\\</code>) for seamless compatibility with tools like <code>icat</code>, <code>yazi</code>, and <code>ranger</code>.</p>
 
 <h2 id="chunking-safety">2048-Byte Safe Transmission Chunking</h2>
 <p>Payloads exceeding 2048 bytes are transmitted in chunks using <code>m=1</code> (more data follows) and <code>m=0</code> (final payload chunk), preventing buffer overflows in PTY drivers.</p>
@@ -247,7 +247,7 @@ pic animation.gif --loop 3  # Play GIF for 3 iterations then pause</code></pre>
     ],
     `
 <h2 id="sixel-spec">DEC Sixel Graphics Decoding</h2>
-<p>Meridian decodes DCS Sixel streams (<code>\\033Pq...\\033\\\\</code>), converting 6-pixel vertical slivers into hardware bitmap textures.</p>
+<p>Zephyr decodes DCS Sixel streams (<code>\\033Pq...\\033\\\\</code>), converting 6-pixel vertical slivers into hardware bitmap textures.</p>
 
 <h2 id="gnuplot-compat">Compatibility with Gnuplot & CLI Plotting</h2>
 <pre><code class="language-bash"># Render inline scientific plots directly in terminal
@@ -267,11 +267,11 @@ gnuplot -e "set terminal sixelgd; plot sin(x)"</code></pre>
     ],
     `
 <h2 id="zero-ascii-spec">Zero-ASCII Engineering Guarantee</h2>
-<p>Meridian Shell guarantees that images displayed via <code>pic</code> are rendered as genuine 32-bit hardware textures on the GPU canvas. Meridian contains zero ASCII, Unicode block, half-block, or Braille converters.</p>
+<p>Zephyr Shell guarantees that images displayed via <code>pic</code> are rendered as genuine 32-bit hardware textures on the GPU canvas. Zephyr contains zero ASCII, Unicode block, half-block, or Braille converters.</p>
 
 <h2 id="comparison-table">Raster vs. Text Cell Approximation Comparison</h2>
 <table class="doc-table">
-  <thead><tr><th>Feature</th><th>Meridian Direct Raster</th><th>Legacy ASCII / Half-Blocks</th></tr></thead>
+  <thead><tr><th>Feature</th><th>Zephyr Direct Raster</th><th>Legacy ASCII / Half-Blocks</th></tr></thead>
   <tbody>
     <tr><td>Pixel Resolution</td><td>Native Image Resolution (e.g. 1920x1080)</td><td>Limited to Cell Grid (e.g. 80x24)</td></tr>
     <tr><td>Color Accuracy</td><td>32-bit Full RGBA (16.7M colors + Alpha)</td><td>256 colors or ANSI approximations</td></tr>

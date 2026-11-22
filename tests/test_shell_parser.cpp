@@ -3,7 +3,7 @@
 #include "../src/shell/lexer.hpp"
 #include "../src/shell/parser.hpp"
 
-using namespace meridian::shell;
+using namespace zephyr::shell;
 
 static std::string wt(const Word& w) { std::string s; for (auto& p : w) s += p.text; return s; }
 

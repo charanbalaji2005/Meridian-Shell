@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -352,5 +352,5 @@ std::string AutosuggestEngine::get_suggestion(
     return "";
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell
 

@@ -4,10 +4,10 @@ title: "Shell & AST Engine"
 category: "Terminal"
 ---
 
-# Meridian Shell
+# Zephyr Shell
 
 An independent POSIX-ish shell: `src/shell/{ast,lexer,parser,executor,
-builtins}.{hpp,cpp}`, built into a standalone `meridian-shell` binary
+builtins}.{hpp,cpp}`, built into a standalone `zephyr-shell` binary
 by `src/app/shell_main.cpp`.
 
 ## Grammar
@@ -40,7 +40,7 @@ two words, not four — this needed a real fix; see `docs/status.md`).
 
 `$(cmd)` is evaluated by forking, redirecting the child's stdout to a
 pipe, and recursively running `cmd` through this *same* lexer/parser/
-executor — never through `/bin/sh -c`. This keeps Meridian Shell
+executor — never through `/bin/sh -c`. This keeps Zephyr Shell
 consistent with its own execution-safety rule (see below) even for
 substitution content, and it's also just correct POSIX subshell
 semantics for free: whatever the substituted command does to its
@@ -59,7 +59,7 @@ A builtin that's part of a multi-stage pipeline, or that has its own
 redirection, still gets forked — this is deliberate and matches real
 shell behavior: `cd /tmp | ls` should NOT change the parent shell's
 directory (POSIX defines each pipeline stage as running in its own
-subshell), and Meridian Shell gets that right by construction rather
+subshell), and Zephyr Shell gets that right by construction rather
 than as a special case.
 
 Multi-stage pipelines wire `N-1` real `pipe()`s between `N` forked
@@ -127,7 +127,7 @@ which don't do job control in `-c` mode or when piped):
   best-effort display of its command line.
 
 **Tested how it actually matters**: `tests/test_job_control.cpp` spawns
-the real `meridian-shell` *binary* (not just the `Executor` class) on a
+the real `zephyr-shell` *binary* (not just the `Executor` class) on a
 real PTY and writes a genuine `0x1A` (Ctrl+Z) byte to the master fd. The
 byte is never delivered to the shell as ordinary input — the kernel's
 tty line discipline intercepts it and sends a real `SIGTSTP` to

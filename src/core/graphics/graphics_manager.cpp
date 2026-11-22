@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 GraphicsManager& GraphicsManager::instance() {
     static GraphicsManager mgr;
@@ -27,19 +27,19 @@ uint64_t GraphicsManager::add_image_file(
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (!gpu_available_) {
-        if (error_out) *error_out = "Meridian: native graphics rendering is unavailable.";
+        if (error_out) *error_out = "Zephyr: native graphics rendering is unavailable.";
         return 0;
     }
 
     auto decoded = ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) {
-        if (error_out) *error_out = "meridian: failed to decode image or unsupported format: " + filepath;
+        if (error_out) *error_out = "zephyr: failed to decode image or unsupported format: " + filepath;
         return 0;
     }
 
     auto tex = texture_manager_.get_or_create_texture(filepath, decoded);
     if (!tex) {
-        if (error_out) *error_out = "meridian: failed to allocate GPU texture for " + filepath;
+        if (error_out) *error_out = "zephyr: failed to allocate GPU texture for " + filepath;
         return 0;
     }
 
@@ -74,20 +74,20 @@ uint64_t GraphicsManager::add_image_memory(
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (!gpu_available_) {
-        if (error_out) *error_out = "Meridian: native graphics rendering is unavailable.";
+        if (error_out) *error_out = "Zephyr: native graphics rendering is unavailable.";
         return 0;
     }
 
     auto decoded = ImageDecoder::decode_memory(data, size, hint);
     if (!decoded.is_valid()) {
-        if (error_out) *error_out = "meridian: failed to decode in-memory image";
+        if (error_out) *error_out = "zephyr: failed to decode in-memory image";
         return 0;
     }
 
     std::string cache_key = hint.empty() ? ("mem_" + std::to_string(next_image_id_)) : hint;
     auto tex = texture_manager_.get_or_create_texture(cache_key, decoded);
     if (!tex) {
-        if (error_out) *error_out = "meridian: failed to allocate GPU texture for in-memory image";
+        if (error_out) *error_out = "zephyr: failed to allocate GPU texture for in-memory image";
         return 0;
     }
 
@@ -200,4 +200,4 @@ bool GraphicsManager::generate_debug_report(const std::string& filepath, ImageDe
     return true;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics

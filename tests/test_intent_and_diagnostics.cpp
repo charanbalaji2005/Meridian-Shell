@@ -3,7 +3,7 @@
 #include "../src/ai/error_diagnostics.hpp"
 #include "../src/ai/intent_engine.hpp"
 
-using namespace meridian::ai;
+using namespace zephyr::ai;
 
 MTEST(intent_engine_translations) {
     IntentEngine engine;
@@ -72,6 +72,6 @@ MTEST(ai_agent_planning_and_lifecycle) {
 
     // Progress format report
     std::string progress = agent.format_progress();
-    ASSERT_TRUE(progress.find("Meridian AI Agent") != std::string::npos);
+    ASSERT_TRUE(progress.find("Zephyr AI Agent") != std::string::npos);
 }
 

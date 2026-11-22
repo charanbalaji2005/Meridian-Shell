@@ -1,7 +1,7 @@
-// meridian-shell / parser.cpp
+// zephyr-shell / parser.cpp
 #include "parser.hpp"
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 Parser::Parser(std::vector<Token> tokens) : tokens_(std::move(tokens)) {
     if (tokens_.empty()) tokens_.push_back(Token{TokenType::End, {}});
@@ -115,4 +115,4 @@ Sequence Parser::parse(std::string* error) {
     return seq;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

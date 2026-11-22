@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 GlyphAtlas::GlyphAtlas(int atlas_width, int atlas_height)
     : atlas_width_(std::max(256, atlas_width)),
@@ -111,5 +111,5 @@ const AtlasEntry& GlyphAtlas::get_or_create(char32_t codepoint, FontStyle style,
     return inserted_it->second;
 }
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

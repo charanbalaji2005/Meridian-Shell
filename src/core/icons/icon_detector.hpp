@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 enum class IconTier {
     NERD_FONT,  // 10,000+ Nerd Font v3.x developer glyphs
@@ -19,7 +19,7 @@ enum class IconTheme {
     Unicode,    // Emoji / Unicode symbols
     Minimal,    // Minimal glyph set
     Monochrome, // Nerd Font glyphs without ANSI color escapes
-    Custom      // Loaded from ~/.config/meridian/icons.toml
+    Custom      // Loaded from ~/.config/zephyr/icons.toml
 };
 
 class IconDetector {
@@ -46,5 +46,5 @@ public:
     static std::string theme_name(IconTheme theme);
 };
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

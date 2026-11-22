@@ -1,5 +1,5 @@
 #pragma once
-// meridian-security / credential_store.hpp
+// zephyr-security / credential_store.hpp
 //
 // Spec §57: API keys must never be hardcoded, committed, or logged,
 // and should prefer the Linux Secret Service / desktop keyring when
@@ -17,7 +17,7 @@
 #include <optional>
 #include <string>
 
-namespace meridian::security {
+namespace zephyr::security {
 
 class CredentialStore {
 public:
@@ -50,4 +50,4 @@ private:
     std::string dir_;
 };
 
-} // namespace meridian::security
+} // namespace zephyr::security

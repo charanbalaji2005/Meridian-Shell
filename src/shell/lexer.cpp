@@ -1,7 +1,7 @@
-// meridian-shell / lexer.cpp
+// zephyr-shell / lexer.cpp
 #include "lexer.hpp"
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 Lexer::Lexer(std::string input) : input_(std::move(input)) {}
 
@@ -148,4 +148,4 @@ std::vector<Token> Lexer::tokenize(std::string* error) {
     return tokens;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

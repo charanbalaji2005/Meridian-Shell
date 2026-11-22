@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 uint64_t SessionRecorder::current_time_ms() {
     auto now = std::chrono::steady_clock::now();
@@ -50,7 +50,7 @@ bool SessionRecorder::save_to_file(const std::string& file_path) const {
     std::ofstream out(file_path, std::ios::trunc | std::ios::binary);
     if (!out.is_open()) return false;
 
-    out << "MERIDIAN_SESSION_V1\n";
+    out << "ZEPHYR_SESSION_V1\n";
     out << events_.size() << "\n";
     for (const auto& ev : events_) {
         out << ev.timestamp_ms << " "
@@ -68,7 +68,7 @@ bool SessionRecorder::load_from_file(const std::string& file_path) {
     if (!in.is_open()) return false;
 
     std::string header;
-    if (!std::getline(in, header) || header != "MERIDIAN_SESSION_V1") {
+    if (!std::getline(in, header) || header != "ZEPHYR_SESSION_V1") {
         return false;
     }
 
@@ -102,5 +102,5 @@ bool SessionRecorder::load_from_file(const std::string& file_path) {
     return true;
 }
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

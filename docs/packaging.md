@@ -1,196 +1,82 @@
----
-layout: default
-title: "Fedora RPM & Linux Packages"
-category: "Packaging"
----
+# Packaging Zephyr Terminal
 
-# Meridian Terminal — Packaging & Distribution Guide
+All Linux packages are built from one set of CMake install rules, so every
+format installs the same files:
 
-This document is the complete guide for building, maintaining, and publishing Meridian Terminal packages across all major Linux distribution ecosystems (Fedora/RHEL/AetherOS, Ubuntu/Debian/Mint, Arch/Manjaro, Flatpak, Snap, and the Universal Installer).
+| Path (under the prefix, usually `/usr`) | Content |
+|---|---|
+| `bin/zephyr-terminal` | Qt 6 GUI |
+| `bin/zephyr`, `bin/zephyr-shell` | CLI toolkit and interactive shell |
+| `share/applications/org.zephyr_terminal.ZephyrTerminal.desktop` | Desktop entry (`Terminal=false`, `X-TerminalArgExec=-e`) |
+| `share/metainfo/org.zephyr_terminal.ZephyrTerminal.metainfo.xml` | AppStream metadata (software centers) |
+| `share/icons/hicolor/{16..512}/apps/zephyr-terminal.png`, `scalable/apps/zephyr-terminal.svg` | Application icon |
+| `share/zephyr/images/gallery/` | Artwork used by `zephyr pic` |
+| `share/doc/zephyr-terminal/`, `share/licenses/zephyr-terminal/` | Docs / license (disable with `-DZEPHYR_INSTALL_DOCS=OFF`, `-DZEPHYR_INSTALL_LICENSE=OFF`) |
 
----
+Build requirements everywhere: C++20 compiler, CMake ≥ 3.20, Qt ≥ 6.4
+(Widgets, Svg). Runtime: Qt 6 base + svg; `qt6-wayland` recommended.
 
-## 1. Distribution Matrix
+The desktop file id, the Wayland `app_id` (`QGuiApplication::desktopFileName`)
+and the X11 `WM_CLASS` (`zephyr-terminal`) all match, so docks and task
+switchers show the right icon.
 
-| Distribution Target | Package Type | Source Files | Build / Publish Command |
-| :--- | :--- | :--- | :--- |
-| **Fedora / RHEL / AetherOS / openSUSE** | `.rpm` | `packaging/rpm/meridian-terminal.spec` | `rpmbuild -ba` or Fedora COPR |
-| **Ubuntu / Debian / Linux Mint / Pop!_OS** | `.deb` | `packaging/deb/debian/*` | `dpkg-buildpackage` or Launchpad PPA |
-| **Arch Linux / Manjaro / EndeavourOS** | AUR | `packaging/aur/PKGBUILD`, `.SRCINFO` | `makepkg` or `aurpublish` |
-| **Universal Linux Desktop** | Flatpak | `packaging/flatpak/*.yaml` | `flatpak-builder` / Flathub |
-| **Universal Linux (Canonical / Snap)** | Snap | `packaging/snap/snapcraft.yaml` | `snapcraft` / Snap Store |
-| **One-Line Universal Installer** | Shell Script | `install.sh` | `curl -fsSL https://.../install.sh \| bash` |
+## Formats
 
----
+| Format | Recipe | Local build | Guide |
+|---|---|---|---|
+| Nix / NixOS | `flake.nix`, `nix/package.nix`, `nix/module.nix`, `default.nix` | `nix build` | [nixos.md](packaging/nixos.md) |
+| Fedora RPM | `packaging/rpm/zephyr-terminal.spec` | `bash packaging/rpm/build_rpm.sh` | [fedora.md](packaging/fedora.md) |
+| Debian / Ubuntu | `packaging/deb/debian/` | `bash packaging/deb/build_deb.sh` | [debian.md](packaging/debian.md) |
+| Arch Linux | `packaging/arch/PKGBUILD` | `bash packaging/arch/build_pkg.sh` | [arch.md](packaging/arch.md) |
+| AppImage | `packaging/appimage/build_appimage.sh` | same | [appimage.md](packaging/appimage.md) |
 
-## 2. Universal One-Line Installer (`install.sh`)
+Local builds use `scripts/make_source_tarball.sh`, which packs the working
+tree (including uncommitted changes) so you can test packaging before
+committing. `scripts/build_all_releases.sh` runs every builder available on
+the host.
 
-The universal installer automatically inspects `/etc/os-release`, determines architecture and tool availability, builds or downloads precompiled releases, and sets up system/user paths with desktop menu entries.
+## How packages are validated
 
-### User Commands:
-```bash
-# Recommended default installation (installs to ~/.local for standard users, /usr/local with sudo)
-curl -fsSL https://raw.githubusercontent.com/meridian-terminal/meridian-terminal/main/install.sh | bash
+`.github/workflows/packages.yml` (run on every push/PR via `ci.yml`, and on
+tags via `release.yml`) builds each format in a matching environment and then
+**installs the result and runs it**:
 
-# Local invocation options:
-./install.sh --user                  # Install into ~/.local without sudo
-./install.sh --system                # Install into /usr/local
-./install.sh --prefix /opt/meridian  # Custom target directory
-./install.sh --dry-run               # Inspect environment without changes
-./install.sh --uninstall             # Cleanly remove installed binaries and assets
-```
+| Job | Environment | Checks |
+|---|---|---|
+| rpm | `fedora:latest` | `%check`: `desktop-file-validate`, `appstream-util validate-relax`, CTest; install with dnf; run `zephyr-terminal --version` and `zephyr-terminal -e sh -c 'echo ok'` (offscreen) |
+| deb | `debian:bookworm`, `ubuntu:24.04` | `desktop-file-validate`, `appstreamcli validate`, CTest via `dh_auto_test`; install with apt; same run checks; lintian (informational) |
+| arch | `archlinux:latest` | `check()`: validators + CTest; install with pacman; same run checks |
+| nix | Ubuntu + Nix | `nix flake check`, `nix build`, run checks, `nix profile install`, and a build with `doCheck = true` |
+| appimage | Ubuntu 24.04 | linuxdeploy bundle, `--version` smoke test, end-to-end `-e` run |
 
----
+The `-e sh -c 'echo ok'` run is an end-to-end test: the GUI starts, spawns
+the command on a real PTY, the command exits, the pane, tab and window close,
+and the process must exit on its own within the timeout.
 
-## 3. Fedora, RHEL & AetherOS Packaging (RPM)
+## Releasing
 
-### Building Locally:
-```bash
-# Install toolchain
-sudo dnf install -y gcc-c++ make rpm-build rpmdevtools
+1. Bump the version in **all** of: `CMakeLists.txt` (`project(VERSION)`),
+   `packaging/rpm/zephyr-terminal.spec` (`Version`, `%changelog`),
+   `packaging/deb/debian/changelog`, `packaging/arch/PKGBUILD` (`pkgver`),
+   `nix/package.nix` (`version`), `packaging/desktop/*.metainfo.xml` (`<release>`),
+   and `CHANGELOG.md`.
+2. Commit `flake.lock` (run `nix flake lock` once; CI uploads a generated one as an artifact).
+3. Tag `vX.Y.Z` and push. `release.yml` builds and tests every package and
+   publishes them with a source tarball and `SHA256SUMS` to GitHub Releases.
+4. AUR: update `sha256sums` in the PKGBUILD from `SHA256SUMS`
+   (`updpkgsums`), run `makepkg --printsrcinfo > .SRCINFO`, and push both to
+   the AUR repository.
 
-# Setup rpmbuild tree
-rpmdev-setuptree
+## Not maintained in this release
 
-# Create source tarball
-make tarball VERSION=0.1.0
-cp build/meridian-terminal-0.1.0.tar.gz ~/rpmbuild/SOURCES/
+`packaging/flatpak/`, `packaging/snap/`, `packaging/macos/` and
+`packaging/windows/` were left unchanged. They predate the GUI and have not
+been validated; the GUI's PTY layer is Linux/POSIX-only.
 
-# Copy spec file and build
-cp packaging/rpm/meridian-terminal.spec ~/rpmbuild/SPECS/
-rpmbuild -ba ~/rpmbuild/SPECS/meridian-terminal.spec
+## Why no MIME types or URL handlers
 
-# Built packages will be located in:
-# ~/rpmbuild/RPMS/x86_64/meridian-terminal-0.1.0-1.fc*.x86_64.rpm
-```
-
-### Publishing to Fedora COPR:
-1. Create a project at [copr.fedorainfracloud.org](https://copr.fedorainfracloud.org/).
-2. Add a new package pointing to your GitHub repository and the `packaging/rpm/meridian-terminal.spec` path.
-3. Users can then install with:
-   ```bash
-   sudo dnf copr enable username/meridian-terminal
-   sudo dnf install meridian-terminal
-   ```
-
----
-
-## 4. Ubuntu, Debian & Linux Mint Packaging (DEB)
-
-### Building Locally:
-```bash
-# Install packaging tools
-sudo apt update && sudo apt install -y build-essential debhelper devscripts dpkg-dev
-
-# Prepare debian/ directory
-cp -r packaging/deb/debian .
-
-# Build the binary package
-dpkg-buildpackage -us -uc -b
-
-# Install the generated .deb:
-sudo dpkg -i ../meridian-terminal_0.1.0-1_amd64.deb
-```
-
-### Publishing to Ubuntu Launchpad PPA:
-1. Build source package: `debuild -S -sa`
-2. Upload to Launchpad: `dput ppa:username/meridian-terminal ../meridian-terminal_0.1.0-1_source.changes`
-3. Users can install with:
-   ```bash
-   sudo add-apt-repository ppa:username/meridian-terminal
-   sudo apt update
-   sudo apt install meridian-terminal
-   ```
-
----
-
-## 5. Arch Linux & AUR Packaging
-
-### Testing Locally:
-```bash
-cd packaging/aur
-makepkg -sric
-```
-
-### Publishing to the Arch User Repository:
-1. Clone your AUR repository:
-   ```bash
-   git clone ssh://aur@aur.archlinux.org/meridian-terminal.git
-   ```
-2. Copy `PKGBUILD` and generate `.SRCINFO`:
-   ```bash
-   cp /path/to/packaging/aur/PKGBUILD meridian-terminal/
-   cd meridian-terminal
-   makepkg --printsrcinfo > .SRCINFO
-   git add PKGBUILD .SRCINFO
-   git commit -m "Release v0.1.0"
-   git push origin master
-   ```
-3. Users can install via any AUR helper:
-   ```bash
-   yay -S meridian-terminal
-   # or
-   paru -S meridian-terminal
-   ```
-
----
-
-## 6. Flatpak (Flathub)
-
-### Building Locally:
-```bash
-# Install flatpak and flatpak-builder
-flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
-flatpak-builder --user --install --force-clean build-dir packaging/flatpak/org.meridian_terminal.MeridianTerminal.yaml
-
-# Run Flatpak:
-flatpak run org.meridian_terminal.MeridianTerminal
-```
-
-### Submitting to Flathub:
-1. Fork [flathub/flathub](https://github.com/flathub/flathub).
-2. Create a new branch with `org.meridian_terminal.MeridianTerminal.yaml` and desktop/metainfo files.
-3. Open a Pull Request on Flathub.
-4. Users install with:
-   ```bash
-   flatpak install flathub org.meridian_terminal.MeridianTerminal
-   ```
-
----
-
-## 7. Snap Store
-
-### Building Locally:
-```bash
-# Install snapcraft
-sudo snap install snapcraft --classic
-
-# Build snap
-snapcraft --directory=packaging/snap
-
-# Install locally in dangerous mode for testing:
-sudo snap install packaging/snap/meridian-terminal_0.1.0_amd64.snap --dangerous --classic
-```
-
-### Publishing:
-```bash
-snapcraft login
-snapcraft register meridian-terminal
-snapcraft upload packaging/snap/meridian-terminal_0.1.0_amd64.snap --release=stable
-```
-Users install with:
-```bash
-sudo snap install meridian-terminal --classic
-```
-
----
-
-## 8. GitHub Actions Automated Release Pipeline
-
-The repository includes `.github/workflows/release.yml`. When you push a Git version tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`):
-1. **Debian runner** builds `meridian-terminal_0.1.0-1_amd64.deb`.
-2. **Fedora container** builds `meridian-terminal-0.1.0-1.fc44.x86_64.rpm` and source RPM.
-3. **Universal runner** creates `meridian-terminal-0.1.0-linux-x86_64.tar.gz`.
-4. Calculates SHA256 checksums (`SHA256SUMS.txt`).
-5. Publishes all assets to the official GitHub Releases page automatically.
-
+Terminal emulators don't open file types, so no MIME types are registered.
+An `ssh://` URL handler was considered and deliberately left out: passing
+untrusted URLs from a browser straight into `ssh` has a history of option- and
+command-injection bugs. Saved SSH profiles are validated instead
+(see `config::SshProfile::validate`).

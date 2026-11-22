@@ -1,5 +1,5 @@
 #pragma once
-// meridian-ai / secret_redactor.hpp
+// zephyr-ai / secret_redactor.hpp
 //
 // Pattern-based redaction of likely secrets (API keys, tokens, passwords,
 // private key blocks) before any text would be sent to a cloud AI
@@ -14,7 +14,7 @@
 
 #include <string>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 class SecretRedactor {
 public:
@@ -25,4 +25,4 @@ public:
     std::string redact(const std::string& text, int* redaction_count = nullptr) const;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

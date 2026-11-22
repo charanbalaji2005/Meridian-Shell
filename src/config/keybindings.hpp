@@ -1,5 +1,5 @@
 #pragma once
-// meridian-config / keybindings.hpp
+// zephyr-config / keybindings.hpp
 //
 // Spec §75/§20's keybindings.toml: a named-action -> key-combo map with
 // sensible defaults (matching the specific shortcuts named elsewhere in
@@ -12,7 +12,7 @@
 #include <map>
 #include <string>
 
-namespace meridian::config {
+namespace zephyr::config {
 
 class Keybindings {
 public:
@@ -26,6 +26,9 @@ public:
     // never returns empty for a known action name).
     std::string get(const std::string& action) const;
     void set(const std::string& action, const std::string& combo);
+    // Drops a user override so the built-in default applies again.
+    void reset(const std::string& action);
+    std::string default_combo(const std::string& action) const;
 
     // All action -> combo pairs currently in effect (defaults plus any
     // overrides), for listing/display purposes.
@@ -36,4 +39,4 @@ private:
     std::map<std::string, std::string> defaults_;
 };
 
-} // namespace meridian::config
+} // namespace zephyr::config

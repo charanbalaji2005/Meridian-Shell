@@ -12,7 +12,7 @@
 #include <vector>
 #include <glob.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -70,42 +70,42 @@ void write_file(const std::string& path, const std::string& contents) {
 
 std::string get_shell_binary_path() {
     std::string home = get_home_dir();
-    std::string local_bin = home + "/.local/bin/meridian-shell";
-    std::string sys_bin = "/usr/local/bin/meridian-shell";
+    std::string local_bin = home + "/.local/bin/zephyr-shell";
+    std::string sys_bin = "/usr/local/bin/zephyr-shell";
     if (file_exists(local_bin)) return local_bin;
     if (file_exists(sys_bin)) return sys_bin;
-    return "meridian-shell";
+    return "zephyr-shell";
 }
 
 std::string get_gui_binary_path() {
     std::string home = get_home_dir();
-    std::string local_gui = home + "/.local/bin/meridian";
-    std::string sys_gui = "/usr/local/bin/meridian";
+    std::string local_gui = home + "/.local/bin/zephyr";
+    std::string sys_gui = "/usr/local/bin/zephyr";
     if (file_exists(local_gui)) return local_gui;
     if (file_exists(sys_gui)) return sys_gui;
-    return "meridian";
+    return "zephyr";
 }
 
 // Safely merge VS Code style terminal profile into settings.json across Linux, macOS, and Windows/WSL
 std::string merge_vscode_profile(const std::string& existing_json, const std::string& shell_bin, const std::string& gui_bin) {
-    if (existing_json.find("\"Meridian Shell\"") != std::string::npos && existing_json.find("\"Meridian Terminal\"") != std::string::npos) {
+    if (existing_json.find("\"Zephyr Shell\"") != std::string::npos && existing_json.find("\"Zephyr Terminal\"") != std::string::npos) {
         return existing_json; // Already registered
     }
 
     if (existing_json.empty() || existing_json == "{}") {
         return R"({
     "terminal.integrated.profiles.linux": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "meridian-shell": {
+        "zephyr-shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "Meridian Terminal": {
+        "Zephyr Terminal": {
             "path": ")" + gui_bin + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
@@ -119,25 +119,25 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
         }
     },
     "terminal.integrated.profiles.osx": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "Meridian Terminal": {
+        "Zephyr Terminal": {
             "path": ")" + gui_bin + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
         }
     },
     "terminal.integrated.profiles.windows": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": "wsl.exe",
-            "args": ["-e", "meridian-shell"],
+            "args": ["-e", "zephyr-shell"],
             "icon": "terminal"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "Meridian Shell"
+    "terminal.integrated.defaultProfile.linux": "Zephyr Shell"
 })";
     }
 
@@ -148,12 +148,12 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
         size_t brace_open = out.find('{', profiles_pos);
         if (brace_open != std::string::npos) {
             std::string snippet = R"(
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "Meridian Terminal": {
+        "Zephyr Terminal": {
             "path": ")" + gui_bin + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
@@ -168,19 +168,19 @@ std::string merge_vscode_profile(const std::string& existing_json, const std::st
     if (last_brace != std::string::npos) {
         std::string section = R"(,
     "terminal.integrated.profiles.linux": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
         },
-        "Meridian Terminal": {
+        "Zephyr Terminal": {
             "path": ")" + gui_bin + R"(",
             "icon": "terminal-tmux",
             "overrideName": true
         }
     },
     "terminal.integrated.profiles.osx": {
-        "Meridian Shell": {
+        "Zephyr Shell": {
             "path": ")" + shell_bin + R"(",
             "icon": "terminal",
             "overrideName": true
@@ -223,7 +223,7 @@ public:
                 info.is_installed = true;
                 info.config_path = path;
                 std::string contents = read_file(path);
-                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                info.is_registered = (contents.find("Zephyr Shell") != std::string::npos);
                 break;
             }
         }
@@ -281,7 +281,7 @@ public:
                 info.is_installed = true;
                 info.config_path = (path.find("settings.json") != std::string::npos) ? path : (home + "/.config/Antigravity/User/settings.json");
                 std::string contents = read_file(info.config_path);
-                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                info.is_registered = (contents.find("Zephyr Shell") != std::string::npos);
                 break;
             }
         }
@@ -331,7 +331,7 @@ public:
                 info.is_installed = true;
                 info.config_path = path;
                 std::string contents = read_file(path);
-                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                info.is_registered = (contents.find("Zephyr Shell") != std::string::npos);
                 break;
             }
         }
@@ -380,7 +380,7 @@ public:
                 info.is_installed = true;
                 info.config_path = path;
                 std::string contents = read_file(path);
-                info.is_registered = (contents.find("Meridian Shell") != std::string::npos);
+                info.is_registered = (contents.find("Zephyr Shell") != std::string::npos);
                 break;
             }
         }
@@ -429,7 +429,7 @@ public:
                 info.is_installed = true;
                 info.config_path = path;
                 std::string contents = read_file(path);
-                info.is_registered = (contents.find("meridian-shell") != std::string::npos);
+                info.is_registered = (contents.find("zephyr-shell") != std::string::npos);
                 break;
             }
         }
@@ -598,18 +598,18 @@ std::vector<IdeInfo> IdeDetector::scan_and_register(bool silent) {
     }
 
     if (!silent) {
-        std::cout << "\n\033[1;36mRegistering Meridian terminal integrations...\033[0m\n";
+        std::cout << "\n\033[1;36mRegistering Zephyr terminal integrations...\033[0m\n";
         for (const auto& info : results) {
             if (info.is_installed && info.is_registered) {
                 std::cout << " \033[1;32m✓\033[0m " << info.name << "\n";
             }
         }
-        std::cout << "\n\033[1;32mMeridian is now available as an integrated terminal where supported.\033[0m\n\n";
+        std::cout << "\n\033[1;32mZephyr is now available as an integrated terminal where supported.\033[0m\n\n";
     }
 
     // Mark registration done
     std::string home = get_home_dir();
-    write_file(home + "/.config/meridian/.ide_registered_v25", "1");
+    write_file(home + "/.config/zephyr/.ide_registered_v25", "1");
 
     return results;
 }
@@ -620,7 +620,7 @@ void IdeDetector::ensure_first_run_registered() {
     s_checked = true;
 
     std::string home = get_home_dir();
-    std::string marker = home + "/.config/meridian/.ide_registered_v25";
+    std::string marker = home + "/.config/zephyr/.ide_registered_v25";
     if (!file_exists(marker)) {
         instance().scan_and_register(true); // Silent background auto-registration
     }
@@ -630,4 +630,4 @@ void IdeDetector::print_ide_report() {
     instance().scan_and_register(false);
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev

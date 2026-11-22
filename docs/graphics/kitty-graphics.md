@@ -6,7 +6,7 @@ status: "development"
 ---
 
 <h2 id="kitty-protocol">Kitty Graphics Protocol Specification</h2>
-<p>Meridian parses Kitty Graphics escape sequences (<code>\033_G...\033\\</code>) for seamless compatibility with tools like <code>icat</code>, <code>yazi</code>, and <code>ranger</code>.</p>
+<p>Zephyr parses Kitty Graphics escape sequences (<code>\033_G...\033\\</code>) for seamless compatibility with tools like <code>icat</code>, <code>yazi</code>, and <code>ranger</code>.</p>
 
 <h2 id="chunking-safety">2048-Byte Safe Transmission Chunking</h2>
 <p>Payloads exceeding 2048 bytes are transmitted in chunks using <code>m=1</code> (more data follows) and <code>m=0</code> (final payload chunk), preventing buffer overflows in PTY drivers.</p>

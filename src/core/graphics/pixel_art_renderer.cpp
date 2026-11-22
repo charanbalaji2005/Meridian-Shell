@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 namespace {
 
@@ -569,10 +569,10 @@ std::string PixelArtRenderer::render_image(const DecodedImage& image, const Pixe
 std::string PixelArtRenderer::render_file(const std::string& filepath, const PixelArtOptions& opts) {
     auto decoded = ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) {
-        return "meridian: failed to decode image '" + filepath + "'\n";
+        return "zephyr: failed to decode image '" + filepath + "'\n";
     }
     return render_image(decoded, opts);
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

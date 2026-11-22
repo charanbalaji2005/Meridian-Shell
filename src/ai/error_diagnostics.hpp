@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / ai / error_diagnostics.hpp
+// zephyr-terminal / ai / error_diagnostics.hpp
 //
 // Context-aware terminal error diagnostics. Inspects terminal outputs from
 // compilers, runtimes, package managers, and databases to formulate structured
@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 enum class DiagnosticCategory {
     NodeJs,
@@ -44,5 +44,5 @@ public:
     DiagnosticCard analyze(const std::string& output) const;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

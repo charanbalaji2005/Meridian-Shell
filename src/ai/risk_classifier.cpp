@@ -1,8 +1,8 @@
-// meridian-ai / risk_classifier.cpp
+// zephyr-ai / risk_classifier.cpp
 #include "risk_classifier.hpp"
 #include <regex>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 std::string to_string(RiskLevel level) {
     switch (level) {
@@ -92,4 +92,4 @@ RiskResult RiskClassifier::classify(const std::string& command_line) const {
     return RiskResult{RiskLevel::Low, {}};
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

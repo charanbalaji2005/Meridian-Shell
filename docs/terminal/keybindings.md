@@ -24,7 +24,7 @@ status: "implemented"
 </table>
 
 <h2 id="customizing-keys">Custom Keymap Configuration</h2>
-<p>Override keybindings in <code>~/.config/meridian/keybindings.json</code>:</p>
+<p>Override keybindings in <code>~/.config/zephyr/keybindings.json</code>:</p>
 <pre><code class="language-json">{
   "split_vertical": "Ctrl+Shift+V",
   "split_horizontal": "Ctrl+Shift+H",

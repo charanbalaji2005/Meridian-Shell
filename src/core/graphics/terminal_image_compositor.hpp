@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/terminal_image_compositor.hpp
 //
-// Dedicated Native Image Layer Compositor for Meridian Terminal.
+// Dedicated Native Image Layer Compositor for Zephyr Terminal.
 // Manages the separate graphics plane above/below the character grid,
 // computes viewports, handles window resizes, and tracks scrollback movement.
 
@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 struct TerminalCellMetrics {
     float cell_width_px = 9.0f;
@@ -66,5 +66,5 @@ private:
     TerminalCellMetrics metrics_;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

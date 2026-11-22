@@ -6,7 +6,7 @@ status: "implemented"
 ---
 
 <h2 id="license-spec">GNU General Public License v3.0</h2>
-<p>Meridian Shell is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later (GPL-3.0-or-later)</strong>.</p>
+<p>Zephyr Shell is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later (GPL-3.0-or-later)</strong>.</p>
 
 <h2 id="permissions-conditions">Summary of Permissions & Obligations</h2>
 <table class="doc-table">

@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 namespace {
 
@@ -41,12 +41,12 @@ std::string trim(const std::string& s) {
 } // namespace
 
 std::string WorkspaceManager::default_storage_dir() {
-    if (const char* override_dir = std::getenv("MERIDIAN_CONFIG_HOME")) {
+    if (const char* override_dir = std::getenv("ZEPHYR_CONFIG_HOME")) {
         return std::string(override_dir) + "/workspaces";
     }
     const char* home = std::getenv("HOME");
     std::string base = home ? home : ".";
-    return base + "/.config/meridian/workspaces";
+    return base + "/.config/zephyr/workspaces";
 }
 
 WorkspaceManager::WorkspaceManager(std::string storage_dir)
@@ -64,7 +64,7 @@ bool WorkspaceManager::save_workspace(const Workspace& ws) {
     std::ofstream out(path, std::ios::trunc);
     if (!out.is_open()) return false;
 
-    out << "# Meridian Workspace Definition\n";
+    out << "# Zephyr Workspace Definition\n";
     out << "name = \"" << ws.name << "\"\n";
     out << "root_dir = \"" << ws.root_dir << "\"\n";
     out << "git_branch = \"" << ws.git_branch << "\"\n";
@@ -219,5 +219,5 @@ std::unique_ptr<PaneTree> WorkspaceManager::restore_to_pane_tree(const Workspace
     return tree;
 }
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

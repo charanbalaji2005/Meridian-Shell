@@ -3,7 +3,7 @@
 #include <regex>
 #include <sstream>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 std::string DiagnosticCard::format() const {
     if (empty()) return "No diagnostic errors detected in output.\n";
@@ -140,5 +140,5 @@ DiagnosticCard ErrorDiagnostics::analyze(const std::string& output) const {
     return card;
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

@@ -5,7 +5,7 @@ category: "TERMINAL"
 status: "implemented"
 ---
 
-<p>Meridian features a high-performance, standard-compliant VT100, VT220, and XTerm terminal emulation engine written in modern C++20.</p>
+<p>Zephyr features a high-performance, standard-compliant VT100, VT220, and XTerm terminal emulation engine written in modern C++20.</p>
 
 <h2 id="ansi-vt">ANSI & VT Escape Sequences</h2>
 <p>The parser handles standard CSI (Control Sequence Introducer), OSC (Operating System Command), APC (Application Program Command), and DCS (Device Control String) sequences:</p>
@@ -26,9 +26,9 @@ status: "implemented"
 <p>Full-screen interactive applications like <code>vim</code>, <code>nano</code>, <code>tmux</code>, and <code>htop</code> switch to the alternate buffer on launch and restore the primary buffer on exit, preserving command prompt history.</p>
 
 <h2 id="truecolor">24-Bit TrueColor RGB (SGR 38/48)</h2>
-<p>Meridian renders full 24-bit RGB colors with 16.7 million distinct hues via standard SGR sequences:</p>
-<pre><code class="language-bash"># Set foreground color to Meridian Cyan (#00E5FF)
-printf "\033[38;2;0;229;255mMeridian TrueColor\033[0m\n"
+<p>Zephyr renders full 24-bit RGB colors with 16.7 million distinct hues via standard SGR sequences:</p>
+<pre><code class="language-bash"># Set foreground color to Zephyr Cyan (#00E5FF)
+printf "\033[38;2;0;229;255mZephyr TrueColor\033[0m\n"
 
 # Set background color to Dark Panel (#0E1622)
 printf "\033[48;2;14;22;34m\033[38;2;0;229;255m Custom Panel \033[0m\n"</code></pre>

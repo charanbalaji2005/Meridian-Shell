@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-namespace meridian::vt {
+namespace zephyr::vt {
 
 AnsiParser::AnsiParser(ScreenBuffer& screen) : screen_(screen) {}
 
@@ -76,7 +76,8 @@ void AnsiParser::handle_escape(uint8_t b) {
         return;
     }
     if (b == 'D') { screen_.newline(); state_ = State::Ground; return; }
-    if (b == 'M') { screen_.move_cursor_rel(-1, 0); state_ = State::Ground; return; }
+    if (b == 'M') { screen_.reverse_index(); state_ = State::Ground; return; }
+    if (b == '=' || b == '>') { state_ = State::Ground; return; } // DECKPAM/DECKPNM: keypad mode, no-op
     if (b == 'E') { screen_.carriage_return(); screen_.newline(); state_ = State::Ground; return; }
     if (b == '\\') { state_ = State::Ground; return; } // String Terminator (ST)
     state_ = State::Ground;
@@ -138,6 +139,10 @@ void AnsiParser::handle_csi(uint8_t b) {
     }
     if ((b >= '0' && b <= '9') || b == ';' || b == ':') {
         if (csi_params_.size() < kMaxCsiLen) csi_params_.push_back(static_cast<char>(b));
+        return;
+    }
+    if (b >= 0x20 && b <= 0x2F) { // intermediate byte (e.g. SP in DECSCUSR)
+        csi_intermediate_ = static_cast<char>(b);
         return;
     }
     if (b >= 0x40 && b <= 0x7E) {
@@ -256,6 +261,13 @@ void AnsiParser::reset_csi() {
     csi_params_.clear();
     csi_private_ = false;
     csi_prefix_ = 0;
+    csi_intermediate_ = 0;
+}
+
+std::string AnsiParser::take_responses() {
+    std::string out;
+    out.swap(responses_);
+    return out;
 }
 
 void AnsiParser::reset_osc() {
@@ -306,7 +318,55 @@ void AnsiParser::dispatch_csi(uint8_t final_byte) {
         return;
     }
 
+    // DECSCUSR: CSI Ps SP q — application-requested cursor shape.
+    if (csi_intermediate_ == ' ' && final_byte == 'q') {
+        auto& m = screen_.modes();
+        switch (p0) {
+            case 0: m.cursor_shape = AppCursorShape::Default; m.cursor_blink = true; break;
+            case 1: m.cursor_shape = AppCursorShape::Block; m.cursor_blink = true; break;
+            case 2: m.cursor_shape = AppCursorShape::Block; m.cursor_blink = false; break;
+            case 3: m.cursor_shape = AppCursorShape::Underline; m.cursor_blink = true; break;
+            case 4: m.cursor_shape = AppCursorShape::Underline; m.cursor_blink = false; break;
+            case 5: m.cursor_shape = AppCursorShape::Bar; m.cursor_blink = true; break;
+            case 6: m.cursor_shape = AppCursorShape::Bar; m.cursor_blink = false; break;
+            default: break;
+        }
+        return;
+    }
+    if (csi_intermediate_ != 0 || csi_prefix_ != 0) {
+        // Secondary DA (CSI > c) and other prefixed/intermediate sequences we
+        // don't implement: ignore rather than misinterpret as plain CSI.
+        if (csi_prefix_ == '>' && final_byte == 'c') responses_ += "\x1b[>0;10;1c";
+        return;
+    }
+
     switch (final_byte) {
+        case 'G': case '`': // CHA / HPA: cursor to absolute column
+            screen_.set_cursor(screen_.cursor_row(), static_cast<int>(p0 > 0 ? p0 - 1 : 0));
+            break;
+        case 'd': // VPA: cursor to absolute row
+            screen_.set_cursor(static_cast<int>(p0 > 0 ? p0 - 1 : 0), screen_.cursor_col());
+            break;
+        case 'E': // CNL
+            screen_.move_cursor_rel(static_cast<int>(std::max(1L, p0)), 0);
+            screen_.carriage_return();
+            break;
+        case 'F': // CPL
+            screen_.move_cursor_rel(-static_cast<int>(std::max(1L, p0)), 0);
+            screen_.carriage_return();
+            break;
+        case 'X': screen_.erase_chars(static_cast<int>(std::max(1L, p0))); break;
+        case 'n': // DSR
+            if (p0 == 5) {
+                responses_ += "\x1b[0n";
+            } else if (p0 == 6) {
+                responses_ += "\x1b[" + std::to_string(screen_.cursor_row() + 1) + ";" +
+                              std::to_string(screen_.cursor_col() + 1) + "R";
+            }
+            break;
+        case 'c': // Primary DA: identify as a VT220-class terminal with ANSI color
+            if (p0 == 0) responses_ += "\x1b[?62;22c";
+            break;
         case 'm': dispatch_sgr(p); break;
         case 'A': screen_.move_cursor_rel(-std::max(1L, p0), 0); break;
         case 'B': screen_.move_cursor_rel(std::max(1L, p0), 0); break;
@@ -349,10 +409,18 @@ void AnsiParser::dispatch_kitty_keyboard(char prefix, const std::vector<long>& p
 }
 
 void AnsiParser::dispatch_decset(const std::vector<long>& params, bool set) {
+    auto& m = screen_.modes();
     for (auto code : params) {
-        if (code == 1049 || code == 47 || code == 1047) {
-            if (set) screen_.enter_alt_screen();
-            else screen_.exit_alt_screen();
+        switch (code) {
+            case 1049: case 47: case 1047:
+                if (set) screen_.enter_alt_screen();
+                else screen_.exit_alt_screen();
+                break;
+            case 1: m.application_cursor_keys = set; break;
+            case 12: m.cursor_blink = set; break;
+            case 25: m.cursor_visible = set; break;
+            case 2004: m.bracketed_paste = set; break;
+            default: break;
         }
     }
 }
@@ -417,4 +485,4 @@ void AnsiParser::dispatch_sgr(const std::vector<long>& params) {
     }
 }
 
-} // namespace meridian::vt
+} // namespace zephyr::vt

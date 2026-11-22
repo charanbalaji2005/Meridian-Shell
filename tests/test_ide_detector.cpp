@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-using namespace meridian::dev;
+using namespace zephyr::dev;
 
 MTEST(ide_detector_scan_and_register) {
     auto results = IdeDetector::instance().scan_and_register(true);

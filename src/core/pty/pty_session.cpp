@@ -1,4 +1,4 @@
-// meridian-terminal-core / pty / pty_session.cpp
+// zephyr-terminal-core / pty / pty_session.cpp
 #include "pty_session.hpp"
 
 #include <cerrno>
@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <iostream>
 
-namespace meridian::pty {
+namespace zephyr::pty {
 
 namespace {
 
@@ -75,13 +75,13 @@ int PtySession::run_interactive(const std::string& custom_shell) {
 
     int master = -1, slave = -1;
     if (openpty(&master, &slave, nullptr, nullptr, &ws) != 0) {
-        std::cerr << "meridian: openpty failed: " << std::strerror(errno) << "\n";
+        std::cerr << "zephyr: openpty failed: " << std::strerror(errno) << "\n";
         return 1;
     }
 
     pid_t pid = fork();
     if (pid < 0) {
-        std::cerr << "meridian: fork failed: " << std::strerror(errno) << "\n";
+        std::cerr << "zephyr: fork failed: " << std::strerror(errno) << "\n";
         ::close(master);
         ::close(slave);
         return 1;
@@ -102,7 +102,7 @@ int PtySession::run_interactive(const std::string& custom_shell) {
 
         setenv("TERM", "xterm-256color", 1);
         setenv("COLORTERM", "truecolor", 1);
-        setenv("MERIDIAN_TERMINAL", "2.0.0", 1);
+        setenv("ZEPHYR_TERMINAL", "2.0.0", 1);
 
         char* argv[2];
         argv[0] = const_cast<char*>(shell_path.c_str());
@@ -338,5 +338,5 @@ void PtySession::resize(int rows, int cols) {
     ioctl(master_fd_, TIOCSWINSZ, &ws);
 }
 
-} // namespace meridian::pty
+} // namespace zephyr::pty
 

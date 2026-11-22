@@ -35,7 +35,7 @@ either an exit code or a "killed by signal N" indication.
 
 The child execs the target program directly — never `system()`, never
 `popen()`, never `/bin/sh -c <user string>`. This matters for the same
-reason it matters in Meridian Shell (`docs/shell.md`): a PTY manager
+reason it matters in Zephyr Shell (`docs/shell.md`): a PTY manager
 that shells out to interpret what it's spawning is a PTY manager with
 an injection surface. `execve`/`execv` take an already-split argv, so
 there's no string-reinterpretation step for anything to inject into.

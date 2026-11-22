@@ -10,7 +10,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ t }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('meridian_cookie_consent');
+    const consent = localStorage.getItem('zephyr_cookie_consent');
     if (!consent) {
       // Delay display slightly for smooth page load
       const timer = setTimeout(() => setIsVisible(true), 1000);
@@ -19,12 +19,12 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ t }) => {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('meridian_cookie_consent', 'accepted');
+    localStorage.setItem('zephyr_cookie_consent', 'accepted');
     setIsVisible(false);
   };
 
   const handleDecline = () => {
-    localStorage.setItem('meridian_cookie_consent', 'declined');
+    localStorage.setItem('zephyr_cookie_consent', 'declined');
     setIsVisible(false);
   };
 

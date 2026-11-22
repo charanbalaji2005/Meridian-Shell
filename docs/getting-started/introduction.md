@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Meridian Shell"
+title: "Zephyr Shell"
 category: "GETTING STARTED"
 status: "implemented"
 ---
@@ -20,38 +20,38 @@ status: "implemented"
 </div>
 
 <div class="terminal-screenshot-card">
-  <img src="./assets/meridian-terminal-screenshot-1.png" alt="Meridian Terminal Live Interface with Anime Artwork and System Telemetry" class="terminal-screenshot-img" />
+  <img src="./assets/zephyr-terminal-screenshot-1.png" alt="Zephyr Terminal Live Interface with Anime Artwork and System Telemetry" class="terminal-screenshot-img" />
   <div class="terminal-screenshot-caption">
-    Meridian Shell running live interactive session with GPU-accelerated raster artwork header, multi-badge Powerline status, and system telemetry.
+    Zephyr Shell running live interactive session with GPU-accelerated raster artwork header, multi-badge Powerline status, and system telemetry.
   </div>
 </div>
 
 <div class="terminal-screenshot-card">
-  <img src="./assets/meridian-terminal-screenshot-2.png" alt="Meridian Terminal Split Panes and Fastfetch Metrics" class="terminal-screenshot-img" />
+  <img src="./assets/zephyr-terminal-screenshot-2.png" alt="Zephyr Terminal Split Panes and Fastfetch Metrics" class="terminal-screenshot-img" />
   <div class="terminal-screenshot-caption">
-    Meridian Terminal displaying custom anime wallpapers, live Git branch divergence, and system metrics on Fedora Linux.
+    Zephyr Terminal displaying custom anime wallpapers, live Git branch divergence, and system metrics on Fedora Linux.
   </div>
 </div>
 
 <h2 id="quick-start">Quick Start</h2>
-<p>Meridian Shell is available for Fedora, Ubuntu, Debian, Arch Linux, openSUSE, and generic Linux platforms. Choose your preferred installation method below:</p>
+<p>Zephyr Shell is available for Fedora, Ubuntu, Debian, Arch Linux, openSUSE, and generic Linux platforms. Choose your preferred installation method below:</p>
 
 <div class="note-box note-info">
   <div class="note-title">📌 Important Notice on Package Repositories</div>
-  <p>Commands like <code>sudo dnf install meridian-terminal</code> require the Meridian repository to be enabled first. For immediate installation on a fresh machine without adding a repository, use the local package files or the universal curl installer below.</p>
+  <p>Commands like <code>sudo dnf install zephyr-terminal</code> require the Zephyr repository to be enabled first. For immediate installation on a fresh machine without adding a repository, use the local package files or the universal curl installer below.</p>
 </div>
 
 <h3>1. Local Package Installation</h3>
-<div class="code-block-wrapper"><div class="code-header"><span>Fedora / RHEL (Local RPM)</span></div><pre><code class="language-bash">sudo dnf install ./meridian-terminal.rpm</code></pre></div>
-<div class="code-block-wrapper"><div class="code-header"><span>Ubuntu / Debian (Local DEB)</span></div><pre><code class="language-bash">sudo apt install ./meridian-terminal.deb</code></pre></div>
-<div class="code-block-wrapper"><div class="code-header"><span>Arch Linux (Local Package)</span></div><pre><code class="language-bash">sudo pacman -U ./meridian-terminal.pkg.tar.zst</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Fedora / RHEL (Local RPM)</span></div><pre><code class="language-bash">sudo dnf install ./zephyr-terminal.rpm</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Ubuntu / Debian (Local DEB)</span></div><pre><code class="language-bash">sudo apt install ./zephyr-terminal.deb</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Arch Linux (Local Package)</span></div><pre><code class="language-bash">sudo pacman -U ./zephyr-terminal.pkg.tar.zst</code></pre></div>
 
 <h3>2. Universal Turnkey Installer</h3>
 <div class="code-block-wrapper"><div class="code-header"><span>Bash 1-Liner (User)</span></div><pre><code class="language-bash">curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash</code></pre></div>
 <div class="code-block-wrapper"><div class="code-header"><span>Bash 1-Liner (System-Wide)</span></div><pre><code class="language-bash">curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | sudo bash</code></pre></div>
 
-<h2 id="what-is-meridian">What is Meridian?</h2>
-<p><strong>Meridian Shell</strong> is an open-source terminal emulator and developer platform designed to unify the terminal layer with native graphics, extensible developer intelligence, and real pseudoterminal multiplexing. Rather than being a simulated web terminal or electron wrapper, Meridian interacts directly with the Linux kernel via POSIX <code>openpty</code>, supporting full interactive terminal workflows.</p>
+<h2 id="what-is-zephyr">What is Zephyr?</h2>
+<p><strong>Zephyr Shell</strong> is an open-source terminal emulator and developer platform designed to unify the terminal layer with native graphics, extensible developer intelligence, and real pseudoterminal multiplexing. Rather than being a simulated web terminal or electron wrapper, Zephyr interacts directly with the Linux kernel via POSIX <code>openpty</code>, supporting full interactive terminal workflows.</p>
 
 <h2 id="core-features">Core Features</h2>
 <div class="feature-cards-grid">
@@ -64,8 +64,8 @@ status: "implemented"
 </div>
 
 <h2 id="architecture">System Architecture</h2>
-<p>Meridian is engineered as decoupled subsystems to guarantee extreme stability and fault isolation:</p>
-<div class="arch-diagram-block"><pre><code class="language-text">Meridian Application
+<p>Zephyr is engineered as decoupled subsystems to guarantee extreme stability and fault isolation:</p>
+<div class="arch-diagram-block"><pre><code class="language-text">Zephyr Application
    │
    ├── GUI Frontend (Qt6 / Wayland / X11 Canvas)
    │
@@ -87,7 +87,7 @@ status: "implemented"
    │
    └── Developer Intelligence & Security
        ├── Native SSH Workspace Manager (~/.ssh/config)
-       ├── Extensible Plugin Engine (~/.config/meridian/plugins/)
+       ├── Extensible Plugin Engine (~/.config/zephyr/plugins/)
        ├── Risk Classification Interceptor & Secret Redactor
        └── GPU Telemetry & Performance Profiler</code></pre></div>
 
@@ -106,7 +106,7 @@ status: "implemented"
 </div>
 
 <h2 id="terminal-compatibility">Terminal Compatibility</h2>
-<p>Meridian is tested against standard Linux CLI applications and full-screen TUI workflows:</p>
+<p>Zephyr is tested against standard Linux CLI applications and full-screen TUI workflows:</p>
 <ul>
   <li><strong>Shells:</strong> <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>sh</code></li>
   <li><strong>Editors:</strong> <code>vim</code>, <code>neovim</code>, <code>nano</code>, <code>emacs</code>, <code>micro</code></li>

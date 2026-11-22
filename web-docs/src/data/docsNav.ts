@@ -12,7 +12,7 @@ export interface NavCategory {
 
 export const NAV_STRUCTURE: NavCategory[] = [
   {
-    title: 'MERIDIAN SHELL',
+    title: 'ZEPHYR SHELL',
     icon: 'Compass',
     items: [
       { id: 'intro', title: 'Introduction', status: 'implemented' },

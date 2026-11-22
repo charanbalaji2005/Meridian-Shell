@@ -5,7 +5,7 @@
 #include <regex>
 #include <sstream>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 namespace {
 
@@ -122,7 +122,7 @@ IntentResult IntentEngine::translate(const std::string& query, const std::string
 
 std::string IntentEngine::format_card(const IntentResult& r) {
     std::ostringstream ss;
-    ss << "┌─── Meridian Intent ─────────────────────────────────────\n";
+    ss << "┌─── Zephyr Intent ─────────────────────────────────────\n";
     ss << "│ Prompt:      " << r.prompt << "\n";
     ss << "│ Generated:   " << r.generated_command << "\n";
     ss << "│ Explanation: " << r.explanation << "\n";
@@ -138,5 +138,5 @@ std::string IntentEngine::format_card(const IntentResult& r) {
     return ss.str();
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

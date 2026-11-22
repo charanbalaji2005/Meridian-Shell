@@ -3,7 +3,7 @@
 #include "../src/core/vt/ansi_parser.hpp"
 #include "../src/core/vt/screen_buffer.hpp"
 
-using namespace meridian::vt;
+using namespace zephyr::vt;
 
 MTEST(plain_text_passes_through) {
     ScreenBuffer sb(3, 20);

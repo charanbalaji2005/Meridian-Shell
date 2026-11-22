@@ -6,7 +6,7 @@
 #include <ctime>
 #include <sstream>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 namespace {
 double current_time_seconds() {
@@ -140,5 +140,5 @@ std::string ProgressIndicator::render_bar(
     return ss.str();
 }
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

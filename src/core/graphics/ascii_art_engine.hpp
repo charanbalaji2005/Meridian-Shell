@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/ascii_art_engine.hpp
 //
-// Ultra-High-Quality ASCII & Unicode Dual-Pixel Terminal Art Engine for Meridian Terminal.
+// Ultra-High-Quality ASCII & Unicode Dual-Pixel Terminal Art Engine for Zephyr Terminal.
 // Features Lanczos-3 Sinc Resampling, 24-bit TrueColor Dual-Pixel Halfblocks (▀),
 // Edge-Aware Detail Enhancement, Brightness/Contrast/Gamma/Saturation adjustments,
 // and 70-character brightness ramps with Floyd-Steinberg error diffusion dithering.
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class AsciiRenderMode {
     TrueColor,   // 24-bit TrueColor Dual-Pixel Halfblocks (▀) [DEFAULT]
@@ -121,5 +121,5 @@ public:
     static void get_terminal_dimensions(int& cols, int& rows);
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

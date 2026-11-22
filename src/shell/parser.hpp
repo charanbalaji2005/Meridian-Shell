@@ -1,5 +1,5 @@
 #pragma once
-// meridian-shell / parser.hpp
+// zephyr-shell / parser.hpp
 //
 // Recursive-descent parser: Token stream -> Sequence AST. Never uses
 // string-splitting; every operator is structural.
@@ -15,7 +15,7 @@
 #include "lexer.hpp"
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 class Parser {
 public:
@@ -36,4 +36,4 @@ private:
     std::size_t pos_ = 0;
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

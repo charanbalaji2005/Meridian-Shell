@@ -6,7 +6,7 @@
 #include <cstring>
 #include <string>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 namespace {
 static IconTheme s_active_theme = IconTheme::NerdFont;
@@ -15,7 +15,7 @@ static bool s_theme_overridden = false;
 
 IconTier IconDetector::detect_tier() {
     // 1. Explicit override via environment variable
-    const char* env_override = std::getenv("MERIDIAN_ICON_TIER");
+    const char* env_override = std::getenv("ZEPHYR_ICON_TIER");
     if (env_override) {
         std::string o = env_override;
         std::transform(o.begin(), o.end(), o.begin(), ::toupper);
@@ -55,7 +55,7 @@ IconTier IconDetector::detect_tier() {
 bool IconDetector::supports_nerd_fonts() {
     // Check explicit Nerd Font indicator variable
     if (std::getenv("NERD_FONTS_VERSION")) return true;
-    if (std::getenv("MERIDIAN_NERD_FONT")) return true;
+    if (std::getenv("ZEPHYR_NERD_FONT")) return true;
 
     // Kitty supports graphics and modern Nerd Fonts
     if (std::getenv("KITTY_WINDOW_ID") || std::getenv("KITTY_PID")) return true;
@@ -151,5 +151,5 @@ std::string IconDetector::theme_name(IconTheme theme) {
     return "unknown";
 }
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

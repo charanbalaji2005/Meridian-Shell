@@ -1,5 +1,5 @@
 #pragma once
-// meridian-shell / executor.hpp
+// zephyr-shell / executor.hpp
 //
 // Executes a parsed Sequence using fork()/execvp()/pipe()/dup2()/waitpid()
 // directly — never passes the user's command through /bin/sh or system().
@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 enum class JobState { Running, Stopped };
 
@@ -100,4 +100,4 @@ private:
     int next_job_id_ = 1;
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

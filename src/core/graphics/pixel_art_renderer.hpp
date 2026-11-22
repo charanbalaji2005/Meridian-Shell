@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/pixel_art_renderer.hpp
 //
-// Meridian Terminal 2.5 — Professional Pixel-Art Terminal Rendering Pipeline:
+// Zephyr Terminal 2.5 — Professional Pixel-Art Terminal Rendering Pipeline:
 // High-quality image decoder -> Lanczos/Bicubic resizer -> Sobel edge preservation
 // -> Pixel-grid reduction -> Median-cut / K-means color quantization
 // -> Ordered dithering (optional) -> Unicode half-block TrueColor ANSI emitter.
@@ -11,7 +11,7 @@
 #include <vector>
 #include "image_decoder.hpp"
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class PixelRenderStyle {
     PixelArt,     // Controlled pixel grid + color quantization + edge preservation (Default)
@@ -65,5 +65,5 @@ public:
     static std::string emit_braille(const std::vector<PixelRgba>& grid, int grid_w, int grid_h);
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

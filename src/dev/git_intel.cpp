@@ -7,7 +7,7 @@
 #include <sstream>
 #include <unistd.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -142,7 +142,7 @@ std::string GitRepoStatus::format_summary_bar() const {
 std::string GitRepoStatus::format_panel() const {
     if (!is_git_repo) return "Not a Git repository.\n";
     std::ostringstream ss;
-    ss << "┌─── Meridian Git ────────────────────────────────────────\n";
+    ss << "┌─── Zephyr Git ────────────────────────────────────────\n";
     ss << "│ Branch: " << branch_name << " (" << head_commit_hash << ")\n";
     if (ahead_count > 0 || behind_count > 0) {
         ss << "│ Upstream: ↑ " << ahead_count << " ahead, ↓ " << behind_count << " behind\n";
@@ -164,5 +164,5 @@ std::string GitRepoStatus::format_panel() const {
     return ss.str();
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

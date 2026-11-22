@@ -1,4 +1,4 @@
-# Meridian Terminal .gitignore
+# Zephyr Terminal .gitignore
 
 # Build outputs
 build/
@@ -11,7 +11,7 @@ dist/
 *.dll
 *.exe
 
-# Meridian persistent recordings and databases
+# Zephyr persistent recordings and databases
 *.rec
 *.db
 *.workspace
@@ -30,7 +30,7 @@ test_output.txt
 # Local configuration overrides & secrets
 .config/
 .cache/
-meridian_credentials.local
+zephyr_credentials.local
 
 # IDE & Editor artifacts
 .vscode/
@@ -44,3 +44,15 @@ compile_commands.json
 node_modules/
 web-docs/node_modules/
 .vite/
+
+# CMake / packaging work directories
+build-*/
+cmake-build-*/
+/debian/
+*.AppImage
+*.pkg.tar.*
+AppDir/
+
+# Nix
+result
+result-*

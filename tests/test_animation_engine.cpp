@@ -5,7 +5,7 @@
 #include "../src/core/graphics/animation_engine.hpp"
 #include "../src/core/graphics/graphics_protocol_parser.hpp"
 
-using namespace meridian::graphics;
+using namespace zephyr::graphics;
 
 MTEST(animation_frame_creation_and_rescale) {
     std::vector<uint8_t> pixels(4 * 4 * 4, 255); // 4x4 white RGBA

@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 
-using namespace meridian::graphics;
+using namespace zephyr::graphics;
 
 MTEST(native_graphics_decoder_rgba8_format) {
     // Decode real gallery PNG image
@@ -224,7 +224,7 @@ MTEST(native_graphics_corrupted_image_handling) {
 }
 
 MTEST(native_graphics_cli_pic_clear_and_list) {
-    meridian::shell::Shell shell(false);
+    zephyr::shell::Shell shell(false);
     std::ostringstream err1;
     int rc1 = shell.run_command("pic --list", err1);
     ASSERT_EQ(rc1, 0);

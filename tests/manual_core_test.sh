@@ -2,7 +2,7 @@
 # tests/manual_core_test.sh
 #
 # The exact manual test sequence from the spec (section 78), run against
-# the real meridian-shell binary and actually checked against expected
+# the real zephyr-shell binary and actually checked against expected
 # output rather than just eyeballed — each command below produces a
 # PASS/FAIL line, and the script's own exit code reflects whether
 # everything passed. Generated files are cleaned up at the end
@@ -12,7 +12,7 @@
 #                                        `make shell` or `make all`)
 
 set -u
-SHELL_BIN="./build/meridian-shell"
+SHELL_BIN="${ZEPHYR_SHELL_BIN:-./build/zephyr-shell}"
 FAILURES=0
 CHECKS=0
 
@@ -27,11 +27,11 @@ check_contains() {
 }
 
 if [ ! -x "$SHELL_BIN" ]; then
-    echo "meridian-shell not built — run 'make shell' or 'make all' first."
+    echo "zephyr-shell not built — run 'make shell' or 'make all' first."
     exit 1
 fi
 
-echo "=== Meridian Shell manual core test ==="
+echo "=== Zephyr Shell manual core test ==="
 echo "(spec section 78 — the exact listed command sequence)"
 echo
 

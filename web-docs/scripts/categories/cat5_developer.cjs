@@ -8,7 +8,7 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="layers-breakdown">Architectural Layer Breakdown</h2>
-<p>Meridian is engineered as modular C++20 subsystems designed to isolate the core terminal state machine from the windowing environment and background telemetry profilers.</p>
+<p>Zephyr is engineered as modular C++20 subsystems designed to isolate the core terminal state machine from the windowing environment and background telemetry profilers.</p>
 
 <h2 id="data-flow">End-to-End Data Flow</h2>
 <div class="arch-diagram-block"><pre><code class="language-text">User Keystroke ──► Window Event Loop ──► PTY Master FD ──► Kernel PTY ──► Shell Process (bash/zsh)
@@ -35,7 +35,7 @@ Display Frame  ◄── GPU Render Pipeline ◄── DamageTracker ◄── S
 <p>Configures raw mode flags (<code>ICANON</code>, <code>ECHO</code>, <code>ISIG</code>) to allow interactive curses and shell line editors to manage raw keypresses.</p>
 
 <h2 id="process-spawning">Process Spawning & Environment Inheritance</h2>
-<p>When launching a new tab, Meridian passes sanitized environment variables while injecting standard terminal indicators (<code>TERM=xterm-256color</code>, <code>COLORTERM=truecolor</code>).</p>
+<p>When launching a new tab, Zephyr passes sanitized environment variables while injecting standard terminal indicators (<code>TERM=xterm-256color</code>, <code>COLORTERM=truecolor</code>).</p>
 `
   );
 
@@ -112,17 +112,17 @@ struct Attributes {
     'Offline natural language intent translation, interactive typo correction popup, compiler diagnostics, and autonomous coding agent.',
     [
       { id: 'typo-popup-algorithm', text: 'Interactive AI Typo Correction Popup & Algorithm', level: 2 },
-      { id: 'intent-engine-dev', text: 'Intent Engine (meridian ask)', level: 2 },
-      { id: 'diagnostics-dev', text: 'Compiler & Runtime Diagnostics (meridian diag)', level: 2 },
-      { id: 'agent-dev', text: 'Autonomous Coding Agent (meridian agent)', level: 2 }
+      { id: 'intent-engine-dev', text: 'Intent Engine (zephyr ask)', level: 2 },
+      { id: 'diagnostics-dev', text: 'Compiler & Runtime Diagnostics (zephyr diag)', level: 2 },
+      { id: 'agent-dev', text: 'Autonomous Coding Agent (zephyr agent)', level: 2 }
     ],
     `
 <h2 id="typo-popup-algorithm">Interactive AI Typo Correction Popup & Algorithm</h2>
-<p>When a misspelled or unknown command is entered in interactive mode (e.g. <code>gti status</code>, <code>sl</code>, <code>mkdri test</code>, <code>pyhton script.py</code>), Meridian AI automatically analyzes the command and renders an interactive confirmation popup.</p>
+<p>When a misspelled or unknown command is entered in interactive mode (e.g. <code>gti status</code>, <code>sl</code>, <code>mkdri test</code>, <code>pyhton script.py</code>), Zephyr AI automatically analyzes the command and renders an interactive confirmation popup.</p>
 
 <div class="code-block-wrapper">
   <div class="code-header"><span>Interactive AI Typo Popup Dialog</span></div>
-  <pre><code class="language-text">┌── 💡 Meridian AI Typo Correction ──────────────────────────────────────────┐
+  <pre><code class="language-text">┌── 💡 Zephyr AI Typo Correction ──────────────────────────────────────────┐
 │ Command 'gti' not found in system PATH or builtins.                        │
 │ Did you mean: git status ?                                                 │
 │                                                                            │
@@ -137,16 +137,16 @@ struct Attributes {
   <li><strong>Single-Key Interactive Intercept:</strong> Puts terminal in non-canonical raw mode (<code>ICANON | ECHO</code> cleared) to read response immediately without requiring extra prompts.</li>
 </ol>
 
-<h2 id="intent-engine-dev">Intent Engine (meridian ask)</h2>
-<pre><code class="language-bash">meridian ask "find all log files modified in the last 24 hours"
+<h2 id="intent-engine-dev">Intent Engine (zephyr ask)</h2>
+<pre><code class="language-bash">zephyr ask "find all log files modified in the last 24 hours"
 # -> find . -name "*.log" -mtime -1</code></pre>
 
-<h2 id="diagnostics-dev">Compiler & Runtime Diagnostics (meridian diag)</h2>
-<pre><code class="language-bash">meridian diag "g++: error: cannot find -lutil"
+<h2 id="diagnostics-dev">Compiler & Runtime Diagnostics (zephyr diag)</h2>
+<pre><code class="language-bash">zephyr diag "g++: error: cannot find -lutil"
 # -> Diagnosis: Missing POSIX utility library. Fix: install glibc-devel / libutil.</code></pre>
 
-<h2 id="agent-dev">Autonomous Coding Agent (meridian agent)</h2>
-<pre><code class="language-bash">meridian agent "add unit tests for OSC 8 hyperlinks"</code></pre>
+<h2 id="agent-dev">Autonomous Coding Agent (zephyr agent)</h2>
+<pre><code class="language-bash">zephyr agent "add unit tests for OSC 8 hyperlinks"</code></pre>
 `
   );
 
@@ -165,7 +165,7 @@ struct Attributes {
 <p><code>ai::SecretRedactor</code> automatically strips Bearer tokens, AWS keys (<code>AKIA...</code>), and RSA/SSH private keys from logs and terminal scrollbacks.</p>
 
 <h2 id="audit-logging">Security Audit Log & Whitelisting</h2>
-<p>Flagged commands are recorded in <code>~/.local/share/meridian/security_audit.log</code> with user confirmation timestamps.</p>
+<p>Flagged commands are recorded in <code>~/.local/share/zephyr/security_audit.log</code> with user confirmation timestamps.</p>
 `
   );
 };

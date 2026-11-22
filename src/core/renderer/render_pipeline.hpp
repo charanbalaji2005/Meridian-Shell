@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / core / renderer / render_pipeline.hpp
+// zephyr-terminal / core / renderer / render_pipeline.hpp
 //
 // GPU vertex generation and batching engine. Transforms ScreenBuffer cells
 // into GPU vertex arrays with TrueColor resolution, damage filtering,
@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 struct RgbaColor {
     uint8_t r = 0;
@@ -103,5 +103,5 @@ private:
     );
 };
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

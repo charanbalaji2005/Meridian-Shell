@@ -5,14 +5,14 @@
 
 #include <sstream>
 
-using namespace meridian::shell;
+using namespace zephyr::shell;
 
 MTEST(shell_noninteractive_prints_no_prompt) {
     Shell shell(/*interactive=*/false);
     std::istringstream in("echo hi\n");
     std::ostringstream out, err;
     shell.run_interactive(in, out, err);
-    ASSERT_TRUE(out.str().find("meridian:") == std::string::npos);
+    ASSERT_TRUE(out.str().find("zephyr:") == std::string::npos);
 }
 
 MTEST(shell_interactive_prints_a_prompt_per_line) {
@@ -23,7 +23,7 @@ MTEST(shell_interactive_prints_a_prompt_per_line) {
     // One prompt printed before each of the two lines read, plus a
     // trailing prompt before hitting EOF on the third read attempt.
     std::size_t count = 0, pos = 0;
-    while ((pos = out.str().find("meridian:", pos)) != std::string::npos) { count++; pos += 1; }
+    while ((pos = out.str().find("zephyr:", pos)) != std::string::npos) { count++; pos += 1; }
     ASSERT_EQ(count, (std::size_t)3);
 }
 
@@ -65,7 +65,7 @@ MTEST(shell_syntax_error_reported_to_err_stream) {
     // Shell itself (unlike builtin output) — this is real, checkable
     // behavior.
     ASSERT_FALSE(err.str().empty());
-    ASSERT_TRUE(err.str().find("meridian-shell:") != std::string::npos);
+    ASSERT_TRUE(err.str().find("zephyr-shell:") != std::string::npos);
 }
 
 MTEST(shell_valid_command_after_syntax_error_still_runs) {

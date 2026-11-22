@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 TelemetryProfiler& TelemetryProfiler::instance() {
     static TelemetryProfiler profiler;
@@ -45,7 +45,7 @@ std::string TelemetryProfiler::format_report() const {
     auto m = get_metrics();
     std::ostringstream out;
     out << "\033[1;38;2;0;229;255m╔════════════════════════════════════════════════════════════════╗\033[0m\n";
-    out << "\033[1;38;2;0;229;255m║       MERIDIAN SHELL — GPU RENDERER & TELEMETRY PROFILER       ║\033[0m\n";
+    out << "\033[1;38;2;0;229;255m║       ZEPHYR SHELL — GPU RENDERER & TELEMETRY PROFILER       ║\033[0m\n";
     out << "\033[1;38;2;0;229;255m╚════════════════════════════════════════════════════════════════╝\033[0m\n\n";
 
     out << std::fixed << std::setprecision(1);
@@ -69,4 +69,4 @@ std::string TelemetryProfiler::format_live_hud() const {
     return out.str();
 }
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer

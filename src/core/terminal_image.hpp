@@ -1,7 +1,7 @@
 #pragma once
 // src/core/terminal_image.hpp
 //
-// Native terminal image rendering engine for Meridian Terminal.
+// Native terminal image rendering engine for Zephyr Terminal.
 // Supports TrueColor 24-bit half-blocks (▀), ASCII, Colored ASCII, Hybrid mode,
 // and animated GIF playback directly on the terminal canvas.
 
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::core {
+namespace zephyr::core {
 
 enum class ImageRenderMode {
     RealRaster,   // Authentic full-color raster image (Kitty Graphics Protocol / GPU texture) [DEFAULT]
@@ -73,5 +73,5 @@ private:
     char char_for_luminance(float lum, const std::string& charset) const;
 };
 
-} // namespace meridian::core
+} // namespace zephyr::core
 

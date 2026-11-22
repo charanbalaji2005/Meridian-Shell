@@ -1,5 +1,5 @@
 #pragma once
-// meridian-ai / risk_classifier.hpp
+// zephyr-ai / risk_classifier.hpp
 //
 // Classifies a command line's risk level (spec §41/§73) using local
 // pattern matching only — no network, no AI model, fully testable.
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 enum class RiskLevel { Low, Medium, High, Critical };
 
@@ -25,4 +25,4 @@ public:
     RiskResult classify(const std::string& command_line) const;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

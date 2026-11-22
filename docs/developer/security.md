@@ -12,4 +12,4 @@ status: "implemented"
 <p><code>ai::SecretRedactor</code> automatically strips Bearer tokens, AWS keys (<code>AKIA...</code>), and RSA/SSH private keys from logs and terminal scrollbacks.</p>
 
 <h2 id="audit-logging">Security Audit Log & Whitelisting</h2>
-<p>Flagged commands are recorded in <code>~/.local/share/meridian/security_audit.log</code> with user confirmation timestamps.</p>
+<p>Flagged commands are recorded in <code>~/.local/share/zephyr/security_audit.log</code> with user confirmation timestamps.</p>

@@ -6,7 +6,7 @@ status: "development"
 ---
 
 <h2 id="gpu-pipeline">GPU Render Pipeline Architecture</h2>
-<p>Meridian's GPU renderer transforms terminal cell matrices into instanced draw calls executed on OpenGL 3.3 Core and Vulkan backends. By offloading text glyph blitting, background colors, and raster images to dedicated shader pipelines, Meridian sustains fluid 144Hz+ rendering without consuming significant CPU resources.</p>
+<p>Zephyr's GPU renderer transforms terminal cell matrices into instanced draw calls executed on OpenGL 3.3 Core and Vulkan backends. By offloading text glyph blitting, background colors, and raster images to dedicated shader pipelines, Zephyr sustains fluid 144Hz+ rendering without consuming significant CPU resources.</p>
 
 <div class="arch-diagram-block"><pre><code class="language-text">ScreenBuffer Grid Cells
         │ (dirty lines)
@@ -26,4 +26,4 @@ status: "development"
 <p><code>renderer::GlyphAtlas</code> rasterizes character glyphs with sub-pixel anti-aliasing into a high-density 2048x2048 texture atlas, achieving sub-millisecond glyph retrieval.</p>
 
 <h2 id="instancing-dev">Instanced Quad Rendering</h2>
-<p>Rather than issuing individual draw calls for each character cell, Meridian batches up to 20,000 glyphs into a single instanced quad array buffer, achieving ultra-low render latency under 1.2ms per frame.</p>
+<p>Rather than issuing individual draw calls for each character cell, Zephyr batches up to 20,000 glyphs into a single instanced quad array buffer, achieving ultra-low render latency under 1.2ms per frame.</p>

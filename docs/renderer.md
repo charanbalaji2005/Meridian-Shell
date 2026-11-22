@@ -26,7 +26,7 @@ no GPU/glyph-rendering code has been compiled or run. See
 The renderer's actual job — reading cell state and painting it — has a
 fully real, tested data source waiting for it:
 
-- `meridian::vt::ScreenBuffer` (`src/core/vt/screen_buffer.hpp`) — the
+- `zephyr::vt::ScreenBuffer` (`src/core/vt/screen_buffer.hpp`) — the
   cell grid, cursor position, and scrollback a renderer would read
   every frame. `Cell::codepoint`/`width`/`attrs` already carry
   everything §9-13 ask a renderer to draw (SGR colors including 24-bit

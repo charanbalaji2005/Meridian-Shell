@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class GraphicType {
     Image,
@@ -100,5 +100,5 @@ private:
     uint64_t next_id_ = 1;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

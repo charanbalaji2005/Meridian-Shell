@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 TerminalImageCompositor::TerminalImageCompositor() = default;
 
@@ -166,5 +166,5 @@ CompositorBounds TerminalImageCompositor::compute_render_bounds(
     return bounds;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

@@ -1,4 +1,4 @@
-// meridian-ai / command_analyzer.cpp
+// zephyr-ai / command_analyzer.cpp
 #include "command_analyzer.hpp"
 
 #include <algorithm>
@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 int edit_distance(const std::string& a, const std::string& b) {
     // Optimal String Alignment distance: classic Levenshtein plus an
@@ -113,4 +113,4 @@ std::optional<Suggestion> CommandAnalyzer::analyze(const std::string& command_na
     return Suggestion{command_name, best, best_distance};
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

@@ -8,13 +8,13 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="gui-arch">GUI Windowing Architecture</h2>
-<p>Meridian's GUI layer embeds the high-speed PTY engine and OpenGL/Vulkan canvas into native desktop window chrome, providing responsive rendering and native platform integration.</p>
+<p>Zephyr's GUI layer embeds the high-speed PTY engine and OpenGL/Vulkan canvas into native desktop window chrome, providing responsive rendering and native platform integration.</p>
 
 <h2 id="wayland-x11">Wayland & X11 Compositor Integration</h2>
 <p>Supports fractional scaling, client-side decorations (CSD), server-side decorations (SSD), and sub-pixel glyph rendering across GNOME, KDE Plasma, and Hyprland.</p>
 
 <h2 id="scaling-dpi">HiDPI & Fractional Scaling</h2>
-<p>Under Wayland <code>wp-fractional-scale-v1</code>, Meridian dynamically scales glyph texture atlases to exact fractional physical pixel dimensions (125%, 150%, 175%), completely avoiding blurry bitmap bilinear interpolation.</p>
+<p>Under Wayland <code>wp-fractional-scale-v1</code>, Zephyr dynamically scales glyph texture atlases to exact fractional physical pixel dimensions (125%, 150%, 175%), completely avoiding blurry bitmap bilinear interpolation.</p>
 `
   );
 
@@ -27,7 +27,7 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="transparency">Window Transparency & Background Blur</h2>
-<p>Configure background opacity (<code>0.0</code> to <code>1.0</code>) and enable compositor blur in <code>~/.config/meridian/config.json</code>:</p>
+<p>Configure background opacity (<code>0.0</code> to <code>1.0</code>) and enable compositor blur in <code>~/.config/zephyr/config.json</code>:</p>
 <pre><code class="language-json">{
   "opacity": 0.92,
   "blur": true
@@ -135,11 +135,11 @@ pic set /path/to/my.png # Set custom user wallpaper</code></pre>
     ],
     `
 <h2 id="context-aware-prompt">Intelligent Context-Aware Powerline Prompt</h2>
-<p>Meridian renders a compact, two-line Powerline prompt with high-contrast color segments and context-aware Nerd Font glyphs:</p>
+<p>Zephyr renders a compact, two-line Powerline prompt with high-contrast color segments and context-aware Nerd Font glyphs:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-header"><span>Meridian Context-Aware Powerline Prompt</span></div>
-  <pre><code class="language-text">   Tue 25 Aug - 23:43   ~/Downloads/meridian-terminal 󰙲   main ↑2 3✗ 2? 
+  <div class="code-header"><span>Zephyr Context-Aware Powerline Prompt</span></div>
+  <pre><code class="language-text">   Tue 25 Aug - 23:43   ~/Downloads/zephyr-terminal 󰙲   main ↑2 3✗ 2? 
    @charanbalaji  ❯ </code></pre>
 </div>
 

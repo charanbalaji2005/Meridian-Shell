@@ -6,7 +6,7 @@
 #include "../src/core/icons/nerd_font_icons.hpp"
 #include "../src/core/icons/fallback_icons.hpp"
 
-using namespace meridian::icons;
+using namespace zephyr::icons;
 
 MTEST(icon_registry_singleton) {
     auto& reg1 = IconRegistry::instance();

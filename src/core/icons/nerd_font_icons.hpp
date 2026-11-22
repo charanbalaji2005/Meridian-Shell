@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 struct NerdFontGlyphs {
     // ── Powerline Symbols ─────────────────────────────────────────────────────
@@ -202,5 +202,5 @@ struct NerdFontGlyphs {
     static constexpr const char* STATUS_FIRE                   = "\xF3\xB0\x9B\x9C"; // U+F06DC 󰛜
 };
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

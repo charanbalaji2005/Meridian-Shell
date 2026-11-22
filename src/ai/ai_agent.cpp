@@ -5,7 +5,7 @@
 #include <memory>
 #include <sstream>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 AiAgent::AiAgent() = default;
 
@@ -138,7 +138,7 @@ void AiAgent::approve_current_step(bool approve) {
 
 std::string AiAgent::format_progress() const {
     std::ostringstream ss;
-    ss << "┌─── Meridian AI Agent ───────────────────────────────────\n";
+    ss << "┌─── Zephyr AI Agent ───────────────────────────────────\n";
     ss << "│ Goal: " << goal_.description << "\n";
     ss << "│ Status: ";
     switch (status_) {
@@ -163,5 +163,5 @@ std::string AiAgent::format_progress() const {
     return ss.str();
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

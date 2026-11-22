@@ -7,11 +7,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-using namespace meridian::ai;
+using namespace zephyr::ai;
 
 namespace {
 std::string sandbox_dir() {
-    return "/tmp/meridian_test_gitctx_" + std::to_string(getpid());
+    return "/tmp/zephyr_test_gitctx_" + std::to_string(getpid());
 }
 } // namespace
 

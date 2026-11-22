@@ -1,13 +1,19 @@
 #!/usr/bin/make -f
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+# Qt 6 headers and CMake configs come from qt6-base-dev / qt6-svg-dev.
+
 %:
-	dh $@
+	dh $@ --buildsystem=cmake+ninja
 
-override_dh_auto_build:
-	$(MAKE) all
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DZEPHYR_BUILD_GUI=ON \
+		-DZEPHYR_BUILD_TESTS=ON \
+		-DZEPHYR_INSTALL_LICENSE=OFF
 
-override_dh_auto_install:
-	install -d $(CURDIR)/debian/meridian-terminal/usr/bin
-	install -d $(CURDIR)/debian/meridian-terminal/usr/share/applications
-	install -m 755 build/meridian-shell $(CURDIR)/debian/meridian-terminal/usr/bin/meridian-shell
-	install -m 755 build/meridian $(CURDIR)/debian/meridian-terminal/usr/bin/meridian
-	install -m 644 meridian.desktop $(CURDIR)/debian/meridian-terminal/usr/share/applications/meridian.desktop
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	desktop-file-validate packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop
+	appstreamcli validate --no-net packaging/desktop/org.zephyr_terminal.ZephyrTerminal.metainfo.xml
+	dh_auto_test --no-parallel
+endif

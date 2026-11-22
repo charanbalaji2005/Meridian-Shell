@@ -9,14 +9,14 @@ module.exports = function(addArt) {
     `
 <h2 id="fedora-rpm">Fedora / RHEL RPM Package</h2>
 <pre><code class="language-bash"># Install locally built RPM
-sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
+sudo dnf install ./dist/zephyr-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
 
 <h2 id="spec-file">RPM Spec File & Compilation</h2>
-<p>The spec file is located in <code>packaging/rpm/meridian-terminal.spec</code>. To build locally:</p>
-<pre><code class="language-bash">rpmbuild -ba packaging/rpm/meridian-terminal.spec</code></pre>
+<p>The spec file is located in <code>packaging/rpm/zephyr-terminal.spec</code>. To build locally:</p>
+<pre><code class="language-bash">rpmbuild -ba packaging/rpm/zephyr-terminal.spec</code></pre>
 
 <h2 id="copr-repo">Fedora COPR Repository Publishing</h2>
-<p>Meridian packages are automatically built for Fedora 39, 40, 41, and Rawhide via automated COPR webhooks on release tags.</p>
+<p>Zephyr packages are automatically built for Fedora 39, 40, 41, and Rawhide via automated COPR webhooks on release tags.</p>
 `
   );
 
@@ -29,10 +29,10 @@ sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
     `
 <h2 id="debian-deb">Ubuntu & Debian DEB Package</h2>
 <pre><code class="language-bash">sudo apt update
-sudo apt install ./dist/meridian-terminal_2.0.0_amd64.deb</code></pre>
+sudo apt install ./dist/zephyr-terminal_2.0.0_amd64.deb</code></pre>
 
 <h2 id="deb-packaging">Building .deb Packages</h2>
-<pre><code class="language-bash">dpkg-deb --build packaging/debian meridian-terminal_2.0.0_amd64.deb</code></pre>
+<pre><code class="language-bash">dpkg-deb --build packaging/debian zephyr-terminal_2.0.0_amd64.deb</code></pre>
 `
   );
 
@@ -48,7 +48,7 @@ sudo apt install ./dist/meridian-terminal_2.0.0_amd64.deb</code></pre>
 makepkg -si</code></pre>
 
 <h2 id="aur-install">AUR Helper Installation</h2>
-<pre><code class="language-bash">yay -S meridian-terminal-bin</code></pre>
+<pre><code class="language-bash">yay -S zephyr-terminal-bin</code></pre>
 `
   );
 
@@ -60,10 +60,10 @@ makepkg -si</code></pre>
     ],
     `
 <h2 id="opensuse-zypper">openSUSE Zypper Installation</h2>
-<pre><code class="language-bash">sudo zypper install ./meridian-terminal.rpm</code></pre>
+<pre><code class="language-bash">sudo zypper install ./zephyr-terminal.rpm</code></pre>
 
 <h2 id="obs-build">Open Build Service (OBS) Integration</h2>
-<p>Meridian maintains spec configurations compatible with openSUSE Tumbleweed and Leap repositories.</p>
+<p>Zephyr maintains spec configurations compatible with openSUSE Tumbleweed and Leap repositories.</p>
 `
   );
 
@@ -75,8 +75,8 @@ makepkg -si</code></pre>
     ],
     `
 <h2 id="appimage-guide">Standalone AppImage Execution</h2>
-<pre><code class="language-bash">chmod +x meridian-terminal.AppImage
-./meridian-terminal.AppImage</code></pre>
+<pre><code class="language-bash">chmod +x zephyr-terminal.AppImage
+./zephyr-terminal.AppImage</code></pre>
 
 <h2 id="building-appimage">Building AppImages with appimagetool</h2>
 <pre><code class="language-bash">./scripts/build_appimage.sh</code></pre>
@@ -121,11 +121,11 @@ makepkg -si</code></pre>
     ],
     `
 <h2 id="macos-status-spec">macOS Darwin Status</h2>
-<p>Darwin BSD PTY abstraction and Homebrew formula (<code>brew install meridian-terminal</code>) are in active development for Apple Silicon (M1-M4) and Intel x86_64.</p>
+<p>Darwin BSD PTY abstraction and Homebrew formula (<code>brew install zephyr-terminal</code>) are in active development for Apple Silicon (M1-M4) and Intel x86_64.</p>
 
 <h2 id="homebrew-install">Homebrew Tap & Installation</h2>
-<pre><code class="language-bash">brew tap charanbalaji2005/meridian
-brew install --cask meridian-terminal</code></pre>
+<pre><code class="language-bash">brew tap charanbalaji2005/zephyr
+brew install --cask zephyr-terminal</code></pre>
 `
   );
 
@@ -140,7 +140,7 @@ brew install --cask meridian-terminal</code></pre>
 <p>Windows Console PTY (ConPTY) adapter and MSI / winget installer are in development.</p>
 
 <h2 id="winget-install">Windows Package Manager (winget)</h2>
-<pre><code class="language-powershell">winget install Meridian.Terminal</code></pre>
+<pre><code class="language-powershell">winget install Zephyr.Terminal</code></pre>
 `
   );
 };

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -44,9 +44,9 @@ void CommandPalette::load_default_actions() {
     register_action({"pane.split_v", "Split Pane Vertically", "Pane", "Ctrl+Shift+E", 0});
     register_action({"pane.zoom", "Toggle Pane Zoom", "Pane", "Ctrl+Shift+Z", 0});
     register_action({"pane.close", "Close Active Pane", "Pane", "Ctrl+Shift+W", 0});
-    register_action({"ai.intent", "Generate Command from English Intent", "Meridian AI", "Ctrl+Shift+I", 0});
-    register_action({"ai.diagnostics", "Diagnose Last Terminal Error", "Meridian AI", "Ctrl+Shift+X", 0});
-    register_action({"ai.agent", "Launch Autonomous Coding Agent", "Meridian AI", "Ctrl+Shift+A", 0});
+    register_action({"ai.intent", "Generate Command from English Intent", "Zephyr AI", "Ctrl+Shift+I", 0});
+    register_action({"ai.diagnostics", "Diagnose Last Terminal Error", "Zephyr AI", "Ctrl+Shift+X", 0});
+    register_action({"ai.agent", "Launch Autonomous Coding Agent", "Zephyr AI", "Ctrl+Shift+A", 0});
     register_action({"dev.git", "Toggle Git Intelligence Panel", "Developer", "Ctrl+Shift+G", 0});
     register_action({"dev.monitor", "Toggle System & Network Monitor", "Developer", "Ctrl+Shift+M", 0});
     register_action({"dev.files", "Toggle File Explorer Sidecar", "Developer", "Ctrl+Shift+B", 0});
@@ -79,5 +79,5 @@ std::vector<PaletteAction> CommandPalette::search(const std::string& query) cons
     return results;
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

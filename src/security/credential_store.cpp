@@ -1,4 +1,4 @@
-// meridian-security / credential_store.cpp
+// zephyr-security / credential_store.cpp
 #include "credential_store.hpp"
 
 #include <cctype>
@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace meridian::security {
+namespace zephyr::security {
 
 namespace {
 
@@ -88,4 +88,4 @@ bool FileCredentialStore::remove(const std::string& key_name) {
     return ::unlink(path.c_str()) == 0;
 }
 
-} // namespace meridian::security
+} // namespace zephyr::security

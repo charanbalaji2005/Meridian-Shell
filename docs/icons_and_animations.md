@@ -1,16 +1,16 @@
-# Meridian Terminal — Icons & Animation Engine Architecture
+# Zephyr Terminal — Icons & Animation Engine Architecture
 
-Meridian Terminal features a dual-subsystem architecture separating **static terminal glyph icons** (via an extensible Nerd Font v3 registry with multi-tier fallbacks) from **true native raster animations** (via an event-driven animation engine supporting GIF/APNG/WebP, Kitty Graphics Protocol, frame composition, and memory limits).
+Zephyr Terminal features a dual-subsystem architecture separating **static terminal glyph icons** (via an extensible Nerd Font v3 registry with multi-tier fallbacks) from **true native raster animations** (via an event-driven animation engine supporting GIF/APNG/WebP, Kitty Graphics Protocol, frame composition, and memory limits).
 
 ---
 
 ## 1. Static Glyph Icon Subsystem
 
-Meridian's icon subsystem (`meridian::icons::IconRegistry`) provides crisp, single-cell aligned icons for over 100+ file extensions, directories, programming languages, Git states, and dev tools.
+Zephyr's icon subsystem (`zephyr::icons::IconRegistry`) provides crisp, single-cell aligned icons for over 100+ file extensions, directories, programming languages, Git states, and dev tools.
 
 ### 1.1 Font Support & Fallback Tiers
 
-Meridian uses a 3-tier fallback engine:
+Zephyr uses a 3-tier fallback engine:
 
 | Tier | Description | Example Directory | Example Clean Git |
 |---|---|---|---|
@@ -18,7 +18,7 @@ Meridian uses a 3-tier fallback engine:
 | **Tier 2: `UNICODE`** | Safe BMP Unicode emoji / symbols | `📁 src/` | `✓ clean` |
 | **Tier 3: `ASCII`** | High-density clean ASCII markers | `[src]` | `ok clean` |
 
-> **Zero Replacement Guarantee**: Meridian never outputs unprintable boxes (`□`, ``, `?`) when an icon is unsupported.
+> **Zero Replacement Guarantee**: Zephyr never outputs unprintable boxes (`□`, ``, `?`) when an icon is unsupported.
 
 ### 1.2 Configuring the Icon Tier
 
@@ -26,18 +26,18 @@ You can explicitly force an icon tier via environment variables:
 
 ```bash
 # Force full Nerd Font icons
-export MERIDIAN_ICON_TIER=NERD_FONT
+export ZEPHYR_ICON_TIER=NERD_FONT
 
 # Force safe Unicode emoji
-export MERIDIAN_ICON_TIER=UNICODE
+export ZEPHYR_ICON_TIER=UNICODE
 
 # Force pure ASCII fallback
-export MERIDIAN_ICON_TIER=ASCII
+export ZEPHYR_ICON_TIER=ASCII
 ```
 
-### 1.3 User Custom Icon Mappings (`~/.config/meridian/icons.toml`)
+### 1.3 User Custom Icon Mappings (`~/.config/zephyr/icons.toml`)
 
-You can define custom icon mappings in `~/.config/meridian/icons.toml`:
+You can define custom icon mappings in `~/.config/zephyr/icons.toml`:
 
 ```toml
 [extensions]
@@ -64,7 +64,7 @@ You can define custom icon mappings in `~/.config/meridian/icons.toml`:
 
 ## 2. Raster Animation Engine
 
-Meridian does not treat animated pictures as font icons. Instead, raster animations are decoded directly into 32-bit RGBA pixel frames and composited using Meridian's native graphics and GPU pipeline.
+Zephyr does not treat animated pictures as font icons. Instead, raster animations are decoded directly into 32-bit RGBA pixel frames and composited using Zephyr's native graphics and GPU pipeline.
 
 ### 2.1 Supported Formats
 - **GIF87a / GIF89a**: Multi-frame GIF with centisecond delay headers and disposal modes.
@@ -108,7 +108,7 @@ pic --clear
 
 ### 2.3 Performance & Safety Limits
 
-To protect against malicious or oversized animations (e.g. decompression bombs), Meridian enforces strict bounding limits:
+To protect against malicious or oversized animations (e.g. decompression bombs), Zephyr enforces strict bounding limits:
 
 - **Memory Limit**: Default `256 MB` total decoded frame memory. Oldest stopped animations are evicted under memory pressure.
 - **Max Canvas Dimensions**: `16384 x 16384` px.
@@ -117,7 +117,7 @@ To protect against malicious or oversized animations (e.g. decompression bombs),
 
 ### 2.4 Kitty Graphics Protocol Animation Support
 
-Meridian fully supports the Kitty Graphics Protocol APC stream:
+Zephyr fully supports the Kitty Graphics Protocol APC stream:
 
 ```
 \033_Ga=a,s=800,v=600,c=0,r=0,z=100;<base64_payload>\033\

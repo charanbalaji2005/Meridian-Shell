@@ -1,15 +1,32 @@
-Source: meridian-terminal
-Section: utils
+Source: zephyr-terminal
+Section: x11
 Priority: optional
-Maintainer: Charan Balaji <charanbalaji@meridian.dev>
-Build-Depends: debhelper-compat (= 13), g++ (>= 4:11), make, cmake (>= 3.20)
+Maintainer: Charan Balaji <charanbalaji@zephyr.dev>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.20),
+               ninja-build,
+               g++ (>= 4:12),
+               qt6-base-dev (>= 6.4),
+               qt6-svg-dev (>= 6.4),
+               libgl-dev,
+               desktop-file-utils,
+               appstream
 Standards-Version: 4.6.2
 Homepage: https://github.com/charanbalaji2005/Meridian-Shell
+Vcs-Browser: https://github.com/charanbalaji2005/Meridian-Shell
+Vcs-Git: https://github.com/charanbalaji2005/Meridian-Shell.git
+Rules-Requires-Root: no
 
-Package: meridian-terminal
+Package: zephyr-terminal
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Modern Linux Terminal & Unified Developer Environment
- Meridian Terminal is a fast Linux terminal emulator, developer environment,
- and AI agent platform with native TrueColor graphics, live Git intelligence,
- multi-pane multiplexing, and in-terminal command preview.
+Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
+Recommends: qt6-wayland
+Suggests: openssh-client
+Description: fast, modern terminal emulator with tabs, splits and profiles
+ Zephyr Terminal is a native Linux terminal emulator written in C++20 and
+ Qt 6. It offers tabs, nested split panes, scrollback search, shell and SSH
+ profiles, themes with transparency, a command palette, editable keybindings
+ and session restore.
+ .
+ The package also ships the "zephyr" command-line toolkit and the
+ "zephyr-shell" interactive shell.

@@ -1,10 +1,10 @@
 // tests / test_job_control.cpp
 //
 // This is the real test for job control: it spawns the actual
-// meridian-shell BINARY (not the Executor class directly) on a REAL PTY,
+// zephyr-shell BINARY (not the Executor class directly) on a REAL PTY,
 // exactly the way PtyManager would host any shell. It then writes a raw
 // Ctrl+Z byte (0x1A) to the PTY master. That byte is never delivered to
-// meridian-shell as ordinary input — the kernel's tty line discipline
+// zephyr-shell as ordinary input — the kernel's tty line discipline
 // intercepts it (ISIG mode) and sends a real SIGTSTP to the terminal's
 // foreground process group. This is the same mechanism a real interactive
 // session relies on, so if this test passes, process-group assignment and
@@ -22,7 +22,7 @@
 #include <string>
 #include <unistd.h>
 
-using namespace meridian::pty;
+using namespace zephyr::pty;
 
 namespace {
 
@@ -49,7 +49,11 @@ std::string read_available(PtyManager& pty, int timeout_ms) {
     return out;
 }
 
-std::string shell_binary_path() { return "./build/meridian-shell"; }
+// Overridable so out-of-tree builds (CMake, packaging) can point at their binary.
+std::string shell_binary_path() {
+    const char* env = std::getenv("ZEPHYR_SHELL_BIN");
+    return env && *env ? env : "./build/zephyr-shell";
+}
 
 } // namespace
 
@@ -102,7 +106,7 @@ MTEST(job_control_ctrl_z_stops_foreground_job_via_real_pty) {
     if (pgid > 0) kill(-pgid, SIGKILL);
 
     pty.write("exit\n");
-    // Bounded wait: if meridian-shell somehow never exits, fail loudly
+    // Bounded wait: if zephyr-shell somehow never exits, fail loudly
     // rather than hanging the whole test suite forever.
     read_available(pty, 300);
     int status = pty.wait_for_exit();

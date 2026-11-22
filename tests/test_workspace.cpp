@@ -5,7 +5,7 @@
 
 #include <unistd.h>
 
-using namespace meridian::workspace;
+using namespace zephyr::workspace;
 
 MTEST(pane_tree_split_and_zoom) {
     PaneTree tree;
@@ -46,7 +46,7 @@ MTEST(pane_tree_split_and_zoom) {
 }
 
 MTEST(workspace_manager_persistence) {
-    std::string test_dir = "/tmp/test_meridian_workspaces";
+    std::string test_dir = "/tmp/test_zephyr_workspaces";
     WorkspaceManager wm(test_dir);
 
     Workspace ws;
@@ -100,7 +100,7 @@ MTEST(session_recorder_save_load) {
 
     ASSERT_EQ(recorder.event_count(), 3u);
 
-    std::string test_file = "/tmp/test_meridian_session.rec";
+    std::string test_file = "/tmp/test_zephyr_session.rec";
     ASSERT_TRUE(recorder.save_to_file(test_file));
 
     SessionRecorder loaded;

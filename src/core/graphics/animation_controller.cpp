@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 AnimationController::AnimationController() = default;
 
@@ -154,5 +154,5 @@ double AnimationController::current_frame_duration() const {
     return frame_durations_[current_frame_index_ % frame_durations_.size()];
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

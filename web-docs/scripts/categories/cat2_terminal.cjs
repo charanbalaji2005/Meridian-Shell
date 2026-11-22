@@ -9,7 +9,7 @@ module.exports = function(addArt) {
       { id: 'osc-protocols', text: 'Operating System Commands (OSC 7/8/52/133)', level: 2 }
     ],
     `
-<p>Meridian features a high-performance, standard-compliant VT100, VT220, and XTerm terminal emulation engine written in modern C++20.</p>
+<p>Zephyr features a high-performance, standard-compliant VT100, VT220, and XTerm terminal emulation engine written in modern C++20.</p>
 
 <h2 id="ansi-vt">ANSI & VT Escape Sequences</h2>
 <p>The parser handles standard CSI (Control Sequence Introducer), OSC (Operating System Command), APC (Application Program Command), and DCS (Device Control String) sequences:</p>
@@ -30,9 +30,9 @@ module.exports = function(addArt) {
 <p>Full-screen interactive applications like <code>vim</code>, <code>nano</code>, <code>tmux</code>, and <code>htop</code> switch to the alternate buffer on launch and restore the primary buffer on exit, preserving command prompt history.</p>
 
 <h2 id="truecolor">24-Bit TrueColor RGB (SGR 38/48)</h2>
-<p>Meridian renders full 24-bit RGB colors with 16.7 million distinct hues via standard SGR sequences:</p>
-<pre><code class="language-bash"># Set foreground color to Meridian Cyan (#00E5FF)
-printf "\\033[38;2;0;229;255mMeridian TrueColor\\033[0m\\n"
+<p>Zephyr renders full 24-bit RGB colors with 16.7 million distinct hues via standard SGR sequences:</p>
+<pre><code class="language-bash"># Set foreground color to Zephyr Cyan (#00E5FF)
+printf "\\033[38;2;0;229;255mZephyr TrueColor\\033[0m\\n"
 
 # Set background color to Dark Panel (#0E1622)
 printf "\\033[48;2;14;22;34m\\033[38;2;0;229;255m Custom Panel \\033[0m\\n"</code></pre>
@@ -60,7 +60,7 @@ printf "\\033[48;2;14;22;34m\\033[38;2;0;229;255m Custom Panel \\033[0m\\n"</cod
       { id: 'signal-forwarding', text: 'Process Group Signals & Terminal Ownership', level: 2 }
     ],
     `
-<p>Meridian includes an internal standalone POSIX shell engine (<code>meridian-shell</code>) with recursive-descent parsing, AST execution, and full job control.</p>
+<p>Zephyr includes an internal standalone POSIX shell engine (<code>zephyr-shell</code>) with recursive-descent parsing, AST execution, and full job control.</p>
 
 <h2 id="ast-engine">POSIX AST Parser & Execution Engine</h2>
 <p>Input strings are tokenized by <code>shell::Lexer</code> and structured into an Abstract Syntax Tree by <code>shell::Parser</code>:</p>
@@ -78,7 +78,7 @@ AST Structure:
 cat app.log | grep -i "error" | sort | uniq -c > errors.txt 2>&1
 
 # Appending output
-echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
+echo "build completed at $(date)" >> /tmp/zephyr.log</code></pre>
 
 <h2 id="command-substitution">Command Substitution & Expansion</h2>
 <p>Supports <code>$(command)</code> substitution, environment variable expansion (<code>$VAR</code>, <code>\${VAR}</code>), and exit code inspection (<code>$?</code>).</p>
@@ -96,7 +96,7 @@ echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
 </table>
 
 <h2 id="signal-forwarding">Process Group Signals & Terminal Ownership</h2>
-<p>When running commands, <code>meridian-shell</code> creates dedicated process groups (<code>setpgid()</code>) and gives controlling terminal ownership via <code>tcsetpgrp()</code> so signals like <code>SIGINT</code> (Ctrl+C) and <code>SIGQUIT</code> (Ctrl+\\) cleanly terminate the foreground pipeline without killing the parent shell.</p>
+<p>When running commands, <code>zephyr-shell</code> creates dedicated process groups (<code>setpgid()</code>) and gives controlling terminal ownership via <code>tcsetpgrp()</code> so signals like <code>SIGINT</code> (Ctrl+C) and <code>SIGQUIT</code> (Ctrl+\\) cleanly terminate the foreground pipeline without killing the parent shell.</p>
 `
   );
 
@@ -109,10 +109,10 @@ echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
       { id: 'termios-config', text: 'Termios Line Discipline & Raw Mode', level: 2 }
     ],
     `
-<p>Meridian uses POSIX <code>openpty(3)</code> to establish real Linux pseudoterminal sessions, decoupling GUI rendering from shell process execution.</p>
+<p>Zephyr uses POSIX <code>openpty(3)</code> to establish real Linux pseudoterminal sessions, decoupling GUI rendering from shell process execution.</p>
 
 <h2 id="openpty-arch">Linux openpty Master/Slave Architecture</h2>
-<div class="arch-diagram-block"><pre><code class="language-text">Meridian UI / Render Canvas
+<div class="arch-diagram-block"><pre><code class="language-text">Zephyr UI / Render Canvas
         │ (read / write)
         ▼
    Master PTY FD
@@ -125,15 +125,15 @@ echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
 <p><code>pty::PTYManager</code> manages master file descriptors using non-blocking I/O (<code>O_NONBLOCK</code>) and <code>epoll</code> polling, ensuring high throughput and zero UI stutter during high-volume output (e.g. <code>find /</code> or large compile logs).</p>
 
 <h2 id="signal-handling">Signal Handling & Resizing (SIGWINCH)</h2>
-<p>When the terminal window or split pane is resized, Meridian calculates the new row and column count and invokes <code>ioctl(master_fd, TIOCSWINSZ, &ws)</code>, instantly sending <code>SIGWINCH</code> to the foreground process group.</p>
+<p>When the terminal window or split pane is resized, Zephyr calculates the new row and column count and invokes <code>ioctl(master_fd, TIOCSWINSZ, &ws)</code>, instantly sending <code>SIGWINCH</code> to the foreground process group.</p>
 
 <h2 id="termios-config">Termios Line Discipline & Raw Mode</h2>
-<p>Meridian configures the slave PTY with <code>termios</code> flags supporting both cooked mode for standard readline shells and raw mode for screen-oriented curses programs like <code>vim</code> and <code>micro</code>.</p>
+<p>Zephyr configures the slave PTY with <code>termios</code> flags supporting both cooked mode for standard readline shells and raw mode for screen-oriented curses programs like <code>vim</code> and <code>micro</code>.</p>
 `
   );
 
   addArt('terminal-commands', 'Commands', 'TERMINAL', 'implemented',
-    'Meridian CLI commands, builtins, and subcommands.',
+    'Zephyr CLI commands, builtins, and subcommands.',
     [
       { id: 'cli-subcommands', text: 'CLI Subcommands Index', level: 2 },
       { id: 'shell-builtins', text: 'Shell Built-in Commands', level: 2 },
@@ -144,20 +144,20 @@ echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
 <table class="doc-table">
   <thead><tr><th>Command</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>meridian</code></td><td>Launch interactive terminal emulator GUI.</td></tr>
-    <tr><td><code>meridian-shell</code></td><td>Launch standalone interactive AST shell.</td></tr>
-    <tr><td><code>meridian monitor</code></td><td>Open live CPU, RAM, Disk, Network, and Process metrics dashboard.</td></tr>
-    <tr><td><code>meridian git</code></td><td>Inspect Git branch divergence, staged/unstaged changes.</td></tr>
-    <tr><td><code>meridian files [dir]</code></td><td>View interactive directory tree explorer with Git badges.</td></tr>
-    <tr><td><code>meridian ssh [alias]</code></td><td>Manage and connect to SSH remote workspaces.</td></tr>
-    <tr><td><code>meridian plugins</code></td><td>List active extensible plugins and lifecycle hooks.</td></tr>
-    <tr><td><code>meridian --performance</code></td><td>Display GPU framerate, PTY latency & telemetry profiler.</td></tr>
-    <tr><td><code>meridian pic &lt;file&gt;</code></td><td>Display direct 32-bit RGBA inline image.</td></tr>
+    <tr><td><code>zephyr</code></td><td>Launch interactive terminal emulator GUI.</td></tr>
+    <tr><td><code>zephyr-shell</code></td><td>Launch standalone interactive AST shell.</td></tr>
+    <tr><td><code>zephyr monitor</code></td><td>Open live CPU, RAM, Disk, Network, and Process metrics dashboard.</td></tr>
+    <tr><td><code>zephyr git</code></td><td>Inspect Git branch divergence, staged/unstaged changes.</td></tr>
+    <tr><td><code>zephyr files [dir]</code></td><td>View interactive directory tree explorer with Git badges.</td></tr>
+    <tr><td><code>zephyr ssh [alias]</code></td><td>Manage and connect to SSH remote workspaces.</td></tr>
+    <tr><td><code>zephyr plugins</code></td><td>List active extensible plugins and lifecycle hooks.</td></tr>
+    <tr><td><code>zephyr --performance</code></td><td>Display GPU framerate, PTY latency & telemetry profiler.</td></tr>
+    <tr><td><code>zephyr pic &lt;file&gt;</code></td><td>Display direct 32-bit RGBA inline image.</td></tr>
   </tbody>
 </table>
 
 <h2 id="shell-builtins">Shell Built-in Commands</h2>
-<p>Inside <code>meridian-shell</code>, built-in commands run directly inside the process without forking:</p>
+<p>Inside <code>zephyr-shell</code>, built-in commands run directly inside the process without forking:</p>
 <pre><code class="language-bash">cd /var/log         # Change current working directory
 export FOO="bar"    # Set environment variable
 jobs                # List active background jobs
@@ -169,13 +169,13 @@ exit 0              # Terminate shell session</code></pre>
 <h2 id="developer-commands">Developer Productivity Subcommands</h2>
 <p>Developer subcommands can be executed from within any shell or invoked directly from your system PATH:</p>
 <pre><code class="language-bash"># Launch live resource monitor
-meridian monitor
+zephyr monitor
 
 # Show visual Git status
-meridian git
+zephyr git
 
 # Open interactive directory browser
-meridian files /var/log</code></pre>
+zephyr files /var/log</code></pre>
 `
   );
 
@@ -188,23 +188,23 @@ meridian files /var/log</code></pre>
       { id: 'ssh-security', text: 'Key Management & Security', level: 2 }
     ],
     `
-<p>Meridian includes a built-in SSH workspace and connection manager in <code>src/dev/ssh_manager.cpp</code>.</p>
+<p>Zephyr includes a built-in SSH workspace and connection manager in <code>src/dev/ssh_manager.cpp</code>.</p>
 
 <h2 id="ssh-mgr">Native SSH Workspace Manager</h2>
 <pre><code class="language-bash"># List all available SSH hosts from ~/.ssh/config
-meridian ssh
+zephyr ssh
 
 # Connect directly to a configured host alias
-meridian ssh production
+zephyr ssh production
 
 # Custom port or identity file connection
-meridian ssh staging -p 2222</code></pre>
+zephyr ssh staging -p 2222</code></pre>
 
 <h2 id="ssh-config-parser">~/.ssh/config Automatic Parsing</h2>
-<p>Meridian automatically parses <code>Host</code>, <code>HostName</code>, <code>User</code>, <code>Port</code>, and <code>IdentityFile</code> directives from <code>~/.ssh/config</code> and presents them in the Command Palette (<code>Ctrl+Shift+P</code>).</p>
+<p>Zephyr automatically parses <code>Host</code>, <code>HostName</code>, <code>User</code>, <code>Port</code>, and <code>IdentityFile</code> directives from <code>~/.ssh/config</code> and presents them in the Command Palette (<code>Ctrl+Shift+P</code>).</p>
 
 <h2 id="remote-compat">Remote Terminal Compatibility & Protocols</h2>
-<p>Over remote SSH sessions, Meridian fully supports:</p>
+<p>Over remote SSH sessions, Zephyr fully supports:</p>
 <ul>
   <li><strong>OSC 52:</strong> Seamless remote clipboard synchronization back to your local clipboard.</li>
   <li><strong>OSC 7:</strong> Remote current working directory reporting for tab titles.</li>
@@ -213,7 +213,7 @@ meridian ssh staging -p 2222</code></pre>
 </ul>
 
 <h2 id="ssh-security">Key Management & Security</h2>
-<p>Meridian integrates with <code>ssh-agent</code> and respects encrypted private keys, passing terminal passphrase prompts seamlessly through the PTY layer without leaking credentials into logs.</p>
+<p>Zephyr integrates with <code>ssh-agent</code> and respects encrypted private keys, passing terminal passphrase prompts seamlessly through the PTY layer without leaking credentials into logs.</p>
 `
   );
 
@@ -244,7 +244,7 @@ meridian ssh staging -p 2222</code></pre>
 </table>
 
 <h2 id="customizing-keys">Custom Keymap Configuration</h2>
-<p>Override keybindings in <code>~/.config/meridian/keybindings.json</code>:</p>
+<p>Override keybindings in <code>~/.config/zephyr/keybindings.json</code>:</p>
 <pre><code class="language-json">{
   "split_vertical": "Ctrl+Shift+V",
   "split_horizontal": "Ctrl+Shift+H",
@@ -267,10 +267,10 @@ meridian ssh staging -p 2222</code></pre>
     ],
     `
 <h2 id="clipboard-sync">System Clipboard Integration</h2>
-<p>Meridian integrates with system clipboards across Wayland (<code>wl-clipboard</code>), X11 (<code>xclip</code>/<code>xsel</code>), macOS (<code>pbcopy</code>), and Windows.</p>
+<p>Zephyr integrates with system clipboards across Wayland (<code>wl-clipboard</code>), X11 (<code>xclip</code>/<code>xsel</code>), macOS (<code>pbcopy</code>), and Windows.</p>
 
 <h2 id="osc52-spec">OSC 52 Base64 Remote Clipboard Protocol</h2>
-<p>Meridian natively parses OSC 52 sequences (<code>\\033]52;c;&lt;base64&gt;\\033\\\\</code>), allowing CLI tools running on remote SSH servers (e.g. <code>tmux</code>, <code>vim</code>, <code>osc52.sh</code>) to copy text directly into your local machine's clipboard without X11 forwarding.</p>
+<p>Zephyr natively parses OSC 52 sequences (<code>\\033]52;c;&lt;base64&gt;\\033\\\\</code>), allowing CLI tools running on remote SSH servers (e.g. <code>tmux</code>, <code>vim</code>, <code>osc52.sh</code>) to copy text directly into your local machine's clipboard without X11 forwarding.</p>
 
 <pre><code class="language-bash"># Example: Copy string to local clipboard over remote SSH
 printf "\\033]52;c;%s\\033\\\\" "$(echo -n "Hello from Remote Server" | base64)"</code></pre>
@@ -279,7 +279,7 @@ printf "\\033]52;c;%s\\033\\\\" "$(echo -n "Hello from Remote Server" | base64)"
 <p>When enabled by interactive programs (<code>\\033[?2004h</code>), pasted text is enclosed in <code>\\033[200~</code> and <code>\\033[201~</code> markers, preventing accidental execution of newline-separated commands.</p>
 
 <h2 id="clipboard-security">Clipboard Security & Secret Redaction</h2>
-<p>Meridian includes an optional clipboard guard that warns the user if pasted content contains sensitive tokens such as private SSH keys or AWS secret access keys.</p>
+<p>Zephyr includes an optional clipboard guard that warns the user if pasted content contains sensitive tokens such as private SSH keys or AWS secret access keys.</p>
 `
   );
 

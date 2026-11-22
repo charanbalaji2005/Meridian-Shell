@@ -30,7 +30,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       </button>
       <ChevronRight size={13} className="breadcrumb-separator" />
       <button onClick={onNavigateHome} className="breadcrumb-link">
-        {t.meridianShell}
+        {t.zephyrShell}
       </button>
       <ChevronRight size={13} className="breadcrumb-separator" />
       <span className="breadcrumb-link">{localizedCategory}</span>

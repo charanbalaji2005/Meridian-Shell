@@ -1,5 +1,5 @@
 #pragma once
-// meridian-shell / lexer.hpp
+// zephyr-shell / lexer.hpp
 //
 // Tokenizes one command line. Handles single/double quoting, backslash
 // escapes, and the operator set from the spec: | ; & && || > >> < 2> 2>>
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 enum class TokenType {
     Word,
@@ -37,4 +37,4 @@ private:
     std::string input_;
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

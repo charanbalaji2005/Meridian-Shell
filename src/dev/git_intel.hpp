@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / git_intel.hpp
+// zephyr-terminal / dev / git_intel.hpp
 //
 // High-speed Git repository intelligence. Inspects local repository status,
 // tracks ahead/behind upstream commit divergence, staged/unstaged changes,
@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct GitFileChange {
     std::string path;
@@ -43,5 +43,5 @@ private:
     static std::string run_git(const std::string& dir, const std::string& args);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

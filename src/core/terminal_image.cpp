@@ -8,7 +8,7 @@
 #include <sstream>
 #include <unistd.h>
 
-namespace meridian::core {
+namespace zephyr::core {
 
 TerminalImage::TerminalImage() = default;
 
@@ -102,7 +102,7 @@ bool TerminalImage::load_file(const std::string& path) {
 
 TerminalImage TerminalImage::create_default_reference_artwork() {
     // 1. Try loading user custom artwork or bundled artwork from file
-    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+    const char* env_art = std::getenv("ZEPHYR_ARTWORK");
     if (env_art && access(env_art, R_OK) == 0) {
         TerminalImage img;
         if (img.load_file(env_art)) return img;
@@ -110,8 +110,8 @@ TerminalImage TerminalImage::create_default_reference_artwork() {
 
     const char* home = std::getenv("HOME");
     if (home) {
-        std::string p1 = std::string(home) + "/.config/meridian/artwork.jpg";
-        std::string p2 = std::string(home) + "/.config/meridian/artwork.ppm";
+        std::string p1 = std::string(home) + "/.config/zephyr/artwork.jpg";
+        std::string p2 = std::string(home) + "/.config/zephyr/artwork.ppm";
         TerminalImage img;
         if (img.load_file(p1) || img.load_file(p2)) return img;
     }
@@ -341,18 +341,18 @@ std::string TerminalImage::render_hardware_image_escape(const std::string& filep
         const char* home = std::getenv("HOME");
         std::string home_str = home ? home : "";
         std::vector<std::string> candidates = {
-            home_str + "/.config/meridian/gallery/" + alias + ".png",
-            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
-            home_str + "/.config/meridian/gallery/" + alias + ".webp",
-            home_str + "/.config/meridian/gallery/" + alias,
+            home_str + "/.config/zephyr/gallery/" + alias + ".png",
+            home_str + "/.config/zephyr/gallery/" + alias + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + alias + ".webp",
+            home_str + "/.config/zephyr/gallery/" + alias,
             "resources/images/gallery/" + alias + ".png",
             "resources/images/gallery/" + alias + ".jpg",
             "resources/images/gallery/" + alias + ".webp",
             "resources/images/gallery/" + alias,
-            home_str + "/.config/meridian/gallery/" + filepath + ".png",
-            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
-            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
-            home_str + "/.config/meridian/gallery/" + filepath,
+            home_str + "/.config/zephyr/gallery/" + filepath + ".png",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".webp",
+            home_str + "/.config/zephyr/gallery/" + filepath,
             "resources/images/gallery/" + filepath + ".png",
             "resources/images/gallery/" + filepath + ".jpg",
             "resources/images/gallery/" + filepath + ".webp",
@@ -470,5 +470,5 @@ std::string TerminalImage::to_kitty_graphics_escape(int x, int y, int cols_spann
     return ss.str();
 }
 
-} // namespace meridian::core
+} // namespace zephyr::core
 

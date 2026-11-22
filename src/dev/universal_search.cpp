@@ -1,6 +1,6 @@
 #include "universal_search.hpp"
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 std::vector<SearchMatch> UniversalSearch::search_screen(const vt::ScreenBuffer& screen, const std::string& query) {
     std::vector<SearchMatch> matches;
@@ -54,5 +54,5 @@ std::vector<SearchMatch> UniversalSearch::search_all(
     return combined;
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

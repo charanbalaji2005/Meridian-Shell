@@ -26,7 +26,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 namespace {
 
@@ -97,13 +97,14 @@ static std::string detect_project_language(const std::string& dir) {
 
 // ─── Gradient / color helpers ─────────────────────────────────────────────────
 
+// 64 bytes fits the worst case (three 11-char ints) without truncation.
 static std::string fg_rgb(int r, int g, int b) {
-    char buf[32];
+    char buf[64];
     snprintf(buf, sizeof(buf), "\033[38;2;%d;%d;%dm", r, g, b);
     return buf;
 }
 static std::string bg_rgb(int r, int g, int b) {
-    char buf[32];
+    char buf[64];
     snprintf(buf, sizeof(buf), "\033[48;2;%d;%d;%dm", r, g, b);
     return buf;
 }
@@ -677,4 +678,4 @@ std::string LineEditor::read_line(
     return current_line;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

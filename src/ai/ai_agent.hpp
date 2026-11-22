@@ -1,7 +1,7 @@
 #pragma once
-// meridian-terminal / ai / ai_agent.hpp
+// zephyr-terminal / ai / ai_agent.hpp
 //
-// Autonomous terminal & coding agent engine ("meridian agent").
+// Autonomous terminal & coding agent engine ("zephyr agent").
 // Orchestrates multi-step repository inspection, build execution,
 // error diagnostics, patch formulation, permission gates, and verification.
 
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 enum class AgentStatus {
     Idle,
@@ -85,5 +85,5 @@ private:
     std::string execute_shell_command(const std::string& cmd);
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai
 

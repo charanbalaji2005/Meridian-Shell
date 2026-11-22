@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / file_explorer.hpp
+// zephyr-terminal / dev / file_explorer.hpp
 //
 // File explorer sidecar engine. Fast directory tree traversal with
 // Git modification status badges, file size formatting, and tree rendering.
@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct FileNode {
     std::string name;
@@ -28,5 +28,5 @@ public:
     static std::string get_file_icon(const std::string& filename, bool is_dir);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

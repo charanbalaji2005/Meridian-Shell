@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / platform / PlatformPTY.hpp
+// zephyr-terminal / platform / PlatformPTY.hpp
 //
 // Unified cross-platform PTY abstraction layer.
 // Exposes a uniform interface across Linux (openpty/termios),
@@ -17,7 +17,7 @@ typedef SSIZE_T ssize_t;
 #include <sys/types.h>
 #endif
 
-namespace meridian::platform {
+namespace zephyr::platform {
 
 enum class PlatformOS {
     Linux,
@@ -66,5 +66,5 @@ public:
     static std::string platform_name();
 };
 
-} // namespace meridian::platform
+} // namespace zephyr::platform
 

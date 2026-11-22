@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 AnimationFrame::AnimationFrame()
     : width_(0), height_(0), duration_seconds_(0.1) {}
@@ -107,5 +107,5 @@ void AnimationFrame::blit_into(std::vector<uint8_t>& canvas, int canvas_w, int c
     }
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

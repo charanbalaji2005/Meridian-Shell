@@ -1,16 +1,16 @@
-// meridian-ai / ai_controller.cpp
+// zephyr-ai / ai_controller.cpp
 #include "ai_controller.hpp"
 #include <sstream>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 namespace {
 
 const std::vector<std::string>& shell_builtin_names() {
     // Mirrors src/shell/builtins.cpp's list. Duplicated rather than
-    // linked against meridian-shell-lib on purpose: the AI layer must
+    // linked against zephyr-shell-lib on purpose: the AI layer must
     // stay usable even for people running bash/zsh/fish instead of
-    // Meridian Shell, so it can't assume the shell library is even
+    // Zephyr Shell, so it can't assume the shell library is even
     // linked in. See docs/ai.md.
     static const std::vector<std::string> names = {
         "cd", "pwd", "echo", "exit", "export", "unset", "env",
@@ -48,7 +48,7 @@ void AIController::save() { config_.save(); }
 
 std::string AIController::status_report() const {
     std::ostringstream out;
-    out << "Meridian AI\n"
+    out << "Zephyr AI\n"
         << "-------------------------\n"
         << "Status:       " << (enabled() ? "ON" : "OFF") << "\n"
         << "Detection:    " << (detection_enabled() ? "ON" : "OFF") << "\n"
@@ -61,7 +61,7 @@ std::string AIController::status_report() const {
 
 std::string AIController::test_providers() const {
     std::ostringstream out;
-    out << "Meridian AI Provider Test\n\n";
+    out << "Zephyr AI Provider Test\n\n";
     for (const char* name : {"Groq", "Gemini", "Ollama Cloud"}) {
         out << name << "\n  Status: NOT IMPLEMENTED (no network access in this build — see docs/ai.md)\n\n";
     }
@@ -108,9 +108,9 @@ std::string AIController::explain_command(const std::string& command_line) const
     out << "No AI provider is configured (this build has no Groq/Gemini/Ollama Cloud\n"
         << "implementation — see docs/ai.md), so I can't generate a real natural-language\n"
         << "explanation of:\n\n  " << command_line << "\n\n"
-        << "What's available without a provider: `meridian ai analyze \"" << command_line
+        << "What's available without a provider: `zephyr ai analyze \"" << command_line
         << "\"` for local typo detection and risk classification.\n";
     return out.str();
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

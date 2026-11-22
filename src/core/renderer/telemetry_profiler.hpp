@@ -1,14 +1,14 @@
 #pragma once
-// meridian-terminal / core / renderer / telemetry_profiler.hpp
+// zephyr-terminal / core / renderer / telemetry_profiler.hpp
 //
 // Real-time GPU, PTY latency, and rendering throughput profiler.
-// Powers `meridian --performance` benchmarking and internal HUD overlays.
+// Powers `zephyr --performance` benchmarking and internal HUD overlays.
 
 #include <string>
 #include <chrono>
 #include <cstdint>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 struct TelemetryMetrics {
     double fps = 144.0;
@@ -44,4 +44,4 @@ private:
     uint64_t total_frames_ = 0;
 };
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer

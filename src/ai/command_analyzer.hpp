@@ -1,5 +1,5 @@
 #pragma once
-// meridian-ai / command_analyzer.hpp
+// zephyr-ai / command_analyzer.hpp
 //
 // Local-only command-name typo detection (spec §38): scans real PATH
 // directories for executables, and when a typed command name isn't a
@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 struct Suggestion {
     std::string original;
@@ -56,4 +56,4 @@ private:
 // elsewhere (e.g. a future subcommand-level analyzer).
 int edit_distance(const std::string& a, const std::string& b);
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

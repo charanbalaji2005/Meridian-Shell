@@ -1,5 +1,5 @@
 #pragma once
-// meridian-ai / ai_controller.hpp
+// zephyr-ai / ai_controller.hpp
 //
 // Ties together Config + CommandAnalyzer + RiskClassifier +
 // SecretRedactor into the state machine spec §36/§37/§59/§61/§64
@@ -18,11 +18,11 @@
 #include <string>
 #include <vector>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 class AIController {
 public:
-    // `config_path` is injected (not hardcoded to ~/.config/meridian)
+    // `config_path` is injected (not hardcoded to ~/.config/zephyr)
     // so tests can point it at a throwaway file.
     explicit AIController(std::string config_path);
 
@@ -53,7 +53,7 @@ public:
     // Always honest about there being no provider behind this yet.
     std::string explain_command(const std::string& command_line) const;
 
-    // Pure secret redaction, exposed directly for the `meridian ai
+    // Pure secret redaction, exposed directly for the `zephyr ai
     // redact` CLI command and for reuse by a future provider layer.
     std::string redact(const std::string& text) const { return redactor_.redact(text); }
 
@@ -70,4 +70,4 @@ private:
     SecretRedactor redactor_;
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

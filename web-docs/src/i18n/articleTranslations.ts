@@ -2,7 +2,7 @@ import { SupportedLanguage } from './translations';
 
 export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   en: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'TERMINAL',
     'GRAPHICS': 'GRAPHICS',
     'INTERFACE': 'INTERFACE',
@@ -14,7 +14,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'PROJECT',
   },
   te: {
-    'MERIDIAN SHELL': 'మెరిడియన్ షెల్',
+    'ZEPHYR SHELL': 'మెరిడియన్ షెల్',
     'TERMINAL': 'టెర్మినల్',
     'GRAPHICS': 'గ్రాఫిక్స్',
     'INTERFACE': 'ఇంటర్‌ఫేస్',
@@ -26,7 +26,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'ప్రాజెక్ట్',
   },
   hi: {
-    'MERIDIAN SHELL': 'मेरीडियन शेल',
+    'ZEPHYR SHELL': 'मेरीडियन शेल',
     'TERMINAL': 'टर्मिनल',
     'GRAPHICS': 'ग्राफ़िक्स',
     'INTERFACE': 'इंटरफ़ेस',
@@ -38,7 +38,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'प्रोजेक्ट',
   },
   es: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'TERMINAL',
     'GRAPHICS': 'GRÁFICOS',
     'INTERFACE': 'INTERFAZ',
@@ -50,7 +50,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'PROYECTO',
   },
   fr: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'TERMINAL',
     'GRAPHICS': 'GRAPHIQUES',
     'INTERFACE': 'INTERFACE',
@@ -62,7 +62,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'PROJET',
   },
   de: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'TERMINAL',
     'GRAPHICS': 'GRAFIKEN',
     'INTERFACE': 'OBERFLÄCHE',
@@ -74,7 +74,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'PROJEKT',
   },
   ja: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'ターミナル',
     'GRAPHICS': 'グラフィックス',
     'INTERFACE': 'インターフェース',
@@ -86,7 +86,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'プロジェクト',
   },
   zh: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': '终端',
     'GRAPHICS': '图形图像',
     'INTERFACE': '用户界面',
@@ -98,7 +98,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': '项目信息',
   },
   ru: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'ТЕРМИНАЛ',
     'GRAPHICS': 'ГРАФИКА',
     'INTERFACE': 'ИНТЕРФЕЙС',
@@ -110,7 +110,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'ПРОЕКТ',
   },
   ar: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'الطرفية',
     'GRAPHICS': 'الرسومات',
     'INTERFACE': 'الواجهة',
@@ -122,7 +122,7 @@ export const CATEGORY_TRANSLATIONS: Record<SupportedLanguage, Record<string, str
     'PROJECT': 'المشروع',
   },
   pt: {
-    'MERIDIAN SHELL': 'MERIDIAN SHELL',
+    'ZEPHYR SHELL': 'ZEPHYR SHELL',
     'TERMINAL': 'TERMINAL',
     'GRAPHICS': 'GRÁFICOS',
     'INTERFACE': 'INTERFACE',

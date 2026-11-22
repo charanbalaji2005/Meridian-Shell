@@ -2,7 +2,7 @@
 #include "mini_test.hpp"
 #include "../src/shell/lexer.hpp"
 
-using namespace meridian::shell;
+using namespace zephyr::shell;
 
 static std::string word_text(const Word& w) {
     std::string s;

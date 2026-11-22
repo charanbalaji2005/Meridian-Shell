@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/image_object.hpp
 //
-// Native GPU Image Object representation for Meridian Terminal.
+// Native GPU Image Object representation for Zephyr Terminal.
 // Represents a photorealistic raster image placed on the terminal canvas layer.
 
 #include "image_decoder.hpp"
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class ImagePlacementType {
     CursorRelative,  // Placed at terminal cursor cell position (scrolls with content)
@@ -64,5 +64,5 @@ struct ImageObject {
     double frame_elapsed = 0.0;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

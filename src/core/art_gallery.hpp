@@ -2,14 +2,14 @@
 // src/core/art_gallery.hpp
 //
 // Curated high-resolution anime, cyberpunk, synthwave & space artwork gallery
-// for Meridian Terminal. Supports permanent theme selection, custom image upload, and rotation.
+// for Zephyr Terminal. Supports permanent theme selection, custom image upload, and rotation.
 
 #include "terminal_image.hpp"
 #include <string>
 #include <vector>
 #include <utility>
 
-namespace meridian::core {
+namespace zephyr::core {
 
 struct ArtworkTheme {
     std::string id;
@@ -47,4 +47,4 @@ public:
     static std::vector<std::string> render_artwork_lines(const TerminalImage& img, int target_cols = 28, int target_rows = 11);
 };
 
-} // namespace meridian::core
+} // namespace zephyr::core

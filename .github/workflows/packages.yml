@@ -1,0 +1,146 @@
+name: Packages
+
+# Builds every Linux package in a matching distro environment, then installs
+# it and runs the installed zephyr-terminal headless (Qt offscreen platform)
+# to prove the package actually works. Called by ci.yml and release.yml.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  rpm:
+    name: Fedora RPM
+    runs-on: ubuntu-24.04
+    container: fedora:latest
+    steps:
+      - name: Install build tools
+        run: dnf install -y rpm-build rpmdevtools 'dnf-command(builddep)' git tar gzip findutils
+      - uses: actions/checkout@v4
+      - name: Install build dependencies from the spec
+        run: dnf builddep -y packaging/rpm/zephyr-terminal.spec
+      - name: "Build RPM (runs %check: desktop/AppStream validation + test suite)"
+        run: bash packaging/rpm/build_rpm.sh
+      - name: Install and run the packaged binary
+        run: |
+          # zephyr-terminal-<version>…: skips -debuginfo/-debugsource and the .src.rpm
+          dnf install -y $(ls dist/zephyr-terminal-[0-9]*.rpm | grep -v '\.src\.rpm$')
+          zephyr-terminal --version
+          ZEPHYR_CONFIG_HOME=/tmp/zcfg timeout 30 zephyr-terminal -e sh -c 'echo ok'
+          rpm -ql zephyr-terminal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-rpm
+          path: dist/*.rpm
+
+  deb:
+    name: ${{ matrix.image }} .deb
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["debian:bookworm", "ubuntu:24.04"]
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install build tools
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential devscripts equivs git ca-certificates lintian
+      - uses: actions/checkout@v4
+      - name: Install build dependencies from debian/control
+        run: mk-build-deps -i -r -t 'apt-get -y --no-install-recommends' packaging/deb/debian/control
+      - name: Build .deb (runs desktop/AppStream validation + test suite)
+        run: bash packaging/deb/build_deb.sh
+      - name: Install and run the packaged binary
+        run: |
+          apt-get install -y ./dist/zephyr-terminal_*.deb
+          zephyr-terminal --version
+          ZEPHYR_CONFIG_HOME=/tmp/zcfg timeout 30 zephyr-terminal -e sh -c 'echo ok'
+          dpkg -L zephyr-terminal
+      - name: Name artifact
+        id: name
+        run: echo "id=$(echo '${{ matrix.image }}' | tr ':.' '--')" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-deb-${{ steps.name.outputs.id }}
+          path: dist/*.deb
+
+  arch:
+    name: Arch Linux package
+    runs-on: ubuntu-24.04
+    container: archlinux:latest
+    steps:
+      - name: Install build tools
+        run: |
+          pacman -Syu --noconfirm --needed base-devel git cmake ninja qt6-base qt6-svg desktop-file-utils appstream sudo
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+      - uses: actions/checkout@v4
+      - name: Build package (makepkg refuses to run as root)
+        run: |
+          chown -R builder: "$GITHUB_WORKSPACE"
+          sudo -u builder bash packaging/arch/build_pkg.sh
+      - name: Install and run the packaged binary
+        run: |
+          pacman -U --noconfirm dist/zephyr-terminal-*.pkg.tar.zst
+          zephyr-terminal --version
+          ZEPHYR_CONFIG_HOME=/tmp/zcfg timeout 30 zephyr-terminal -e sh -c 'echo ok'
+          pacman -Ql zephyr-terminal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-arch
+          path: dist/*.pkg.tar.*
+
+  nix:
+    name: Nix flake
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
+      - name: nix flake check (evaluates packages, apps, devShell, NixOS module)
+        run: nix flake check -L
+      - name: nix build
+        run: nix build -L .#default
+      - name: Run the built package
+        run: |
+          ./result/bin/zephyr-terminal --version
+          ZEPHYR_CONFIG_HOME=/tmp/zcfg timeout 30 ./result/bin/zephyr-terminal -e sh -c 'echo ok'
+          ls -R result/share/applications result/share/icons | head -40
+      - name: nix profile install from the checkout
+        run: |
+          nix profile install .#default
+          zephyr-terminal --version
+      - name: Test suite inside the Nix build (doCheck)
+        run: nix build -L --impure --expr '(builtins.getFlake (toString ./.)).packages.x86_64-linux.default.override { doCheck = true; }' -o result-checked
+      - name: Upload flake.lock (commit it to pin nixpkgs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake-lock
+          path: flake.lock
+
+  appimage:
+    name: AppImage
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            qt6-base-dev qt6-svg-dev qt6-wayland libgl-dev qmake6 qt6-base-dev-tools \
+            desktop-file-utils file wget
+      - name: Build AppImage (includes --version smoke test)
+        run: bash packaging/appimage/build_appimage.sh
+      - name: Run the AppImage end-to-end
+        run: |
+          chmod +x dist/*.AppImage
+          ZEPHYR_CONFIG_HOME=/tmp/zcfg APPIMAGE_EXTRACT_AND_RUN=1 timeout 60 dist/*.AppImage -e sh -c 'echo ok'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-appimage
+          path: dist/*.AppImage

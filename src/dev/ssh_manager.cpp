@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 SSHManager::SSHManager(std::string config_path)
     : config_path_(std::move(config_path)) {
@@ -24,11 +24,9 @@ bool SSHManager::load() {
 
     std::ifstream file(config_path_);
     if (!file.is_open()) {
-        // Provide default fallback host entries for workspace display
-        hosts_.push_back(SSHHost{"production", "prod.meridian.internal", "deploy", 22, "~/.ssh/id_ed25519", "Main production cluster"});
-        hosts_.push_back(SSHHost{"development", "dev.meridian.internal", "dev", 2222, "", "Staging environment"});
-        hosts_.push_back(SSHHost{"raspberry-pi", "192.168.1.100", "pi", 22, "", "Lab hardware"});
-        return true;
+        // No ~/.ssh/config: the user simply has no configured hosts. Never
+        // invent placeholder hosts — they would be shown as if they were real.
+        return false;
     }
 
     std::stringstream buffer;
@@ -121,12 +119,12 @@ bool SSHManager::remove_host(const std::string& alias) {
 std::string SSHManager::format_overview() const {
     std::ostringstream out;
     out << "\033[1;38;2;0;229;255m╔════════════════════════════════════════════════════════════════╗\033[0m\n";
-    out << "\033[1;38;2;0;229;255m║       MERIDIAN SHELL — SSH WORKSPACE & CONNECTION MANAGER      ║\033[0m\n";
+    out << "\033[1;38;2;0;229;255m║       ZEPHYR SHELL — SSH WORKSPACE & CONNECTION MANAGER      ║\033[0m\n";
     out << "\033[1;38;2;0;229;255m╚════════════════════════════════════════════════════════════════╝\033[0m\n\n";
 
     if (hosts_.empty()) {
         out << "\033[38;2;143;160;181mNo SSH hosts found in " << config_path_ << "\033[0m\n";
-        out << "Run: \033[38;2;0;229;255mmeridian ssh add <alias> <hostname> [user] [port]\033[0m\n";
+        out << "Run: \033[38;2;0;229;255mzephyr ssh add <alias> <hostname> [user] [port]\033[0m\n";
         return out.str();
     }
 
@@ -150,8 +148,8 @@ std::string SSHManager::format_overview() const {
         out << "\033[38;2;0;229;255m" << h.command_line() << "\033[0m\n";
     }
 
-    out << "\n\033[38;2;143;160;181mQuick Connect: \033[1;38;2;0;229;255mmeridian ssh <alias>\033[0m\n";
+    out << "\n\033[38;2;143;160;181mQuick Connect: \033[1;38;2;0;229;255mzephyr ssh <alias>\033[0m\n";
     return out.str();
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev

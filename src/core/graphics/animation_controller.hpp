@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstddef>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class PlaybackState {
     Stopped,
@@ -70,5 +70,5 @@ private:
     bool finished_ = false;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

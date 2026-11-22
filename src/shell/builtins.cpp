@@ -1,4 +1,4 @@
-// meridian-shell / builtins.cpp
+// zephyr-shell / builtins.cpp
 #include "builtins.hpp"
 #include "executor.hpp"
 #include "../core/terminal_image.hpp"
@@ -40,7 +40,7 @@
 
 extern char** environ;
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 namespace {
 const char* kBuiltinNames[] = {
@@ -132,7 +132,7 @@ static int builtin_jobs(Executor& ctx) {
 
 static int builtin_type(const std::vector<std::string>& argv) {
     if (argv.size() < 2) return 0;
-    if (is_builtin(argv[1])) { std::cout << argv[1] << " is a Meridian Shell builtin\n"; return 0; }
+    if (is_builtin(argv[1])) { std::cout << argv[1] << " is a Zephyr Shell builtin\n"; return 0; }
     const char* path = std::getenv("PATH");
     std::string p = path ? path : "";
     std::size_t start = 0;
@@ -159,7 +159,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             // Check alias candidates
             auto decoded = graphics::ImageDecoder::decode_file(target);
             if (!decoded.is_valid()) {
-                std::cerr << "meridian: failed to decode image: " << target << "\n";
+                std::cerr << "zephyr: failed to decode image: " << target << "\n";
                 return 1;
             }
             gm.generate_debug_report(target, report);
@@ -231,7 +231,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         auto themes = core::ArtGallery::list_themes();
         std::string current_choice = core::ArtGallery::get_configured_choice();
 
-        std::cout << "\033[1;36m┌─── MERIDIAN ANIME & ARTWORK GALLERY ────────────────────────────────────────┐\033[0m\n";
+        std::cout << "\033[1;36m┌─── ZEPHYR ANIME & ARTWORK GALLERY ────────────────────────────────────────┐\033[0m\n";
         for (size_t i = 0; i < themes.size(); ++i) {
             bool is_active = (current_choice == themes[i].first || current_choice == std::to_string(i));
             std::cout << "\033[1;36m│\033[0m "
@@ -256,18 +256,18 @@ static int builtin_pic(const std::vector<std::string>& argv) {
             if (dot != std::string::npos) name = name.substr(0, dot);
         }
         const char* home = std::getenv("HOME");
-        std::string dest_dir = std::string(home ? home : ".") + "/.config/meridian/gallery";
+        std::string dest_dir = std::string(home ? home : ".") + "/.config/zephyr/gallery";
         system(("mkdir -p " + dest_dir).c_str());
         std::string dest_file = dest_dir + "/" + name + ".png";
 
         auto decoded = graphics::ImageDecoder::decode_file(src);
         if (!decoded.is_valid()) {
-            std::cerr << "\033[31mmeridian: could not load source image:\033[0m " << src << "\n";
+            std::cerr << "\033[31mzephyr: could not load source image:\033[0m " << src << "\n";
             return 1;
         }
         std::string cmd = "cp -f \"" + src + "\" \"" + dest_file + "\"";
         system(cmd.c_str());
-        std::cout << "\033[38;2;34;197;94m✔\033[0m Image successfully added to Meridian Gallery as '\033[1;33m" << name << "\033[0m'!\n"
+        std::cout << "\033[38;2;34;197;94m✔\033[0m Image successfully added to Zephyr Gallery as '\033[1;33m" << name << "\033[0m'!\n"
                   << "  \033[0;37m• View directly:\033[0m      pic " << name << "\n"
                   << "  \033[0;37m• Set on startup:\033[0m     pic set " << name << "\n";
         return 0;
@@ -399,18 +399,18 @@ static int builtin_pic(const std::vector<std::string>& argv) {
         const char* home = std::getenv("HOME");
         std::string home_str = home ? home : "";
         std::vector<std::string> candidates = {
-            home_str + "/.config/meridian/gallery/" + alias + ".png",
-            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
-            home_str + "/.config/meridian/gallery/" + alias + ".webp",
-            home_str + "/.config/meridian/gallery/" + alias,
+            home_str + "/.config/zephyr/gallery/" + alias + ".png",
+            home_str + "/.config/zephyr/gallery/" + alias + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + alias + ".webp",
+            home_str + "/.config/zephyr/gallery/" + alias,
             "resources/images/gallery/" + alias + ".png",
             "resources/images/gallery/" + alias + ".jpg",
             "resources/images/gallery/" + alias + ".webp",
             "resources/images/gallery/" + alias,
-            home_str + "/.config/meridian/gallery/" + filepath + ".png",
-            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
-            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
-            home_str + "/.config/meridian/gallery/" + filepath,
+            home_str + "/.config/zephyr/gallery/" + filepath + ".png",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".webp",
+            home_str + "/.config/zephyr/gallery/" + filepath,
             "resources/images/gallery/" + filepath + ".png",
             "resources/images/gallery/" + filepath + ".jpg",
             "resources/images/gallery/" + filepath + ".webp",
@@ -427,7 +427,7 @@ static int builtin_pic(const std::vector<std::string>& argv) {
     }
 
     if (filepath.empty()) {
-        std::cerr << "meridian: please specify an image file to display (e.g. pic anime.png)\n";
+        std::cerr << "zephyr: please specify an image file to display (e.g. pic anime.png)\n";
         return 1;
     }
 
@@ -481,7 +481,7 @@ static int builtin_ls(const std::vector<std::string>& argv) {
 
     DIR* d = opendir(target_dir.c_str());
     if (!d) {
-        std::cerr << "meridian: ls: cannot access '" << target_dir << "': No such file or directory\n";
+        std::cerr << "zephyr: ls: cannot access '" << target_dir << "': No such file or directory\n";
         return 1;
     }
 
@@ -591,7 +591,7 @@ static int builtin_palette(const std::vector<std::string>& argv) {
     std::string q = (argv.size() >= 2) ? argv[1] : "";
     dev::CommandPalette palette;
     auto results = palette.search(q);
-    std::cout << "┌─── Meridian Command Palette (Ctrl+Shift+P) ────────────\n";
+    std::cout << "┌─── Zephyr Command Palette (Ctrl+Shift+P) ────────────\n";
     for (const auto& a : results) {
         std::cout << "│ [" << a.category << "] " << a.title << " (" << a.shortcut << ")\n";
     }
@@ -652,7 +652,7 @@ static int builtin_zoom() {
 static int builtin_pane(const std::vector<std::string>& argv) {
     auto& tree = workspace::get_session_pane_tree();
     if (argv.size() < 2 || argv[1] == "list" || argv[1] == "status") {
-        std::cout << "┌─── Meridian Panes (Active ID: " << tree.active_pane_id()
+        std::cout << "┌─── Zephyr Panes (Active ID: " << tree.active_pane_id()
                   << " | Total: " << tree.count_panes()
                   << " | Zoomed: " << (tree.is_zoomed() ? "Yes" : "No") << ") ───\n";
         auto items = tree.compute_layout(80, 24);
@@ -812,14 +812,14 @@ static int builtin_auth(const std::vector<std::string>& argv) {
         return 0;
     }
 
-    std::cout << "\n\033[1;36m┌─── Meridian GitHub Authentication Manager ───────────────────────────────────┐\033[0m\n";
+    std::cout << "\n\033[1;36m┌─── Zephyr GitHub Authentication Manager ───────────────────────────────────┐\033[0m\n";
 
     // 1. Check & Ensure SSH Key exists
     bool has_key = (access(key_file.c_str(), F_OK) == 0 && access(pub_key_file.c_str(), F_OK) == 0);
     if (!has_key) {
         std::cout << "\033[1;33mℹ Generating new ED25519 SSH key for GitHub...\033[0m\n";
         int s1 = system(("mkdir -p " + ssh_dir + " && chmod 700 " + ssh_dir).c_str());
-        int s2 = system(("ssh-keygen -t ed25519 -C \"meridian-user\" -f " + key_file + " -N \"\"").c_str());
+        int s2 = system(("ssh-keygen -t ed25519 -C \"zephyr-user\" -f " + key_file + " -N \"\"").c_str());
         (void)s1; (void)s2;
     }
 
@@ -879,7 +879,7 @@ static int builtin_auth(const std::vector<std::string>& argv) {
         std::cout << "\033[1;37m│\033[0m \033[1;31m○ STATUS: NOT YET LINKED\033[0m\n"
                   << "\033[1;37m│\033[0m Follow these 2 quick steps to link your GitHub account:\n"
                   << "\033[1;37m│\033[0m\n"
-                  << "\033[1;37m│\033[0m \033[1;33mStep 1:\033[0m Copy your Meridian SSH Public Key below:\n"
+                  << "\033[1;37m│\033[0m \033[1;33mStep 1:\033[0m Copy your Zephyr SSH Public Key below:\n"
                   << "\033[1;37m│\033[0m \033[1;36m" << pub_key << "\033[0m\n"
                   << "\033[1;37m│\033[0m\n"
                   << "\033[1;37m│\033[0m \033[1;33mStep 2:\033[0m Add it in your browser at:\n"
@@ -897,7 +897,7 @@ static int builtin_auth(const std::vector<std::string>& argv) {
 
 static int builtin_help() {
     std::cout <<
-        "Meridian Shell builtins:\n"
+        "Zephyr Shell builtins:\n"
         "  cd [dir]         change working directory\n"
         "  pwd              print working directory\n"
         "  echo [args...]   print arguments\n"
@@ -918,7 +918,7 @@ static int builtin_help() {
         "  ssh-mgr [alias]  manage & connect to SSH remote workspaces\n"
         "  auth [service]   manage GitHub / remote authentication & SSH keys\n"
         "  vscode [act]     manage VS Code terminal profiles & auto-detection\n"
-        "  update           check and install latest Meridian releases\n"
+        "  update           check and install latest Zephyr releases\n"
         "  stats            view anonymous usage statistics and growth\n"
         "  telemetry        manage opt-in anonymous metrics and privacy\n"
         "  plugins          list active extensible plugins & hooks\n"
@@ -976,4 +976,4 @@ int run_builtin(const std::string& name, const std::vector<std::string>& argv, E
     return 127;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 enum class SpinnerStyle {
     Dots,         // ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏
@@ -77,4 +77,4 @@ public:
     );
 };
 
-} // namespace meridian::icons
+} // namespace zephyr::icons

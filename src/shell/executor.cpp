@@ -1,4 +1,4 @@
-// meridian-shell / executor.cpp
+// zephyr-shell / executor.cpp
 #include "executor.hpp"
 #include "builtins.hpp"
 #include "lexer.hpp"
@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 // _exit() skips C++ iostream flushing (unlike a normal return from main),
 // so any buffered std::cout/std::cerr content written by an in-process
@@ -304,7 +304,7 @@ void Executor::run_in_child(const Command& cmd) {
             case RedirType::AllAppend: fd = open(target.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644); break;
         }
         if (fd < 0) {
-            std::cerr << "meridian-shell: cannot open '" << target << "': " << std::strerror(errno) << "\n";
+            std::cerr << "zephyr-shell: cannot open '" << target << "': " << std::strerror(errno) << "\n";
             flush_and_exit(1);
         }
         switch (r.type) {
@@ -334,7 +334,7 @@ void Executor::run_in_child(const Command& cmd) {
     cargv.push_back(nullptr);
 
     execvp(argv[0].c_str(), cargv.data());
-    std::cerr << "meridian-shell: " << argv[0] << ": " << std::strerror(errno) << "\n";
+    std::cerr << "zephyr-shell: " << argv[0] << ": " << std::strerror(errno) << "\n";
     flush_and_exit(errno == ENOENT ? 127 : 126);
 }
 
@@ -354,7 +354,7 @@ int Executor::run_pipeline(const Pipeline& pl) {
     std::size_t n = pl.commands.size();
     std::vector<std::array<int, 2>> pipes(n > 1 ? n - 1 : 0);
     for (auto& p : pipes) {
-        if (pipe(p.data()) != 0) { std::cerr << "meridian-shell: pipe() failed\n"; return 1; }
+        if (pipe(p.data()) != 0) { std::cerr << "zephyr-shell: pipe() failed\n"; return 1; }
     }
 
     std::cout.flush();
@@ -365,7 +365,7 @@ int Executor::run_pipeline(const Pipeline& pl) {
     pid_t pgid = 0;
     for (std::size_t i = 0; i < n; ++i) {
         pid_t pid = fork();
-        if (pid < 0) { std::cerr << "meridian-shell: fork failed\n"; return 1; }
+        if (pid < 0) { std::cerr << "zephyr-shell: fork failed\n"; return 1; }
         if (pid == 0) {
             if (job_control_enabled_) {
                 pid_t self = getpid();
@@ -433,4 +433,4 @@ int Executor::run_pipeline(const Pipeline& pl) {
     return last_status;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

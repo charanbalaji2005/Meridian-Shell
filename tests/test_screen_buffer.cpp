@@ -2,7 +2,7 @@
 #include "mini_test.hpp"
 #include "../src/core/vt/screen_buffer.hpp"
 
-using namespace meridian::vt;
+using namespace zephyr::vt;
 
 MTEST(cursor_starts_at_origin) {
     ScreenBuffer sb(5, 10);

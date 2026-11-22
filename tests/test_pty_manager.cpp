@@ -12,7 +12,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-using namespace meridian::pty;
+using namespace zephyr::pty;
 
 MTEST(pty_spawns_real_process_and_reads_its_output) {
     PtyManager pty;

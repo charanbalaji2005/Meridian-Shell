@@ -20,7 +20,7 @@ grep -rn "connect\|socket\|getaddrinfo\|CURLOPT\|http://\|https://" src/ --inclu
 ```
 
 Run today, this returns a handful of matches — all noise, not network
-code: the AST's `Connector`/`Connector::And` etc. (Meridian Shell's
+code: the AST's `Connector`/`Connector::And` etc. (Zephyr Shell's
 `;`/`&&`/`||` sequencing concept, nothing to do with sockets), a doc
 comment mentioning "provider connectivity," and a CLI help string
 containing the word "connectivity." No `connect()`/`socket()`/
@@ -99,7 +99,7 @@ patterns it knows about.
 
 ## Execution safety
 
-Both Meridian Shell (`docs/shell.md`) and the PTY layer (`docs/pty.md`)
+Both Zephyr Shell (`docs/shell.md`) and the PTY layer (`docs/pty.md`)
 spawn processes via direct `fork()`+`execve()`/`execvp()` — never
 `system()`, `popen()`, or building a string for `/bin/sh -c` on
 user-controlled input. This is checkable the same way as the network
@@ -119,7 +119,7 @@ No production code path (`src/`) uses `system()` or `popen()` anywhere.
 
 - No sandboxing/seccomp for spawned processes — a spawned shell command
   or (eventually) an AI-generated command has the same privileges as
-  the user running Meridian, same as any terminal.
+  the user running Zephyr, same as any terminal.
 - No code signing / release-build hardening — out of scope until
   there's a packaging story (`docs/status.md`'s M20).
 - Job control's signal-disposition changes (`docs/shell.md`) are

@@ -18,11 +18,11 @@ function addArticle(id, title, category, status, summary, headings, body) {
 }
 
 // 1. GETTING STARTED
-addArticle('intro', 'Meridian Shell', 'GETTING STARTED', 'implemented',
+addArticle('intro', 'Zephyr Shell', 'GETTING STARTED', 'implemented',
   'A developer-focused cross-platform terminal platform built around real PTY sessions, terminal emulation, native graphics, GPU rendering, and extensible developer tooling.',
   [
     { id: 'quick-start', text: 'Quick Start', level: 2 },
-    { id: 'what-is-meridian', text: 'What is Meridian?', level: 2 },
+    { id: 'what-is-zephyr', text: 'What is Zephyr?', level: 2 },
     { id: 'core-features', text: 'Core Features', level: 2 },
     { id: 'architecture', text: 'Architecture', level: 2 },
     { id: 'direct-image-rendering', text: 'Direct Image Rendering', level: 2 },
@@ -46,30 +46,30 @@ addArticle('intro', 'Meridian Shell', 'GETTING STARTED', 'implemented',
 </div>
 
 <div class="screenshot-container">
-  <img src="./assets/meridian_screenshot.png" alt="Meridian Terminal live session running on Fedora Linux" class="meridian-live-screenshot" />
+  <img src="./assets/zephyr_screenshot.png" alt="Zephyr Terminal live session running on Fedora Linux" class="zephyr-live-screenshot" />
   <div class="screenshot-label">
-    <span>Meridian Shell 2.0 on Fedora Linux (x86_64) running Hyprland with anime artwork header (Theme 2 / Ribbon Girl) and live Fastfetch hardware metrics.</span>
+    <span>Zephyr Shell 2.0 on Fedora Linux (x86_64) running Hyprland with anime artwork header (Theme 2 / Ribbon Girl) and live Fastfetch hardware metrics.</span>
   </div>
 </div>
 
 <h2 id="quick-start">Quick Start</h2>
-<p>You can run or install Meridian Shell on any Linux system through local package archives or the universal turnkey installer.</p>
+<p>You can run or install Zephyr Shell on any Linux system through local package archives or the universal turnkey installer.</p>
 
 <div class="note-box note-info">
   <div class="note-title">📌 Important Notice on Package Repositories</div>
-  <p>Commands like <code>sudo dnf install meridian-terminal</code> require the Meridian repository to be enabled first. For immediate installation on a fresh machine without adding a repository, use the local package files or the universal curl installer below.</p>
+  <p>Commands like <code>sudo dnf install zephyr-terminal</code> require the Zephyr repository to be enabled first. For immediate installation on a fresh machine without adding a repository, use the local package files or the universal curl installer below.</p>
 </div>
 
 <h3>1. Local Package Installation</h3>
-<div class="code-block-wrapper"><div class="code-header"><span>Fedora / RHEL (Local RPM)</span></div><pre><code class="language-bash">sudo dnf install ./meridian-terminal.rpm</code></pre></div>
-<div class="code-block-wrapper"><div class="code-header"><span>Ubuntu / Debian (Local DEB)</span></div><pre><code class="language-bash">sudo apt install ./meridian-terminal.deb</code></pre></div>
-<div class="code-block-wrapper"><div class="code-header"><span>Arch Linux (Local Package)</span></div><pre><code class="language-bash">sudo pacman -U ./meridian-terminal.pkg.tar.zst</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Fedora / RHEL (Local RPM)</span></div><pre><code class="language-bash">sudo dnf install ./zephyr-terminal.rpm</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Ubuntu / Debian (Local DEB)</span></div><pre><code class="language-bash">sudo apt install ./zephyr-terminal.deb</code></pre></div>
+<div class="code-block-wrapper"><div class="code-header"><span>Arch Linux (Local Package)</span></div><pre><code class="language-bash">sudo pacman -U ./zephyr-terminal.pkg.tar.zst</code></pre></div>
 
 <h3>2. Universal Turnkey Installer</h3>
 <div class="code-block-wrapper"><div class="code-header"><span>Bash 1-Liner</span></div><pre><code class="language-bash">curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash</code></pre></div>
 
-<h2 id="what-is-meridian">What is Meridian?</h2>
-<p><strong>Meridian Shell</strong> is an open-source terminal emulator and developer platform designed to unify the terminal layer with native graphics, extensible developer intelligence, and real pseudoterminal multiplexing.</p>
+<h2 id="what-is-zephyr">What is Zephyr?</h2>
+<p><strong>Zephyr Shell</strong> is an open-source terminal emulator and developer platform designed to unify the terminal layer with native graphics, extensible developer intelligence, and real pseudoterminal multiplexing.</p>
 
 <h2 id="core-features">Core Features</h2>
 <div class="feature-cards-grid">
@@ -80,7 +80,7 @@ addArticle('intro', 'Meridian Shell', 'GETTING STARTED', 'implemented',
 </div>
 
 <h2 id="architecture">Architecture</h2>
-<div class="arch-diagram-block"><pre><code class="language-text">Meridian Application
+<div class="arch-diagram-block"><pre><code class="language-text">Zephyr Application
    ↓
 Terminal UI (Qt / Canvas)
    ↓
@@ -105,7 +105,7 @@ Platform Layer (Linux, macOS, Windows)</code></pre></div>
 </div>
 
 <h2 id="terminal-compatibility">Terminal Compatibility</h2>
-<p>Meridian is tested against standard Linux CLI applications: <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>ssh</code>, <code>sudo</code>, <code>vim</code>, <code>nano</code>, <code>tmux</code>, <code>htop</code>, <code>git</code>, <code>python</code>, <code>node</code>, <code>docker</code>.</p>
+<p>Zephyr is tested against standard Linux CLI applications: <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>ssh</code>, <code>sudo</code>, <code>vim</code>, <code>nano</code>, <code>tmux</code>, <code>htop</code>, <code>git</code>, <code>python</code>, <code>node</code>, <code>docker</code>.</p>
 
 <h2 id="packaging">Packaging</h2>
 <p>Available for Fedora (RPM), Debian/Ubuntu (.deb), Arch Linux (PKGBUILD), and Universal Linux tarballs.</p>
@@ -124,11 +124,11 @@ addArticle('installation', 'Installation & Build', 'GETTING STARTED', 'implement
     { id: 'universal-script', text: 'Universal 1-Line Installer', level: 2 }
   ],
   `
-<p>Meridian provides native packages for all major Linux distributions.</p>
+<p>Zephyr provides native packages for all major Linux distributions.</p>
 <h2 id="dnf-rpm">Fedora & RHEL (DNF / RPM)</h2>
-<pre><code class="language-bash">sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
+<pre><code class="language-bash">sudo dnf install ./dist/zephyr-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
 <h2 id="apt-deb">Debian & Ubuntu (APT / DEB)</h2>
-<pre><code class="language-bash">sudo apt install ./dist/meridian-terminal_2.0.0_amd64.deb</code></pre>
+<pre><code class="language-bash">sudo apt install ./dist/zephyr-terminal_2.0.0_amd64.deb</code></pre>
 <h2 id="arch-pkg">Arch Linux (Pacman / PKGBUILD)</h2>
 <pre><code class="language-bash">cd packaging/arch && makepkg -si</code></pre>
 <h2 id="universal-script">Universal 1-Line Installer</h2>
@@ -137,16 +137,16 @@ addArticle('installation', 'Installation & Build', 'GETTING STARTED', 'implement
 );
 
 addArticle('quickstart', 'Quick Start', 'GETTING STARTED', 'implemented',
-  'Get started with Meridian Terminal in under one minute.',
+  'Get started with Zephyr Terminal in under one minute.',
   [
-    { id: 'launch', text: 'Launching Meridian', level: 2 },
+    { id: 'launch', text: 'Launching Zephyr', level: 2 },
     { id: 'themes', text: 'Anime Theme Selection (Ctrl+P / pic)', level: 2 },
     { id: 'palette', text: 'Command Palette (Ctrl+Shift+P)', level: 2 }
   ],
   `
-<h2 id="launch">Launching Meridian</h2>
-<pre><code class="language-bash">meridian          # Start interactive terminal environment
-meridian-shell    # Start standalone shell engine</code></pre>
+<h2 id="launch">Launching Zephyr</h2>
+<pre><code class="language-bash">zephyr          # Start interactive terminal environment
+zephyr-shell    # Start standalone shell engine</code></pre>
 <h2 id="themes">Anime Theme Selection (Ctrl+P / pic)</h2>
 <pre><code class="language-bash">pic set sharingan_eye   # Sasuke/Itachi Sharingan (Theme 0)
 pic set ribbon_girl     # Ribbon Girl (Theme 2)
@@ -163,16 +163,16 @@ addArticle('first-run', 'First Run', 'GETTING STARTED', 'implemented',
     { id: 'env-setup', text: 'Environment Verification', level: 2 }
   ],
   `
-<p>Upon initial launch, Meridian automatically initializes configuration files:</p>
+<p>Upon initial launch, Zephyr automatically initializes configuration files:</p>
 <h2 id="paths">Default Directories & Paths</h2>
 <ul>
-  <li><code>~/.config/meridian/config.json</code>: Main terminal configuration.</li>
-  <li><code>~/.config/meridian/gallery/</code>: Embedded anime wallpaper assets.</li>
-  <li><code>~/.config/meridian/keybindings.json</code>: User custom keymap overrides.</li>
-  <li><code>~/.local/share/meridian/history.db</code>: Rich history database.</li>
+  <li><code>~/.config/zephyr/config.json</code>: Main terminal configuration.</li>
+  <li><code>~/.config/zephyr/gallery/</code>: Embedded anime wallpaper assets.</li>
+  <li><code>~/.config/zephyr/keybindings.json</code>: User custom keymap overrides.</li>
+  <li><code>~/.local/share/zephyr/history.db</code>: Rich history database.</li>
 </ul>
 <h2 id="env-setup">Environment Verification</h2>
-<pre><code class="language-bash">meridian --version</code></pre>
+<pre><code class="language-bash">zephyr --version</code></pre>
 `
 );
 
@@ -183,7 +183,7 @@ addArticle('getting-started-config', 'Configuration', 'GETTING STARTED', 'implem
     { id: 'sample', text: 'Sample config.json', level: 2 }
   ],
   `
-<p>Meridian uses standard JSON for configuration with automatic live reloading.</p>
+<p>Zephyr uses standard JSON for configuration with automatic live reloading.</p>
 <h2 id="sample">Sample config.json</h2>
 <pre><code class="language-json">{
   "theme": "sharingan_eye",
@@ -222,7 +222,7 @@ addArticle('terminal-shell', 'Shell', 'TERMINAL', 'implemented',
     { id: 'pipelines', text: 'Pipelines & Redirections', level: 2 }
   ],
   `
-<p>Meridian includes an internal lexer, recursive-descent parser, and AST executor.</p>
+<p>Zephyr includes an internal lexer, recursive-descent parser, and AST executor.</p>
 <h2 id="pipelines">Pipelines & Redirections</h2>
 <pre><code class="language-bash">cat log.txt | grep -i error | wc -l > errors.txt 2>&1</code></pre>
 `
@@ -235,24 +235,24 @@ addArticle('terminal-pty', 'PTY', 'TERMINAL', 'implemented',
     { id: 'signals', text: 'Signal Handling & Resizing', level: 2 }
   ],
   `
-<p>Meridian uses POSIX <code>openpty</code> to fork master/slave session pairs.</p>
+<p>Zephyr uses POSIX <code>openpty</code> to fork master/slave session pairs.</p>
 <h2 id="signals">Signal Handling & Resizing</h2>
 <p>Propagates <code>SIGWINCH</code> window resize notifications and forwards <code>SIGINT</code>, <code>SIGTSTP</code>, and <code>SIGQUIT</code> directly to foreground process groups.</p>
 `
 );
 
 addArticle('terminal-commands', 'Commands', 'TERMINAL', 'implemented',
-  'Meridian CLI commands, builtins, and subcommands.',
+  'Zephyr CLI commands, builtins, and subcommands.',
   [
     { id: 'cli-cmds', text: 'Core Subcommands', level: 2 }
   ],
   `
-<p>Meridian provides built-in commands for diagnostics, monitor, git status, and graphics:</p>
-<pre><code class="language-bash">meridian ask "find all pdf files"
-meridian diag "cannot find -lutil"
-meridian monitor
-meridian git
-meridian pic image.png</code></pre>
+<p>Zephyr provides built-in commands for diagnostics, monitor, git status, and graphics:</p>
+<pre><code class="language-bash">zephyr ask "find all pdf files"
+zephyr diag "cannot find -lutil"
+zephyr monitor
+zephyr git
+zephyr pic image.png</code></pre>
 `
 );
 
@@ -263,10 +263,10 @@ addArticle('terminal-ssh', 'SSH', 'TERMINAL', 'implemented',
     { id: 'ssh-config', text: '~/.ssh/config Integration', level: 2 }
   ],
   `
-<p>Meridian integrates with <code>~/.ssh/config</code> to provide a terminal workspace manager.</p>
+<p>Zephyr integrates with <code>~/.ssh/config</code> to provide a terminal workspace manager.</p>
 <h2 id="ssh-overview">SSH Workspace Manager</h2>
-<pre><code class="language-bash">meridian ssh              # List available SSH connection profiles
-meridian ssh production   # Connect directly to production alias</code></pre>
+<pre><code class="language-bash">zephyr ssh              # List available SSH connection profiles
+zephyr ssh production   # Connect directly to production alias</code></pre>
 `
 );
 
@@ -295,7 +295,7 @@ addArticle('terminal-clipboard', 'Clipboard', 'TERMINAL', 'implemented',
     { id: 'osc52', text: 'OSC 52 Clipboard Protocol', level: 2 }
   ],
   `
-<p>Meridian supports OSC 52 (<code>\\033]52;c;&lt;base64&gt;\\033\\\\</code>) for remote clipboard copy/paste over SSH sessions seamlessly.</p>
+<p>Zephyr supports OSC 52 (<code>\\033]52;c;&lt;base64&gt;\\033\\\\</code>) for remote clipboard copy/paste over SSH sessions seamlessly.</p>
 `
 );
 
@@ -305,7 +305,7 @@ addArticle('terminal-scrollback', 'Scrollback', 'TERMINAL', 'implemented',
     { id: 'scrollback-overview', text: 'Scrollback Engine', level: 2 }
   ],
   `
-<p>Meridian stores up to 100,000 lines of scrollback history in a deque with fast substring and regex search.</p>
+<p>Zephyr stores up to 100,000 lines of scrollback history in a deque with fast substring and regex search.</p>
 `
 );
 
@@ -317,7 +317,7 @@ addArticle('graphics-gpu', 'GPU Renderer', 'GRAPHICS', 'development',
     { id: 'glyph-atlas', text: 'Glyph Texture Atlas', level: 2 }
   ],
   `
-<p>Meridian tracks dirty screen rects to minimize draw calls and maximize battery life and framerate.</p>
+<p>Zephyr tracks dirty screen rects to minimize draw calls and maximize battery life and framerate.</p>
 `
 );
 
@@ -339,7 +339,7 @@ addArticle('graphics-formats', 'Image Formats', 'GRAPHICS', 'implemented',
     { id: 'formats', text: 'Format Support Matrix', level: 2 }
   ],
   `
-<p>Meridian uses <code>stb_image</code> to decode PNG, JPEG, WebP, GIF, and BMP directly into 32-bit RGBA pixel buffers.</p>
+<p>Zephyr uses <code>stb_image</code> to decode PNG, JPEG, WebP, GIF, and BMP directly into 32-bit RGBA pixel buffers.</p>
 `
 );
 
@@ -349,7 +349,7 @@ addArticle('graphics-gif', 'GIF', 'GRAPHICS', 'implemented',
     { id: 'gif-playback', text: 'Animated GIF Engine', level: 2 }
   ],
   `
-<p>Meridian decodes multi-frame GIF images and animates them at native frame delays on the canvas.</p>
+<p>Zephyr decodes multi-frame GIF images and animates them at native frame delays on the canvas.</p>
 `
 );
 
@@ -379,7 +379,7 @@ addArticle('graphics-rendering', 'Image Rendering', 'GRAPHICS', 'implemented',
     { id: 'zero-ascii', text: 'Zero ASCII / Zero Half-Block Guarantee', level: 2 }
   ],
   `
-<p>Meridian completely bypasses ASCII and half-block character approximations, rendering pure 32-bit RGBA hardware textures.</p>
+<p>Zephyr completely bypasses ASCII and half-block character approximations, rendering pure 32-bit RGBA hardware textures.</p>
 `
 );
 
@@ -461,7 +461,7 @@ addArticle('dev-architecture', 'Architecture', 'DEVELOPER', 'implemented',
     { id: 'layers', text: 'Core Architecture Layers', level: 2 }
   ],
   `
-<p>Meridian separates the UI from the underlying terminal emulation and PTY multiplexing engines.</p>
+<p>Zephyr separates the UI from the underlying terminal emulation and PTY multiplexing engines.</p>
 `
 );
 
@@ -512,8 +512,8 @@ addArticle('dev-ai-engine', 'AI Engine', 'DEVELOPER', 'experimental',
     { id: 'diag-engine', text: 'Compiler Diagnostics (diag)', level: 2 }
   ],
   `
-<pre><code class="language-bash">meridian ask "find files larger than 1GB"
-meridian diag "cannot find -lutil"</code></pre>
+<pre><code class="language-bash">zephyr ask "find files larger than 1GB"
+zephyr diag "cannot find -lutil"</code></pre>
 `
 );
 
@@ -529,7 +529,7 @@ addArticle('dev-security', 'Security', 'DEVELOPER', 'implemented',
 
 // 6. CONFIGURATION
 addArticle('config-file', 'Configuration File', 'CONFIGURATION', 'implemented',
-  'Specification of ~/.config/meridian/config.json options.',
+  'Specification of ~/.config/zephyr/config.json options.',
   [
     { id: 'schema', text: 'Schema Specification', level: 2 }
   ],
@@ -560,7 +560,7 @@ addArticle('config-keybindings', 'Keybindings', 'CONFIGURATION', 'implemented',
     { id: 'custom-keys', text: 'Keybinding JSON Format', level: 2 }
   ],
   `
-<p>Configure custom keybindings in <code>~/.config/meridian/keybindings.json</code>.</p>
+<p>Configure custom keybindings in <code>~/.config/zephyr/keybindings.json</code>.</p>
 `
 );
 
@@ -575,7 +575,7 @@ addArticle('config-profiles', 'Profiles', 'CONFIGURATION', 'implemented',
 );
 
 addArticle('config-env', 'Environment Variables', 'CONFIGURATION', 'implemented',
-  'Environment variables read and set by Meridian Terminal.',
+  'Environment variables read and set by Zephyr Terminal.',
   [
     { id: 'env-vars', text: 'Environment Variable Reference', level: 2 }
   ],
@@ -583,9 +583,9 @@ addArticle('config-env', 'Environment Variables', 'CONFIGURATION', 'implemented'
 <table class="doc-table">
   <thead><tr><th>Variable</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>TERM</code></td><td>Set to <code>xterm-256color</code> or <code>meridian</code></td></tr>
+    <tr><td><code>TERM</code></td><td>Set to <code>xterm-256color</code> or <code>zephyr</code></td></tr>
     <tr><td><code>COLORTERM</code></td><td>Set to <code>truecolor</code></td></tr>
-    <tr><td><code>MERIDIAN_CONFIG_HOME</code></td><td>Override config directory path</td></tr>
+    <tr><td><code>ZEPHYR_CONFIG_HOME</code></td><td>Override config directory path</td></tr>
   </tbody>
 </table>
 `
@@ -598,7 +598,7 @@ addArticle('pkg-fedora', 'Fedora / RPM', 'PACKAGING', 'implemented',
     { id: 'dnf', text: 'DNF Installation', level: 2 }
   ],
   `
-<pre><code class="language-bash">sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
+<pre><code class="language-bash">sudo dnf install ./dist/zephyr-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
 `
 );
 
@@ -608,7 +608,7 @@ addArticle('pkg-debian', 'Ubuntu / Debian / DEB', 'PACKAGING', 'implemented',
     { id: 'dpkg', text: 'APT / DEB Installation', level: 2 }
   ],
   `
-<pre><code class="language-bash">sudo apt install ./dist/meridian-terminal_2.0.0_amd64.deb</code></pre>
+<pre><code class="language-bash">sudo apt install ./dist/zephyr-terminal_2.0.0_amd64.deb</code></pre>
 `
 );
 
@@ -628,7 +628,7 @@ addArticle('pkg-opensuse', 'openSUSE', 'PACKAGING', 'implemented',
     { id: 'zypper', text: 'Zypper Installation', level: 2 }
   ],
   `
-<pre><code class="language-bash">sudo zypper install ./meridian-terminal.rpm</code></pre>
+<pre><code class="language-bash">sudo zypper install ./zephyr-terminal.rpm</code></pre>
 `
 );
 
@@ -638,7 +638,7 @@ addArticle('pkg-appimage', 'AppImage', 'PACKAGING', 'implemented',
     { id: 'appimage-run', text: 'Running AppImage', level: 2 }
   ],
   `
-<pre><code class="language-bash">chmod +x meridian-terminal.AppImage && ./meridian-terminal.AppImage</code></pre>
+<pre><code class="language-bash">chmod +x zephyr-terminal.AppImage && ./zephyr-terminal.AppImage</code></pre>
 `
 );
 
@@ -684,7 +684,7 @@ addArticle('pkg-windows', 'Windows', 'PACKAGING', 'development',
 
 // 8. DEVELOPMENT
 addArticle('development-building', 'Building', 'DEVELOPMENT', 'implemented',
-  'Compiling Meridian Terminal with C++20, Make, and dependencies.',
+  'Compiling Zephyr Terminal with C++20, Make, and dependencies.',
   [
     { id: 'make', text: 'Make Targets', level: 2 }
   ],
@@ -711,7 +711,7 @@ addArticle('development-debugging', 'Debugging', 'DEVELOPMENT', 'implemented',
     { id: 'telemetry', text: 'Telemetry Profiler', level: 2 }
   ],
   `
-<pre><code class="language-bash">meridian --performance</code></pre>
+<pre><code class="language-bash">zephyr --performance</code></pre>
 `
 );
 
@@ -745,11 +745,11 @@ addArticle('ref-cli', 'CLI Reference', 'REFERENCE', 'implemented',
 <table class="doc-table">
   <thead><tr><th>Command</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>meridian</code></td><td>Launch interactive terminal</td></tr>
-    <tr><td><code>meridian ssh [alias]</code></td><td>Manage & connect to SSH workspace</td></tr>
-    <tr><td><code>meridian plugins</code></td><td>List active extensible plugins</td></tr>
-    <tr><td><code>meridian --performance</code></td><td>Display GPU & PTY telemetry profiler</td></tr>
-    <tr><td><code>meridian pic &lt;file&gt;</code></td><td>Display direct inline raster image</td></tr>
+    <tr><td><code>zephyr</code></td><td>Launch interactive terminal</td></tr>
+    <tr><td><code>zephyr ssh [alias]</code></td><td>Manage & connect to SSH workspace</td></tr>
+    <tr><td><code>zephyr plugins</code></td><td>List active extensible plugins</td></tr>
+    <tr><td><code>zephyr --performance</code></td><td>Display GPU & PTY telemetry profiler</td></tr>
+    <tr><td><code>zephyr pic &lt;file&gt;</code></td><td>Display direct inline raster image</td></tr>
   </tbody>
 </table>
 `
@@ -792,22 +792,22 @@ addArticle('ref-shortcuts', 'Keyboard Shortcuts', 'REFERENCE', 'implemented',
 );
 
 addArticle('ref-env', 'Environment Variables', 'REFERENCE', 'implemented',
-  'Environment variables used and exported by Meridian.',
+  'Environment variables used and exported by Zephyr.',
   [
     { id: 'env-ref', text: 'Environment Variables', level: 2 }
   ],
   `
-<p><code>TERM=xterm-256color</code>, <code>COLORTERM=truecolor</code>, <code>MERIDIAN_CONFIG_HOME</code>.</p>
+<p><code>TERM=xterm-256color</code>, <code>COLORTERM=truecolor</code>, <code>ZEPHYR_CONFIG_HOME</code>.</p>
 `
 );
 
 addArticle('ref-faq', 'FAQ', 'REFERENCE', 'implemented',
-  'Frequently asked questions about Meridian Shell.',
+  'Frequently asked questions about Zephyr Shell.',
   [
     { id: 'general-faq', text: 'General Questions', level: 2 }
   ],
   `
-<p><strong>Q: Does Meridian render real images or ASCII?</strong><br/>A: Meridian renders direct 32-bit RGBA hardware raster graphics with zero ASCII conversion.</p>
+<p><strong>Q: Does Zephyr render real images or ASCII?</strong><br/>A: Zephyr renders direct 32-bit RGBA hardware raster graphics with zero ASCII conversion.</p>
 `
 );
 
@@ -835,16 +835,16 @@ addArticle('proj-github', 'GitHub', 'PROJECT', 'implemented',
 addArticle('proj-changelog', 'Changelog', 'PROJECT', 'implemented',
   'Release history and major milestone changes.',
   [
-    { id: 'v2-0', text: 'Meridian 2.0.0 (August 2026)', level: 2 }
+    { id: 'v2-0', text: 'Zephyr 2.0.0 (August 2026)', level: 2 }
   ],
   `
-<h2 id="v2-0">Meridian 2.0.0 (August 2026)</h2>
+<h2 id="v2-0">Zephyr 2.0.0 (August 2026)</h2>
 <ul>
   <li>Direct 32-bit RGBA inline image decoding engine (zero ASCII).</li>
   <li>OSC 8 Hyperlinks & OSC 52 Remote Clipboard.</li>
   <li>OSC 7 Working Directory tracking & OSC 133 Semantic Prompts.</li>
   <li>Native SSH Workspace Manager & Extensible Plugin Engine.</li>
-  <li>GPU Telemetry Profiler (meridian --performance).</li>
+  <li>GPU Telemetry Profiler (zephyr --performance).</li>
 </ul>
 `
 );
@@ -855,7 +855,7 @@ addArticle('proj-license', 'License', 'PROJECT', 'implemented',
     { id: 'gpl', text: 'GNU GPLv3 License', level: 2 }
   ],
   `
-<p>Meridian Terminal is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later</strong>.</p>
+<p>Zephyr Terminal is free and open-source software licensed under the <strong>GNU General Public License v3.0 or later</strong>.</p>
 `
 );
 

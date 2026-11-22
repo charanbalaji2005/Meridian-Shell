@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal-core / vt / ansi_parser.hpp
+// zephyr-terminal-core / vt / ansi_parser.hpp
 //
 // A real state-machine parser for the ANSI/VT escape sequences a shell and
 // its child programs actually emit (SGR colors/attributes, cursor motion,
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::vt {
+namespace zephyr::vt {
 
 class AnsiParser {
 public:
@@ -32,6 +32,12 @@ public:
 
     // Kitty extended keyboard protocol flags
     uint32_t kitty_keyboard_flags() const { return kitty_keyboard_flags_; }
+
+    // Bytes the terminal must send back to the application in reply to
+    // queries (DSR cursor-position report, primary Device Attributes).
+    // The frontend writes these to the PTY; calling this drains the queue.
+    std::string take_responses();
+    bool has_responses() const { return !responses_.empty(); }
 
 private:
     enum class State {
@@ -73,6 +79,8 @@ private:
     std::string csi_params_;        // raw digits/semicolons/colons
     bool csi_private_ = false;      // '?' prefix seen (DECSET/DECRST family)
     char csi_prefix_ = 0;           // '>', '<', '=', '?'
+    char csi_intermediate_ = 0;     // e.g. ' ' in DECSCUSR (CSI Ps SP q)
+    std::string responses_;
 
     std::string osc_buffer_;
     std::string apc_buffer_;
@@ -92,4 +100,4 @@ private:
     static constexpr std::size_t kMaxDcsLen = 1048576; // 1MB payload per DCS stream
 };
 
-} // namespace meridian::vt
+} // namespace zephyr::vt

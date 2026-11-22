@@ -6,11 +6,11 @@ status: "implemented"
 ---
 
 <h2 id="context-aware-prompt">Intelligent Context-Aware Powerline Prompt</h2>
-<p>Meridian renders a compact, two-line Powerline prompt with high-contrast color segments and context-aware Nerd Font glyphs:</p>
+<p>Zephyr renders a compact, two-line Powerline prompt with high-contrast color segments and context-aware Nerd Font glyphs:</p>
 
 <div class="code-block-wrapper">
-  <div class="code-header"><span>Meridian Context-Aware Powerline Prompt</span></div>
-  <pre><code class="language-text">   Tue 25 Aug - 23:43   ~/Downloads/meridian-terminal 󰙲   main ↑2 3✗ 2? 
+  <div class="code-header"><span>Zephyr Context-Aware Powerline Prompt</span></div>
+  <pre><code class="language-text">   Tue 25 Aug - 23:43   ~/Downloads/zephyr-terminal 󰙲   main ↑2 3✗ 2? 
    @charanbalaji  ❯ </code></pre>
 </div>
 

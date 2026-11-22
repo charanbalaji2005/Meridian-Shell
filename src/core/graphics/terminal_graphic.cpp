@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <fstream>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 GraphicManager::GraphicManager() = default;
 
@@ -102,5 +102,5 @@ TerminalGraphic GraphicManager::create_startup_artwork_graphic(float x, float y,
     return g;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

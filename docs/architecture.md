@@ -6,20 +6,20 @@ category: "Developer"
 
 # Architecture
 
-Meridian is three independent systems, matching the spec: the terminal
-core, Meridian Shell, and Meridian AI. "Independent" is enforced at the
-build-graph level, not just conceptually — `meridian-core` has zero
-dependency on `meridian-shell-lib` and neither depends on Qt6 or any AI
+Zephyr is three independent systems, matching the spec: the terminal
+core, Zephyr Shell, and Zephyr AI. "Independent" is enforced at the
+build-graph level, not just conceptually — `zephyr-core` has zero
+dependency on `zephyr-shell-lib` and neither depends on Qt6 or any AI
 provider code. A GUI or AI outage can never take down the terminal
 core or the shell.
 
 ```
-                         MERIDIAN
+                         ZEPHYR
                             |
              +--------------+--------------+
              |              |              |
              v              v              v
-       Terminal Core    Meridian Shell   Meridian AI
+       Terminal Core    Zephyr Shell   Zephyr AI
       (src/core/*)       (src/shell/*)    (src/ai/*)
              |              |
              +------+-------+
@@ -54,20 +54,20 @@ A GUI frontend (once built) would own a `PtyManager` + `ScreenBuffer` +
 loop, feed bytes to the parser, and paint from the `ScreenBuffer`'s
 cells. None of that requires changes to this layer.
 
-## Meridian Shell (`src/shell/`)
+## Zephyr Shell (`src/shell/`)
 
 `ast.hpp` -> `lexer.{hpp,cpp}` -> `parser.{hpp,cpp}` -> `executor.{hpp,cpp}`
 + `builtins.{hpp,cpp}`. See `docs/shell.md` for the grammar and
 execution-safety details (fork/exec directly, never `system()` /
 `/bin/sh -c` for user commands).
 
-Meridian Shell is a normal program: `src/app/shell_main.cpp` builds it
-into a standalone `meridian-shell` binary that reads stdin and writes
+Zephyr Shell is a normal program: `src/app/shell_main.cpp` builds it
+into a standalone `zephyr-shell` binary that reads stdin and writes
 stdout like any other shell. `PtyManager` can spawn it exactly the way
 it would spawn `/bin/bash` — nothing shell-specific leaks into the PTY
 layer.
 
-## Meridian AI (`src/ai/`)
+## Zephyr AI (`src/ai/`)
 
 Real local layer: `secret_redactor`, `risk_classifier`,
 `command_analyzer`, `command_context`, `ai_controller` — see
@@ -107,8 +107,8 @@ by the lack of Qt6/network in this environment. See `docs/gui.md` and
    connection. That's the whole reason this repo's test suite exists
    and passes in a sandbox with neither.
 2. **Spec compliance.** §3 and §80 both require the terminal to work
-   fully without Meridian Shell or Meridian AI. That's not just a
-   feature checkbox — it's the reason `meridian-core` doesn't `#include`
+   fully without Zephyr Shell or Zephyr AI. That's not just a
+   feature checkbox — it's the reason `zephyr-core` doesn't `#include`
    anything from `src/shell/` or `src/ai/`.
 3. **Incremental delivery.** The GUI and AI layers can be built later,
    by someone with Qt6 and network access, against a core that's

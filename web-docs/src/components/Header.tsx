@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   const currentLang = LANGUAGE_OPTIONS.find((l) => l.code === language) || LANGUAGE_OPTIONS[0];
 
   return (
-    <header className="meridian-header">
+    <header className="zephyr-header">
       <div className="header-left">
         <button
           className="mobile-menu-btn"
@@ -52,8 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
           {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
 
-        <a href="#intro" onClick={() => onNavigate('intro')} className="brand-logo" title="Meridian Shell Documentation">
-          {/* Meridian Shell Logo matching screenshot */}
+        <a href="#intro" onClick={() => onNavigate('intro')} className="brand-logo" title="Zephyr Shell Documentation">
+          {/* Zephyr Shell Logo matching screenshot */}
           <div className="logo-badge">
             <svg viewBox="0 0 100 100" width="28" height="28" className="logo-svg">
               <circle cx="50" cy="50" r="44" fill="none" stroke="#00A8B5" strokeWidth="6" />
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
             </svg>
           </div>
           <div className="brand-text-block">
-            <span className="brand-name">MERIDIAN SHELL</span>
+            <span className="brand-name">ZEPHYR SHELL</span>
             <span className="brand-tag">{t.brandDocs}</span>
           </div>
         </a>

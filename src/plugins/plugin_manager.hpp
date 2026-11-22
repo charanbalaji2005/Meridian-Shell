@@ -1,7 +1,7 @@
 #pragma once
-// meridian-terminal / plugins / plugin_manager.hpp
+// zephyr-terminal / plugins / plugin_manager.hpp
 //
-// Extensible Plugin Engine for Meridian Shell.
+// Extensible Plugin Engine for Zephyr Shell.
 // Provides lifecycle management, command execution hooks, terminal UI overlays,
 // and third-party developer extensibility.
 
@@ -11,11 +11,11 @@
 #include <unordered_map>
 #include <functional>
 
-namespace meridian::plugins {
+namespace zephyr::plugins {
 
-class MeridianPlugin {
+class ZephyrPlugin {
 public:
-    virtual ~MeridianPlugin() = default;
+    virtual ~ZephyrPlugin() = default;
 
     virtual std::string name() const = 0;
     virtual std::string version() const = 0;
@@ -34,11 +34,11 @@ class PluginManager {
 public:
     static PluginManager& instance();
 
-    void register_plugin(std::shared_ptr<MeridianPlugin> plugin);
+    void register_plugin(std::shared_ptr<ZephyrPlugin> plugin);
     bool unregister_plugin(const std::string& name);
 
-    const std::vector<std::shared_ptr<MeridianPlugin>>& plugins() const { return plugins_; }
-    std::shared_ptr<MeridianPlugin> find_plugin(const std::string& name) const;
+    const std::vector<std::shared_ptr<ZephyrPlugin>>& plugins() const { return plugins_; }
+    std::shared_ptr<ZephyrPlugin> find_plugin(const std::string& name) const;
 
     // Dispatch hooks to all active plugins
     void notify_command_pre_exec(const std::string& cmd);
@@ -52,7 +52,7 @@ private:
     PluginManager();
     void load_builtin_plugins();
 
-    std::vector<std::shared_ptr<MeridianPlugin>> plugins_;
+    std::vector<std::shared_ptr<ZephyrPlugin>> plugins_;
 };
 
-} // namespace meridian::plugins
+} // namespace zephyr::plugins

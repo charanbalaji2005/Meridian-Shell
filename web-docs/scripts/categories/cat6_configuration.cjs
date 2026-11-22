@@ -1,6 +1,6 @@
 module.exports = function(addArt) {
   addArt('config-file', 'Configuration File', 'CONFIGURATION', 'implemented',
-    'Specification of ~/.config/meridian/config.json options.',
+    'Specification of ~/.config/zephyr/config.json options.',
     [
       { id: 'config-schema', text: 'Complete JSON Schema', level: 2 },
       { id: 'options-table', text: 'Configuration Options Reference', level: 2 },
@@ -8,7 +8,7 @@ module.exports = function(addArt) {
     ],
     `
 <h2 id="config-schema">Complete JSON Schema</h2>
-<p>Location: <code>~/.config/meridian/config.json</code></p>
+<p>Location: <code>~/.config/zephyr/config.json</code></p>
 <pre><code class="language-json">{
   "theme": "sharingan_eye",
   "random_theme": false,
@@ -38,7 +38,7 @@ module.exports = function(addArt) {
 </table>
 
 <h2 id="validation-rules">JSON Schema Validation & Fallbacks</h2>
-<p>Meridian automatically validates config files against an internal schema on startup. If a syntax error is present, Meridian logs a warning and falls back to safe defaults without crashing.</p>
+<p>Zephyr automatically validates config files against an internal schema on startup. If a syntax error is present, Zephyr logs a warning and falls back to safe defaults without crashing.</p>
 `
   );
 
@@ -74,7 +74,7 @@ pic set /home/charanbalaji/Pictures/custom_wallpaper.png</code></pre>
     ],
     `
 <h2 id="keymap-json">keybindings.json Specification</h2>
-<p>Location: <code>~/.config/meridian/keybindings.json</code></p>
+<p>Location: <code>~/.config/zephyr/keybindings.json</code></p>
 <pre><code class="language-json">{
   "new_tab": "Ctrl+Shift+T",
   "close_tab": "Ctrl+Shift+W",
@@ -107,7 +107,7 @@ pic set /home/charanbalaji/Pictures/custom_wallpaper.png</code></pre>
     ],
     `
 <h2 id="profile-management">Profile Configurations</h2>
-<p>Define custom shell startup profiles in <code>~/.config/meridian/profiles.json</code> for Bash, Zsh, Fish, or direct SSH sessions.</p>
+<p>Define custom shell startup profiles in <code>~/.config/zephyr/profiles.json</code> for Bash, Zsh, Fish, or direct SSH sessions.</p>
 
 <h2 id="profiles-json-spec">profiles.json Example</h2>
 <pre><code class="language-json">{
@@ -131,7 +131,7 @@ pic set /home/charanbalaji/Pictures/custom_wallpaper.png</code></pre>
   );
 
   addArt('config-env', 'Environment Variables', 'CONFIGURATION', 'implemented',
-    'Environment variables read and set by Meridian Terminal.',
+    'Environment variables read and set by Zephyr Terminal.',
     [
       { id: 'env-table', text: 'Environment Variables Reference', level: 2 },
       { id: 'overriding-env', text: 'Overriding Default Environment Variables', level: 2 }
@@ -143,13 +143,13 @@ pic set /home/charanbalaji/Pictures/custom_wallpaper.png</code></pre>
   <tbody>
     <tr><td><code>TERM</code></td><td><code>xterm-256color</code></td><td>Standard terminal capability identification.</td></tr>
     <tr><td><code>COLORTERM</code></td><td><code>truecolor</code></td><td>Enables 24-bit TrueColor in CLI applications.</td></tr>
-    <tr><td><code>MERIDIAN_CONFIG_HOME</code></td><td><code>~/.config/meridian</code></td><td>Override configuration directory path.</td></tr>
-    <tr><td><code>MERIDIAN_SESSION_ID</code></td><td><code>UUID</code></td><td>Unique identifier for active terminal window.</td></tr>
+    <tr><td><code>ZEPHYR_CONFIG_HOME</code></td><td><code>~/.config/zephyr</code></td><td>Override configuration directory path.</td></tr>
+    <tr><td><code>ZEPHYR_SESSION_ID</code></td><td><code>UUID</code></td><td>Unique identifier for active terminal window.</td></tr>
   </tbody>
 </table>
 
 <h2 id="overriding-env">Overriding Default Environment Variables</h2>
-<p>Set custom environment variables in <code>~/.config/meridian/config.json</code> under the <code>"env"</code> dictionary.</p>
+<p>Set custom environment variables in <code>~/.config/zephyr/config.json</code> under the <code>"env"</code> dictionary.</p>
 `
   );
 };

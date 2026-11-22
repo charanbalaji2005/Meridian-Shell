@@ -13,7 +13,7 @@
 #include <sstream>
 #include <unistd.h>
 
-using namespace meridian::shell;
+using namespace zephyr::shell;
 
 namespace {
 
@@ -25,7 +25,7 @@ std::string read_file(const std::string& path) {
 }
 
 std::string tmp_path(const std::string& name) {
-    return "/tmp/meridian_test_" + name + "_" + std::to_string(getpid());
+    return "/tmp/zephyr_test_" + name + "_" + std::to_string(getpid());
 }
 
 } // namespace
@@ -87,12 +87,12 @@ MTEST(executor_cd_builtin_changes_real_process_directory) {
 
 MTEST(executor_export_and_variable_expansion) {
     Executor ex;
-    ex.run_line("export MERIDIAN_TEST_VAR=hello123");
+    ex.run_line("export ZEPHYR_TEST_VAR=hello123");
     std::string f = tmp_path("var");
-    ex.run_line("echo $MERIDIAN_TEST_VAR > " + f);
+    ex.run_line("echo $ZEPHYR_TEST_VAR > " + f);
     ASSERT_EQ(read_file(f), std::string("hello123\n"));
     std::remove(f.c_str());
-    unsetenv("MERIDIAN_TEST_VAR");
+    unsetenv("ZEPHYR_TEST_VAR");
 }
 
 MTEST(executor_command_substitution_uses_own_engine_not_bash) {
@@ -122,10 +122,10 @@ MTEST(executor_dollar_question_reports_last_status) {
 
 MTEST(executor_single_quotes_prevent_expansion) {
     Executor ex;
-    setenv("MERIDIAN_TEST_VAR2", "should_not_appear", 1);
+    setenv("ZEPHYR_TEST_VAR2", "should_not_appear", 1);
     std::string f = tmp_path("quote");
-    ex.run_line("echo '$MERIDIAN_TEST_VAR2' > " + f);
-    ASSERT_EQ(read_file(f), std::string("$MERIDIAN_TEST_VAR2\n"));
+    ex.run_line("echo '$ZEPHYR_TEST_VAR2' > " + f);
+    ASSERT_EQ(read_file(f), std::string("$ZEPHYR_TEST_VAR2\n"));
     std::remove(f.c_str());
-    unsetenv("MERIDIAN_TEST_VAR2");
+    unsetenv("ZEPHYR_TEST_VAR2");
 }

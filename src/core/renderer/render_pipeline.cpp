@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 namespace {
 
@@ -207,5 +207,5 @@ RenderBatch RenderPipeline::generate_batch(
     return batch;
 }
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

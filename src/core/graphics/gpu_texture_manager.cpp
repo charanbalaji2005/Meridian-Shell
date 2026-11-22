@@ -4,7 +4,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 GpuTextureManager::GpuTextureManager() = default;
 
@@ -133,5 +133,5 @@ void GpuTextureManager::evict_if_needed(size_t required_bytes) {
     }
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

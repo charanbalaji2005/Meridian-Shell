@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Meridian Shell Documentation Portal - Claude Support Light Theme
+   Zephyr Shell Documentation Portal - Claude Support Light Theme
    Clean White / Off-White Technical Documentation Design System
    ========================================================================== */
 
@@ -29,7 +29,7 @@
   --text-muted: #8A8A8A;
   --text-heading: #1F1F1F;
 
-  /* Meridian Accents */
+  /* Zephyr Accents */
   --accent-cyan: #00A8B5;
   --accent-blue: #4263EB;
   --accent-purple: #7C3AED;
@@ -114,7 +114,7 @@ body {
 /* ==========================================================================
    Header (Top Navigation)
    ========================================================================== */
-.meridian-header {
+.zephyr-header {
   position: sticky;
   top: 0;
   left: 0;
@@ -417,7 +417,7 @@ body {
 /* ==========================================================================
    Left Sidebar
    ========================================================================== */
-.meridian-sidebar {
+.zephyr-sidebar {
   width: var(--sidebar-width);
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
@@ -1605,7 +1605,7 @@ body {
     display: flex;
   }
 
-  .meridian-sidebar {
+  .zephyr-sidebar {
     position: fixed;
     top: 0;
     left: 0;
@@ -1621,7 +1621,7 @@ body {
     padding-top: 0;
   }
 
-  .meridian-sidebar.open {
+  .zephyr-sidebar.open {
     transform: translateX(0);
   }
 
@@ -1629,7 +1629,7 @@ body {
     display: flex;
   }
 
-  .meridian-header {
+  .zephyr-header {
     padding: 0 12px;
   }
 

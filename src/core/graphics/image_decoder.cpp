@@ -10,7 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 namespace {
 
@@ -209,18 +209,18 @@ DecodedImage ImageDecoder::decode_file(const std::string& filepath) {
         const char* home = std::getenv("HOME");
         std::string home_str = home ? home : "";
         std::vector<std::string> candidates = {
-            home_str + "/.config/meridian/gallery/" + alias + ".png",
-            home_str + "/.config/meridian/gallery/" + alias + ".jpg",
-            home_str + "/.config/meridian/gallery/" + alias + ".webp",
-            home_str + "/.config/meridian/gallery/" + alias,
+            home_str + "/.config/zephyr/gallery/" + alias + ".png",
+            home_str + "/.config/zephyr/gallery/" + alias + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + alias + ".webp",
+            home_str + "/.config/zephyr/gallery/" + alias,
             "resources/images/gallery/" + alias + ".png",
             "resources/images/gallery/" + alias + ".jpg",
             "resources/images/gallery/" + alias + ".webp",
             "resources/images/gallery/" + alias,
-            home_str + "/.config/meridian/gallery/" + filepath + ".png",
-            home_str + "/.config/meridian/gallery/" + filepath + ".jpg",
-            home_str + "/.config/meridian/gallery/" + filepath + ".webp",
-            home_str + "/.config/meridian/gallery/" + filepath,
+            home_str + "/.config/zephyr/gallery/" + filepath + ".png",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".jpg",
+            home_str + "/.config/zephyr/gallery/" + filepath + ".webp",
+            home_str + "/.config/zephyr/gallery/" + filepath,
             "resources/images/gallery/" + filepath + ".png",
             "resources/images/gallery/" + filepath + ".jpg",
             "resources/images/gallery/" + filepath + ".webp",
@@ -365,5 +365,5 @@ ImageFrame ImageDecoder::rescale_frame(
     return dst;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <unistd.h>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 namespace {
 
@@ -377,7 +377,7 @@ void IconRegistry::reload_custom_mappings() {
 
     const char* home = std::getenv("HOME");
     if (!home) return;
-    std::string config_path = std::string(home) + "/.config/meridian/icons.toml";
+    std::string config_path = std::string(home) + "/.config/zephyr/icons.toml";
     if (access(config_path.c_str(), R_OK) == 0) {
         parse_toml_file(config_path);
     }
@@ -717,5 +717,5 @@ Icon IconRegistry::getIconForPath(const std::string& formatted_path, bool is_git
     return getIconForDirectory(di);
 }
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

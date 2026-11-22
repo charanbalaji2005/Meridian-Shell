@@ -1,7 +1,7 @@
 #pragma once
 // src/dev/github_integration.hpp
 //
-// Meridian Developer Experience — GitHub Smart Integration:
+// Zephyr Developer Experience — GitHub Smart Integration:
 //  - 1-Click SSH key management and Port 443 fallback (without overwriting existing keys)
 //  - Non-blocking, configurable Git lifecycle hints for 'git init' and 'git clone'
 //  - GitHub account authorization status and repository linkage
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 class GitHubIntegration {
 public:
@@ -19,5 +19,5 @@ public:
     static void set_hints_enabled(bool enabled);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

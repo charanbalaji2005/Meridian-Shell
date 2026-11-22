@@ -1,7 +1,7 @@
 #pragma once
-// meridian-shell / ast.hpp
+// zephyr-shell / ast.hpp
 //
-// AST for Meridian Shell. Words are kept as segments (literal vs
+// AST for Zephyr Shell. Words are kept as segments (literal vs
 // expandable) rather than fully-resolved strings, so expansion — $VAR,
 // ${VAR}, $(command substitution) — happens lazily at execution time.
 // This matters for correctness: with &&/||, an unevaluated branch must
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 // A word segment. `literal == true` means "print this text verbatim,
 // never expand it" — that's what single-quoted text and backslash-escaped
@@ -50,4 +50,4 @@ struct SequenceItem {
 
 using Sequence = std::vector<SequenceItem>;
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

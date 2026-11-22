@@ -1,5 +1,50 @@
 # Changelog
 
+## 2.6.0 — Qt 6 graphical terminal and Linux packaging
+
+### Added
+- `zephyr-terminal`, a Qt 6 graphical terminal emulator (`src/gui/`): tabs, nested
+  split panes, scrollback search, a scrollbar-synced viewport, selection (word/line,
+  primary selection), safe paste, IME input, Kitty/Sixel images, OSC 8 links.
+- Settings window (appearance, colors, terminal, fonts, animations, keybindings, shell
+  profiles, SSH connections, startup, Linux integration, NixOS, performance); changes
+  apply live and persist in `~/.config/zephyr/`.
+- Command palette, collapsible sidebar (profiles/SSH, files, history, packages, system
+  information, offline command assistant), theme-aware Lucide SVG icons, reduced-motion-aware
+  animations, dark/light/system appearance with accent colors, six terminal themes.
+- "Neon Night" look: rounded translucent window with a glowing gradient border
+  (`gui::WindowFrame`), frameless mode with native move/resize, minimal mode (no header or
+  sidebar), the Neon Night color scheme and a one-click preset; ready-made fastfetch,
+  shell-greeting and Hyprland configs in `contrib/neon-night/` (see `docs/ricing.md`).
+- Shell and SSH profiles (`config::ProfileStore`), session restore (`config::SessionStore`),
+  per-user config dir resolution honouring `XDG_CONFIG_HOME`.
+- Core: scrollback viewport and search (`ScreenBuffer`), DECCKM/DECTCEM/bracketed paste/DECSCUSR
+  modes, CHA/VPA/CNL/CPL/ECH, DSR and DA replies, correct reverse index, xterm key encoding and
+  paste sanitization (`vt::input_encoder`).
+- Packaging: Nix flake (package, app, dev shell, overlay, NixOS module) and `default.nix`;
+  Fedora spec, Debian `debian/`, Arch PKGBUILD and AppImage builder, all on CMake install rules;
+  CI workflow that builds, installs and runs every package.
+- 30+ new unit tests (`tests/test_terminal_features.cpp`, `tests/test_config.cpp`).
+
+### Changed
+- CMake is now complete (it was missing sources the `zephyr` binary needs) and is the
+  build used by all packages; version 2.6.0 everywhere.
+- Default keybindings no longer take keys the shell needs (`Ctrl+W`, `Ctrl+T`, `Ctrl+Space`);
+  terminal actions use `Ctrl+Shift`. `split_vertical` no longer collides with paste.
+- The desktop entry launches the GUI (`Terminal=false`) with correct `StartupWMClass`/app id.
+
+### Fixed
+- PTY masters leaked into later children (no `FD_CLOEXEC`), so closing a tab never hung up
+  its shell; the PTY manager now hangs up and reaps children (no zombies).
+- `SSHManager` invented placeholder hosts when `~/.ssh/config` was missing.
+- OSC 52 test payload left un-renamed by the Meridian→Zephyr rename.
+- Job-control tests hard-coded `./build/zephyr-shell` (now `ZEPHYR_SHELL_BIN`).
+
+### Removed
+- Unbuilt, non-compiling legacy GUI widgets; the fake AppImage script; the hand-rolled
+  `scripts/package_offline.sh`; the duplicate `packaging/aur/`; the `zephyr.repo` /
+  `setup_dnf_repo.sh` pointing at a repository that does not exist (with `gpgcheck=0`).
+
 ## Unreleased — file-tree completeness pass (config, security, CommandContext, Shell class, manual test script)
 
 Third work session. Prompted by an explicit request to check the repo
@@ -10,7 +55,7 @@ diff against spec §5, and `docs/status.md` for the running ledger.
 ### Added
 
 - `tests/manual_core_test.sh` — the exact command sequence spec §78
-  names, run for real against the real `meridian-shell` binary with
+  names, run for real against the real `zephyr-shell` binary with
   actual PASS/FAIL checks per command (11/11 passing), not just a list
   of commands to eyeball.
 - `src/ai/command_context.{hpp,cpp}` — real local context gathering:
@@ -85,16 +130,16 @@ network, no Qt6/cmake, no display server) that shaped scope both times.
 
 ### Added
 
-- **Real POSIX job control** in Meridian Shell: process groups
+- **Real POSIX job control** in Zephyr Shell: process groups
   (`setpgid`), terminal foreground handoff (`tcsetpgrp`), `fg`/`bg`
   builtins, `WUNTRACED`-based stop detection, correct signal
   disposition on both sides of `fork()` (shell ignores job-control
   signals once enabled; every child restores default before exec).
   Enabled automatically for interactive sessions only, matching real
   shells. Tested by writing a genuine Ctrl+Z byte to a real PTY hosting
-  the real `meridian-shell` binary and confirming actual kernel
+  the real `zephyr-shell` binary and confirming actual kernel
   `SIGTSTP` delivery — not simulated.
-- **Local-only Meridian AI layer** (`src/ai/`): `SecretRedactor`
+- **Local-only Zephyr AI layer** (`src/ai/`): `SecretRedactor`
   (regex-based: KEY=VALUE env vars, Bearer tokens, AWS/GitHub/Slack/
   OpenAI-style key formats, PEM private key blocks), `RiskClassifier`
   (LOW/MEDIUM/HIGH/CRITICAL via ordered pattern matching), and
@@ -107,8 +152,8 @@ network, no Qt6/cmake, no display server) that shaped scope both times.
   machine and `analyze`/`explain`/`redact`/`test` operations described
   in the spec, with `explain`/`test` reporting honestly that no
   provider is implemented rather than fabricating output.
-- `meridian` CLI binary (`src/app/meridian_main.cpp`):
-  `meridian ai on|off|status|detect on|off|privacy on|off|providers|
+- `zephyr` CLI binary (`src/app/zephyr_main.cpp`):
+  `zephyr ai on|off|status|detect on|off|privacy on|off|providers|
   use|test|analyze|explain|redact`.
 - 26 new tests (job control + AI layer), bringing the suite to 86 tests
   / 192 assertions.
@@ -145,21 +190,21 @@ shaped scope.
 
 ### Added
 
-- `meridian-core`: VT cell/attribute/color model, screen buffer
+- `zephyr-core`: VT cell/attribute/color model, screen buffer
   (cursor, primary+alternate screen, scrollback, scroll regions), and a
   real ANSI/VT state-machine parser (SGR, cursor motion, erase,
   alt-screen, OSC title, UTF-8 decode).
-- `meridian-core`: PTY manager (`openpty`/`fork`/`execve`), tested
+- `zephyr-core`: PTY manager (`openpty`/`fork`/`execve`), tested
   against real spawned processes.
-- Meridian Shell: lexer, recursive-descent parser, executor (real
+- Zephyr Shell: lexer, recursive-descent parser, executor (real
   `fork`/`execvp`/`pipe`/`dup2`/`waitpid`), builtins (`cd`, `pwd`,
   `echo`, `export`, `unset`, `env`, `history`, `jobs`, `type`/`which`,
   `help`, `clear`, `exit`). Pipelines, redirection (`>`, `>>`, `<`,
   `2>`, `2>>`, `&>`, `&>>`), `;`/`&&`/`||` sequencing, background jobs,
   recursive command substitution (`$(...)`, via the shell's own engine,
   never `/bin/sh -c`).
-- Standalone `meridian-shell` binary and a headless PTY+ANSI
-  integration demo (`meridian_demo`) spawning a real `bash` process.
+- Standalone `zephyr-shell` binary and a headless PTY+ANSI
+  integration demo (`zephyr_demo`) spawning a real `bash` process.
 - 60 tests (139 assertions) covering the above, including adversarial/
   malformed-input cases for the ANSI parser and real fork/exec
   integration tests for the PTY layer and shell executor.

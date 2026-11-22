@@ -6,7 +6,7 @@ status: "implemented"
 ---
 
 <h2 id="config-schema">Complete JSON Schema</h2>
-<p>Location: <code>~/.config/meridian/config.json</code></p>
+<p>Location: <code>~/.config/zephyr/config.json</code></p>
 <pre><code class="language-json">{
   "theme": "sharingan_eye",
   "random_theme": false,
@@ -36,4 +36,4 @@ status: "implemented"
 </table>
 
 <h2 id="validation-rules">JSON Schema Validation & Fallbacks</h2>
-<p>Meridian automatically validates config files against an internal schema on startup. If a syntax error is present, Meridian logs a warning and falls back to safe defaults without crashing.</p>
+<p>Zephyr automatically validates config files against an internal schema on startup. If a syntax error is present, Zephyr logs a warning and falls back to safe defaults without crashing.</p>

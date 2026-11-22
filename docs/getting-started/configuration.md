@@ -6,10 +6,10 @@ status: "implemented"
 ---
 
 <h2 id="overview">Configuration Architecture</h2>
-<p>Meridian uses standard JSON for configuration with schema validation. Settings are divided into core terminal emulation, appearance, keybindings, and developer tools.</p>
+<p>Zephyr uses standard JSON for configuration with schema validation. Settings are divided into core terminal emulation, appearance, keybindings, and developer tools.</p>
 
 <h2 id="live-reload">Live Configuration Reloading</h2>
-<p>Changes saved to <code>~/.config/meridian/config.json</code> are watched using inotify and reloaded instantly without restarting your active terminal sessions or dropping PTY connections.</p>
+<p>Changes saved to <code>~/.config/zephyr/config.json</code> are watched using inotify and reloaded instantly without restarting your active terminal sessions or dropping PTY connections.</p>
 
 <h2 id="sample">Comprehensive config.json Specification</h2>
 <pre><code class="language-json">{

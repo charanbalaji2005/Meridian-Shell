@@ -1,4 +1,4 @@
-// docs/assets/docs.js — Client scripts for Meridian Documentation
+// docs/assets/docs.js — Client scripts for Zephyr Documentation
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Table of Contents Generator & Scroll-Spy
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Mobile Drawer Toggle
   const mobileBtn = document.getElementById('mobileMenuBtn');
-  const sidebar = document.getElementById('meridianSidebar');
+  const sidebar = document.getElementById('zephyrSidebar');
   const backdrop = document.getElementById('mobileBackdrop');
   const closeBtn = document.getElementById('sidebarCloseBtn');
 
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Theme Toggle
   const themeBtn = document.getElementById('themeToggleBtn');
-  const savedTheme = localStorage.getItem('meridian-docs-theme') || 'dark';
+  const savedTheme = localStorage.getItem('zephyr-docs-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
 
   if (themeBtn) {
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cur = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('meridian-docs-theme', next);
+      localStorage.setItem('zephyr-docs-theme', next);
     });
   }
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchResults = document.getElementById('searchResults');
 
   const DOCS_INDEX = [
-    { title: 'Introduction', cat: 'Getting Started', url: 'index.html', desc: 'Overview of Meridian Shell terminal platform.' },
+    { title: 'Introduction', cat: 'Getting Started', url: 'index.html', desc: 'Overview of Zephyr Shell terminal platform.' },
     { title: 'Installation & Build', cat: 'Getting Started', url: 'build.html', desc: 'Compiling from source, DNF RPM, APT DEB, Arch packages.' },
     { title: 'Configuration', cat: 'Getting Started', url: 'configuration.html', desc: 'config.json options, anime themes, font settings.' },
     { title: 'Terminal Emulation', cat: 'Terminal', url: 'terminal-emulation.html', desc: 'VT100, XTerm escapes, alternate screens, TrueColor.' },
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderResults(q) {
     if (!searchResults) return;
     if (!q) {
-      searchResults.innerHTML = '<div style="font-size: 13px; color: var(--text-subtle); padding: 12px;">Type to search Meridian Shell documentation...</div>';
+      searchResults.innerHTML = '<div style="font-size: 13px; color: var(--text-subtle); padding: 12px;">Type to search Zephyr Shell documentation...</div>';
       return;
     }
     const filtered = DOCS_INDEX.filter(item => 

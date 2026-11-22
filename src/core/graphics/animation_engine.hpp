@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/animation_engine.hpp
 //
-// Central Animation Engine for Meridian Terminal.
+// Central Animation Engine for Zephyr Terminal.
 // Handles multi-frame GIF, APNG, WebP, and Kitty Graphics Protocol animation streams.
 // Implements frame composition, disposal modes, memory bounds (256MB default),
 // and non-blocking timer/event-driven playback.
@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 struct AnimationObject {
     uint64_t id = 0;
@@ -101,5 +101,5 @@ private:
     std::map<uint64_t, std::shared_ptr<AnimationObject>> animations_;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

@@ -17,7 +17,7 @@ extern "C" {
     void stbi_image_free(void *retval_from_stbi_load);
 }
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 size_t AnimationObject::total_memory_bytes() const {
     size_t bytes = 0;
@@ -399,5 +399,5 @@ bool AnimationEngine::enforce_memory_limit() {
     return true;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

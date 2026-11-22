@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 PaneTree::PaneTree() {
     root_ = std::make_unique<PaneNode>();
@@ -268,5 +268,5 @@ PaneTree& get_session_pane_tree() {
     return s_session_tree;
 }
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Meridian Terminal 2.5 — Universal Prebuilt Multi-Distribution Installer
+# Zephyr Terminal 2.5 — Universal Prebuilt Multi-Distribution Installer
 # Repository: https://github.com/charanbalaji2005/Meridian-Shell
 #
 # Usage:
@@ -12,7 +12,7 @@ set -euo pipefail
 
 APP_VERSION="2.5.0"
 REPO_OWNER="charanbalaji2005"
-REPO_NAME="Meridian-Shell"
+REPO_NAME="Zephyr-Shell"
 GITHUB_REPO="${REPO_OWNER}/${REPO_NAME}"
 RELEASE_BASE_URL="https://github.com/${GITHUB_REPO}/releases/download/v${APP_VERSION}"
 RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
@@ -48,7 +48,7 @@ log_error()   { echo -e " ${RED}✖ ERROR:${RESET} $*" >&2; }
 echo -e "${CYAN}"
 cat << "EOF"
 ╔══════════════════════════════════════════════════════════╗
-║              Meridian Terminal 2.5 Installer             ║
+║              Zephyr Terminal 2.5 Installer             ║
 ╚══════════════════════════════════════════════════════════╝
 EOF
 echo -e "${RESET}"
@@ -102,7 +102,7 @@ if grep -qi microsoft /proc/version 2>/dev/null || [ -n "${WSL_DISTRO_NAME:-}" ]
     IS_WSL=true
     log_info "WSL environment detected (${WSL_DISTRO_NAME:-Ubuntu/Debian WSL})"
     if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-        log_info "Display server: Headless / Terminal only (Meridian Shell will run directly)"
+        log_info "Display server: Headless / Terminal only (Zephyr Shell will run directly)"
     else
         log_step "WSLg graphical display server active (${DISPLAY:-${WAYLAND_DISPLAY}})"
     fi
@@ -125,7 +125,7 @@ fi
 # ------------------------------------------------------------------------------
 # 4. Download & Install Prebuilt Release Package
 # ------------------------------------------------------------------------------
-WORK_DIR="$(mktemp -d /tmp/meridian-install-XXXXXX)"
+WORK_DIR="$(mktemp -d /tmp/zephyr-install-XXXXXX)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
 
 cd "${WORK_DIR}"
@@ -144,16 +144,16 @@ download_file() {
     fi
 }
 
-log_step "Downloading Meridian Terminal ${APP_VERSION} for ${ARCH_TYPE}..."
+log_step "Downloading Zephyr Terminal ${APP_VERSION} for ${ARCH_TYPE}..."
 
 # Case A: Ubuntu / Debian (.deb package)
 if [ "${USER_MODE}" = false ] && { [ "${DISTRO}" = "ubuntu" ] || [ "${DISTRO}" = "debian" ] || [ "${DISTRO}" = "pop" ] || [ "${DISTRO}" = "mint" ]; }; then
-    DEB_URL="${RELEASE_BASE_URL}/meridian-terminal_${APP_VERSION}_${PKG_ARCH_DEB}.deb"
-    if download_file "${DEB_URL}" "meridian.deb" 2>/dev/null; then
+    DEB_URL="${RELEASE_BASE_URL}/zephyr-terminal_${APP_VERSION}_${PKG_ARCH_DEB}.deb"
+    if download_file "${DEB_URL}" "zephyr.deb" 2>/dev/null; then
         log_step "Installing native Debian/Ubuntu package via apt..."
-        if apt-get update -qq && apt-get install -y -qq ./meridian.deb >/dev/null 2>&1; then
+        if apt-get update -qq && apt-get install -y -qq ./zephyr.deb >/dev/null 2>&1; then
             INSTALLED=true
-        elif dpkg -i ./meridian.deb >/dev/null 2>&1 || apt-get install -f -y -qq >/dev/null 2>&1; then
+        elif dpkg -i ./zephyr.deb >/dev/null 2>&1 || apt-get install -f -y -qq >/dev/null 2>&1; then
             INSTALLED=true
         fi
     fi
@@ -161,10 +161,10 @@ fi
 
 # Case B: Fedora / RHEL / CentOS / Alma / Rocky (.rpm package)
 if [ "${INSTALLED}" = false ] && [ "${USER_MODE}" = false ] && { [ "${DISTRO}" = "fedora" ] || [ "${DISTRO}" = "rhel" ] || [ "${DISTRO}" = "centos" ] || [ "${DISTRO}" = "almalinux" ] || [ "${DISTRO}" = "rocky" ]; }; then
-    RPM_URL="${RELEASE_BASE_URL}/meridian-terminal-${APP_VERSION}-1.fc44.${PKG_ARCH_RPM}.rpm"
-    if download_file "${RPM_URL}" "meridian.rpm" 2>/dev/null || download_file "${RELEASE_BASE_URL}/meridian-terminal-${APP_VERSION}.${PKG_ARCH_RPM}.rpm" "meridian.rpm" 2>/dev/null; then
+    RPM_URL="${RELEASE_BASE_URL}/zephyr-terminal-${APP_VERSION}-1.fc44.${PKG_ARCH_RPM}.rpm"
+    if download_file "${RPM_URL}" "zephyr.rpm" 2>/dev/null || download_file "${RELEASE_BASE_URL}/zephyr-terminal-${APP_VERSION}.${PKG_ARCH_RPM}.rpm" "zephyr.rpm" 2>/dev/null; then
         log_step "Installing native RPM package via dnf..."
-        if dnf install -y -q ./meridian.rpm >/dev/null 2>&1 || rpm -Uvh --replacepkgs ./meridian.rpm >/dev/null 2>&1; then
+        if dnf install -y -q ./zephyr.rpm >/dev/null 2>&1 || rpm -Uvh --replacepkgs ./zephyr.rpm >/dev/null 2>&1; then
             INSTALLED=true
         fi
     fi
@@ -172,18 +172,18 @@ fi
 
 # Case C: Standalone Prebuilt Binary Tarball (Universal Linux & User Mode)
 if [ "${INSTALLED}" = false ]; then
-    TARBALL_NAME="meridian-terminal-${APP_VERSION}-linux-${PKG_ARCH_RAW}.tar.gz"
+    TARBALL_NAME="zephyr-terminal-${APP_VERSION}-linux-${PKG_ARCH_RAW}.tar.gz"
     TARBALL_URL="${RELEASE_BASE_URL}/${TARBALL_NAME}"
 
     if download_file "${TARBALL_URL}" "${TARBALL_NAME}" 2>/dev/null; then
         log_step "Extracting standalone prebuilt release archive..."
         tar -xzf "${TARBALL_NAME}"
-        EXTRACTED_DIR="$(find . -maxdepth 1 -type d -name "meridian-terminal*" | head -n 1)"
+        EXTRACTED_DIR="$(find . -maxdepth 1 -type d -name "zephyr-terminal*" | head -n 1)"
 
         mkdir -p "${PREFIX}/bin" "${PREFIX}/share/applications" "${PREFIX}/share/icons/hicolor/scalable/apps"
         if [ -d "${EXTRACTED_DIR}/bin" ]; then
-            cp -f "${EXTRACTED_DIR}/bin/meridian"* "${PREFIX}/bin/"
-            chmod 755 "${PREFIX}/bin/meridian"*
+            cp -f "${EXTRACTED_DIR}/bin/zephyr"* "${PREFIX}/bin/"
+            chmod 755 "${PREFIX}/bin/zephyr"*
         fi
         INSTALLED=true
     fi
@@ -191,21 +191,21 @@ fi
 
 # Case D: Fallback Local Build (if release asset not yet published on GitHub)
 if [ "${INSTALLED}" = false ]; then
-    log_info "Prebuilt binary asset not reached; building Meridian 2.5 from source..."
+    log_info "Prebuilt binary asset not reached; building Zephyr 2.5 from source..."
     if [ -f "Makefile" ] && [ -d "src" ]; then
         make all -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)"
     else
         download_file "https://github.com/${GITHUB_REPO}/archive/refs/heads/main.tar.gz" "source.tar.gz"
         tar -xzf "source.tar.gz"
-        SRC_DIR="$(find . -maxdepth 1 -type d -name "*Meridian-Shell*" | head -n 1)"
+        SRC_DIR="$(find . -maxdepth 1 -type d -name "*Zephyr-Shell*" | head -n 1)"
         cd "${SRC_DIR}"
         make all -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)"
     fi
 
     mkdir -p "${PREFIX}/bin"
-    cp -f build/meridian "${PREFIX}/bin/meridian"
-    cp -f build/meridian-shell "${PREFIX}/bin/meridian-shell"
-    chmod 755 "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"
+    cp -f build/zephyr "${PREFIX}/bin/zephyr"
+    cp -f build/zephyr-shell "${PREFIX}/bin/zephyr-shell"
+    chmod 755 "${PREFIX}/bin/zephyr" "${PREFIX}/bin/zephyr-shell"
     INSTALLED=true
 fi
 
@@ -216,7 +216,7 @@ log_step "Installing desktop integration & artwork gallery assets..."
 
 DESKTOP_DIR="${HOME}/.local/share/applications"
 ICON_DIR="${HOME}/.local/share/icons/hicolor/scalable/apps"
-GALLERY_DIR="${HOME}/.config/meridian/gallery"
+GALLERY_DIR="${HOME}/.config/zephyr/gallery"
 
 if [ "${USER_MODE}" = false ]; then
     DESKTOP_DIR="/usr/share/applications"
@@ -225,14 +225,15 @@ fi
 
 mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" "${GALLERY_DIR}"
 
-if [ -f "packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop" ]; then
-    cp -f packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null || true
-elif [ -f "meridian.desktop" ]; then
-    cp -f meridian.desktop "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null || true
+# The desktop entry launches the graphical terminal; only register it when
+# zephyr-terminal is actually installed.
+if command -v zephyr-terminal >/dev/null 2>&1 && [ -f "packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop" ]; then
+    cp -f packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop \
+        "${DESKTOP_DIR}/org.zephyr_terminal.ZephyrTerminal.desktop" 2>/dev/null || true
 fi
 
-if [ -f "resources/icons/meridian-terminal.svg" ]; then
-    cp -f resources/icons/meridian-terminal.svg "${ICON_DIR}/meridian-terminal.svg" 2>/dev/null || true
+if [ -f "resources/icons/zephyr-terminal.svg" ]; then
+    cp -f resources/icons/zephyr-terminal.svg "${ICON_DIR}/zephyr-terminal.svg" 2>/dev/null || true
 fi
 
 if [ -d "resources/images/gallery" ]; then
@@ -241,7 +242,7 @@ fi
 
 # Register in /etc/shells if root
 if [ "${USER_MODE}" = false ] && [ -w /etc/shells ]; then
-    for bin_path in "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"; do
+    for bin_path in "${PREFIX}/bin/zephyr" "${PREFIX}/bin/zephyr-shell"; do
         if ! grep -Fxq "${bin_path}" /etc/shells 2>/dev/null; then
             echo "${bin_path}" >> /etc/shells
         fi
@@ -299,17 +300,17 @@ if command -v nvim >/dev/null 2>&1 || [ -d "${HOME}/.config/nvim" ]; then
 fi
 
 echo ""
-echo -e "${CYAN}Registering Meridian terminal integrations...${RESET}"
+echo -e "${CYAN}Registering Zephyr terminal integrations...${RESET}"
 for ide in "${DETECTED_IDES[@]}"; do
     echo -e " ${GREEN}✓${RESET} ${ide}"
 done
 
 # Perform profile registrations
-SHELL_EXEC="${PREFIX}/bin/meridian-shell"
-GUI_EXEC="${PREFIX}/bin/meridian"
+SHELL_EXEC="${PREFIX}/bin/zephyr-shell"
+GUI_EXEC="${PREFIX}/bin/zephyr"
 if [ ! -f "${SHELL_EXEC}" ]; then
-    SHELL_EXEC="${HOME}/.local/bin/meridian-shell"
-    GUI_EXEC="${HOME}/.local/bin/meridian"
+    SHELL_EXEC="${HOME}/.local/bin/zephyr-shell"
+    GUI_EXEC="${HOME}/.local/bin/zephyr"
 fi
 
 if [ -f "${GUI_EXEC}" ]; then
@@ -317,7 +318,7 @@ if [ -f "${GUI_EXEC}" ]; then
 fi
 
 echo ""
-echo -e "${GREEN}Meridian is now available as an integrated terminal where supported.${RESET}"
+echo -e "${GREEN}Zephyr is now available as an integrated terminal where supported.${RESET}"
 
 # ------------------------------------------------------------------------------
 # 7. PATH Configuration Check
@@ -331,15 +332,15 @@ log_step "PATH verified (${PREFIX}/bin)"
 
 echo ""
 echo -e "${GREEN}══════════════════════════════════════════════════════════${RESET}"
-echo -e " ${GREEN}✔ Meridian Terminal ${APP_VERSION} installed successfully!${RESET}"
+echo -e " ${GREEN}✔ Zephyr Terminal ${APP_VERSION} installed successfully!${RESET}"
 echo -e "${GREEN}══════════════════════════════════════════════════════════${RESET}"
 echo ""
 echo "Run:"
-echo -e "   ${CYAN}meridian${RESET}              (Launch Meridian Terminal)"
-echo -e "   ${CYAN}meridian-shell${RESET}        (Launch standalone shell)"
-echo -e "   ${CYAN}meridian vscode${RESET}       (Manage VS Code terminal integration)"
-echo -e "   ${CYAN}meridian update${RESET}       (Check and download latest releases)"
-echo -e "   ${CYAN}meridian stats${RESET}        (View anonymous platform statistics)"
+echo -e "   ${CYAN}zephyr${RESET}              (Launch Zephyr Terminal)"
+echo -e "   ${CYAN}zephyr-shell${RESET}        (Launch standalone shell)"
+echo -e "   ${CYAN}zephyr vscode${RESET}       (Manage VS Code terminal integration)"
+echo -e "   ${CYAN}zephyr update${RESET}       (Check and download latest releases)"
+echo -e "   ${CYAN}zephyr stats${RESET}        (View anonymous platform statistics)"
 echo -e "   ${CYAN}auth github${RESET}           (1-click GitHub authentication & SSH setup)"
 echo ""
 

@@ -1,4 +1,4 @@
-// meridian-ai / command_context.cpp
+// zephyr-ai / command_context.cpp
 #include "command_context.hpp"
 
 #include <cstdlib>
@@ -7,7 +7,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 namespace {
 
@@ -72,7 +72,7 @@ CommandContext CommandContextBuilder::build(const std::string& current_command,
     if (getcwd(cwd_buf, sizeof(cwd_buf))) ctx.working_directory = cwd_buf;
 
     const char* shell_env = std::getenv("SHELL");
-    ctx.shell_name = shell_env ? shell_env : "meridian-shell";
+    ctx.shell_name = shell_env ? shell_env : "zephyr-shell";
 
     struct utsname uts{};
     if (uname(&uts) == 0) {
@@ -87,4 +87,4 @@ CommandContext CommandContextBuilder::build(const std::string& current_command,
     return ctx;
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

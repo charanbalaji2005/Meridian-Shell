@@ -19,7 +19,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
 
   // Check if feedback was already provided for this specific page
   useEffect(() => {
-    const saved = localStorage.getItem(`meridian_feedback_${articleId}`);
+    const saved = localStorage.getItem(`zephyr_feedback_${articleId}`);
     if (saved) {
       setFeedbackGiven(true);
       setVote(saved as 'up' | 'down');
@@ -71,7 +71,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   const handleVote = (choice: 'up' | 'down') => {
     setVote(choice);
     setFeedbackGiven(true);
-    localStorage.setItem(`meridian_feedback_${articleId}`, choice);
+    localStorage.setItem(`zephyr_feedback_${articleId}`, choice);
   };
 
   return (

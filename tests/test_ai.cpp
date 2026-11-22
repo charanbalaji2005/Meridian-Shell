@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <unistd.h>
 
-using namespace meridian::ai;
+using namespace zephyr::ai;
 
 // ---- SecretRedactor ----
 
@@ -129,7 +129,7 @@ MTEST(analyzer_makes_no_suggestion_for_wildly_different_bogus_name) {
 MTEST(analyzer_respects_explicit_path_override) {
     // Use an isolated fake PATH so this test doesn't depend on exactly
     // what's installed on whatever machine runs it.
-    std::string dir = "/tmp/meridian_ai_test_bin";
+    std::string dir = "/tmp/zephyr_ai_test_bin";
     std::string mkdir_cmd = "mkdir -p " + dir;
     if (system(mkdir_cmd.c_str()) != 0) { /* best-effort */ }
     std::string touch_cmd = "touch " + dir + "/mytool && chmod +x " + dir + "/mytool";
@@ -156,16 +156,16 @@ MTEST(edit_distance_basic_cases) {
 // ---- Config ----
 
 MTEST(config_round_trips_values) {
-    std::string path = "/tmp/meridian_test_config_" + std::to_string(getpid()) + ".toml";
+    std::string path = "/tmp/zephyr_test_config_" + std::to_string(getpid()) + ".toml";
     std::remove(path.c_str());
     {
-        meridian::Config c(path);
+        zephyr::Config c(path);
         c.set("ai.provider", "groq");
         c.set_bool("ai.enabled", true);
         ASSERT_TRUE(c.save());
     }
     {
-        meridian::Config c(path);
+        zephyr::Config c(path);
         ASSERT_TRUE(c.load());
         ASSERT_EQ(c.get("ai.provider"), std::string("groq"));
         ASSERT_TRUE(c.get_bool("ai.enabled", false));
@@ -174,7 +174,7 @@ MTEST(config_round_trips_values) {
 }
 
 MTEST(config_missing_file_is_not_an_error) {
-    meridian::Config c("/tmp/meridian_definitely_does_not_exist_12345.toml");
+    zephyr::Config c("/tmp/zephyr_definitely_does_not_exist_12345.toml");
     ASSERT_FALSE(c.load()); // false = "didn't exist", not a crash
     ASSERT_EQ(c.get("anything", "default"), std::string("default"));
 }
@@ -182,7 +182,7 @@ MTEST(config_missing_file_is_not_an_error) {
 // ---- AIController integration ----
 
 MTEST(controller_analyze_is_silent_when_ai_disabled) {
-    std::string path = "/tmp/meridian_test_ctrl_" + std::to_string(getpid()) + ".toml";
+    std::string path = "/tmp/zephyr_test_ctrl_" + std::to_string(getpid()) + ".toml";
     std::remove(path.c_str());
     AIController ctrl(path);
     ASSERT_FALSE(ctrl.enabled()); // default off
@@ -192,7 +192,7 @@ MTEST(controller_analyze_is_silent_when_ai_disabled) {
 }
 
 MTEST(controller_analyze_detects_typo_and_risk_when_enabled) {
-    std::string path = "/tmp/meridian_test_ctrl2_" + std::to_string(getpid()) + ".toml";
+    std::string path = "/tmp/zephyr_test_ctrl2_" + std::to_string(getpid()) + ".toml";
     std::remove(path.c_str());
     AIController ctrl(path);
     ctrl.set_enabled(true);
@@ -208,7 +208,7 @@ MTEST(controller_analyze_detects_typo_and_risk_when_enabled) {
 }
 
 MTEST(controller_status_report_reflects_state) {
-    std::string path = "/tmp/meridian_test_ctrl3_" + std::to_string(getpid()) + ".toml";
+    std::string path = "/tmp/zephyr_test_ctrl3_" + std::to_string(getpid()) + ".toml";
     std::remove(path.c_str());
     AIController ctrl(path);
     ctrl.set_enabled(true);
@@ -220,7 +220,7 @@ MTEST(controller_status_report_reflects_state) {
 }
 
 MTEST(controller_explain_is_honest_about_no_provider) {
-    AIController ctrl("/tmp/meridian_test_ctrl4.toml");
+    AIController ctrl("/tmp/zephyr_test_ctrl4.toml");
     std::string explanation = ctrl.explain_command("chmod 755 app.sh");
     ASSERT_TRUE(explanation.find("No AI provider") != std::string::npos);
 }

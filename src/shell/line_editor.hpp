@@ -1,6 +1,6 @@
 // src/shell/line_editor.hpp
 #pragma once
-// meridian-shell / line_editor.hpp
+// zephyr-shell / line_editor.hpp
 //
 // Interactive line editor with:
 //   - Fish/Zsh-style real-time dim ghost autosuggestions
@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 class LineEditor {
 public:
@@ -54,4 +54,4 @@ private:
     static void clear_history_preview(std::ostream& out, int lines_drawn);
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

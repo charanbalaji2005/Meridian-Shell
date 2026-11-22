@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / core / renderer / glyph_atlas.hpp
+// zephyr-terminal / core / renderer / glyph_atlas.hpp
 //
 // Texture atlas and glyph metrics manager for GPU terminal rendering.
 // Organizes rasterized glyphs into texture sheets, handles Nerd Font /
@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 enum class FontStyle : uint8_t {
     Regular,
@@ -81,5 +81,5 @@ private:
     AtlasEntry allocate_entry(char32_t cp, FontStyle style, int cell_w, int cell_h);
 };
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::platform {
+namespace zephyr::platform {
 
 class WindowsConPTY : public PlatformPTY {
 public:
@@ -177,7 +177,7 @@ std::string PlatformPTY::platform_name() {
     return "Windows";
 }
 
-} // namespace meridian::platform
+} // namespace zephyr::platform
 
 #endif
 

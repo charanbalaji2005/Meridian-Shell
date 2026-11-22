@@ -16,7 +16,12 @@
 #include "../src/plugins/plugin_manager.hpp"
 #include "../src/core/renderer/telemetry_profiler.hpp"
 
-using namespace meridian;
+#include <cstdio>
+#include <fstream>
+#include <string>
+#include <unistd.h>
+
+using namespace zephyr;
 
 MTEST(protocol_osc8_hyperlinks_attached_to_cells) {
     vt::ScreenBuffer screen(10, 40);
@@ -44,9 +49,9 @@ MTEST(protocol_osc52_remote_clipboard_decoding) {
     vt::ScreenBuffer screen(10, 40);
     vt::AnsiParser parser(screen);
 
-    // "TWVyaWRpYW4=" is base64 for "Meridian"
-    parser.feed("\033]52;c;TWVyaWRpYW4=\033\\");
-    ASSERT_EQ(screen.clipboard(), "Meridian");
+    // "WmVwaHly" is base64 for "Zephyr"
+    parser.feed("\033]52;c;WmVwaHly\033\\");
+    ASSERT_EQ(screen.clipboard(), "Zephyr");
 
     // "SGVsbG8gV29ybGQ=" is base64 for "Hello World"
     parser.feed("\033]52;c;SGVsbG8gV29ybGQ=\007");
@@ -57,8 +62,8 @@ MTEST(protocol_osc7_working_directory_tracking) {
     vt::ScreenBuffer screen(10, 40);
     vt::AnsiParser parser(screen);
 
-    parser.feed("\033]7;file://fedora-laptop/home/charanbalaji/Downloads/meridian\033\\");
-    ASSERT_EQ(screen.working_directory(), "/home/charanbalaji/Downloads/meridian");
+    parser.feed("\033]7;file://fedora-laptop/home/charanbalaji/Downloads/zephyr\033\\");
+    ASSERT_EQ(screen.working_directory(), "/home/charanbalaji/Downloads/zephyr");
 
     parser.feed("\033]7;file://localhost/var/log\007");
     ASSERT_EQ(screen.working_directory(), "/var/log");
@@ -87,16 +92,27 @@ MTEST(protocol_osc133_shell_integration_and_exit_codes) {
 }
 
 MTEST(dev_ssh_manager_host_lookup_and_command_generation) {
-    dev::SSHManager mgr("/nonexistent/ssh/config"); // will load default test hosts
+    // A missing config yields no hosts (no fabricated placeholders).
+    dev::SSHManager missing("/nonexistent/ssh/config");
+    ASSERT_TRUE(missing.list_hosts().empty());
+
+    std::string path = "/tmp/zephyr_ssh_config_test_" + std::to_string(getpid());
+    {
+        std::ofstream f(path);
+        f << "Host production\n  HostName prod.zephyr.internal\n  User deploy\n  IdentityFile ~/.ssh/id_ed25519\n\n"
+          << "Host development\n  HostName dev.zephyr.internal\n  User dev\n  Port 2222\n";
+    }
+    dev::SSHManager mgr(path);
+    std::remove(path.c_str());
     auto hosts = mgr.list_hosts();
     ASSERT_TRUE(!hosts.empty());
 
     auto prod = mgr.find_host("production");
     ASSERT_TRUE(prod.has_value());
-    ASSERT_EQ(prod->hostname, "prod.meridian.internal");
+    ASSERT_EQ(prod->hostname, "prod.zephyr.internal");
     ASSERT_EQ(prod->user, "deploy");
     ASSERT_EQ(prod->port, 22);
-    ASSERT_TRUE(prod->command_line().find("deploy@prod.meridian.internal") != std::string::npos);
+    ASSERT_TRUE(prod->command_line().find("deploy@prod.zephyr.internal") != std::string::npos);
 
     auto custom_port = mgr.find_host("development");
     ASSERT_TRUE(custom_port.has_value());
@@ -133,7 +149,7 @@ MTEST(telemetry_profiler_metrics_and_hud) {
     ASSERT_EQ(m.dirty_rects_count, 2u);
 
     std::string report = profiler.format_report();
-    ASSERT_TRUE(report.find("MERIDIAN SHELL — GPU RENDERER") != std::string::npos);
+    ASSERT_TRUE(report.find("ZEPHYR SHELL — GPU RENDERER") != std::string::npos);
 
     std::string hud = profiler.format_live_hud();
     ASSERT_TRUE(hud.find("FPS:") != std::string::npos);

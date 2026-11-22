@@ -1,5 +1,5 @@
 #pragma once
-// meridian-shell / shell.hpp
+// zephyr-shell / shell.hpp
 //
 // Spec's top-level "Shell" component: wraps Executor with the REPL loop
 // and prompt-string logic that used to live directly in
@@ -14,7 +14,7 @@
 #include <iostream>
 #include <string>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 class Shell {
 public:
@@ -67,4 +67,4 @@ private:
     bool interactive_;
 };
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

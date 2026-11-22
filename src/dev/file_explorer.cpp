@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 std::string FileExplorer::get_file_icon(const std::string& filename, bool is_dir) {
     bool is_exec = false;
@@ -77,5 +77,5 @@ std::string FileExplorer::format_tree(const FileNode& node, int indent) {
     return ss.str();
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

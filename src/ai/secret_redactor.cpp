@@ -1,8 +1,8 @@
-// meridian-ai / secret_redactor.cpp
+// zephyr-ai / secret_redactor.cpp
 #include "secret_redactor.hpp"
 #include <regex>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 namespace {
 
@@ -54,4 +54,4 @@ std::string SecretRedactor::redact(const std::string& text, int* redaction_count
     return out;
 }
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

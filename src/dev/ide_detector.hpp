@@ -1,9 +1,9 @@
 #pragma once
 // src/dev/ide_detector.hpp
 //
-// Meridian Terminal 2.5 — Modular IDE Detection & Adapter Subsystem:
+// Zephyr Terminal 2.5 — Modular IDE Detection & Adapter Subsystem:
 // Automatically scans the host environment for installed IDEs and editors,
-// registering Meridian Terminal and Meridian Shell as available integrated
+// registering Zephyr Terminal and Zephyr Shell as available integrated
 // terminal profiles without requiring user intervention.
 //
 // Preserves all existing user configurations, custom profiles, and default shells.
@@ -12,7 +12,7 @@
 #include <vector>
 #include <memory>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct IdeInfo {
     std::string id;
@@ -38,7 +38,7 @@ class IdeDetector {
 public:
     static IdeDetector& instance();
 
-    // Auto-detects and registers Meridian across all installed IDEs
+    // Auto-detects and registers Zephyr across all installed IDEs
     std::vector<IdeInfo> scan_and_register(bool silent = false);
 
     // Checks if first-run auto-registration is needed and performs it silently
@@ -52,4 +52,4 @@ private:
     std::vector<std::unique_ptr<IdeAdapter>> adapters_;
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev

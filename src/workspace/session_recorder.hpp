@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / workspace / session_recorder.hpp
+// zephyr-terminal / workspace / session_recorder.hpp
 //
 // Reproducible session recording and replay engine. Records time-indexed
 // PTY inputs, outputs, terminal resize events, and process exit codes.
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::workspace {
+namespace zephyr::workspace {
 
 enum class SessionEventType : uint8_t {
     KeyInput,
@@ -52,5 +52,5 @@ private:
     static uint64_t current_time_ms();
 };
 
-} // namespace meridian::workspace
+} // namespace zephyr::workspace
 

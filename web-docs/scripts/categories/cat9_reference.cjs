@@ -10,16 +10,16 @@ module.exports = function(addArt) {
 <table class="doc-table">
   <thead><tr><th>Command</th><th>Arguments</th><th>Description</th></tr></thead>
   <tbody>
-    <tr><td><code>meridian</code></td><td><code>[none]</code></td><td>Launch interactive terminal emulator GUI.</td></tr>
-    <tr><td><code>meridian-shell</code></td><td><code>[-c &quot;cmd&quot;]</code></td><td>Launch standalone AST shell process.</td></tr>
-    <tr><td><code>meridian ssh</code></td><td><code>[alias]</code></td><td>Manage and connect to SSH remote workspaces.</td></tr>
-    <tr><td><code>meridian plugins</code></td><td><code>[none]</code></td><td>List active extensible plugins and lifecycle hooks.</td></tr>
-    <tr><td><code>meridian --performance</code></td><td><code>[none]</code></td><td>Display GPU framerate and telemetry profiler HUD.</td></tr>
-    <tr><td><code>meridian monitor</code></td><td><code>[none]</code></td><td>Open live CPU, RAM, Disk, and Network dashboard.</td></tr>
-    <tr><td><code>meridian git</code></td><td><code>[none]</code></td><td>Inspect Git branch divergence and staged changes.</td></tr>
-    <tr><td><code>meridian pic</code></td><td><code>&lt;file&gt;</code></td><td>Display direct 32-bit RGBA inline image.</td></tr>
-    <tr><td><code>meridian ask</code></td><td><code>&quot;&lt;intent&gt;&quot;</code></td><td>Translate natural language to safe shell command.</td></tr>
-    <tr><td><code>meridian diag</code></td><td><code>&quot;&lt;error&gt;&quot;</code></td><td>Diagnose compiler / runtime errors with suggested fixes.</td></tr>
+    <tr><td><code>zephyr</code></td><td><code>[none]</code></td><td>Launch interactive terminal emulator GUI.</td></tr>
+    <tr><td><code>zephyr-shell</code></td><td><code>[-c &quot;cmd&quot;]</code></td><td>Launch standalone AST shell process.</td></tr>
+    <tr><td><code>zephyr ssh</code></td><td><code>[alias]</code></td><td>Manage and connect to SSH remote workspaces.</td></tr>
+    <tr><td><code>zephyr plugins</code></td><td><code>[none]</code></td><td>List active extensible plugins and lifecycle hooks.</td></tr>
+    <tr><td><code>zephyr --performance</code></td><td><code>[none]</code></td><td>Display GPU framerate and telemetry profiler HUD.</td></tr>
+    <tr><td><code>zephyr monitor</code></td><td><code>[none]</code></td><td>Open live CPU, RAM, Disk, and Network dashboard.</td></tr>
+    <tr><td><code>zephyr git</code></td><td><code>[none]</code></td><td>Inspect Git branch divergence and staged changes.</td></tr>
+    <tr><td><code>zephyr pic</code></td><td><code>&lt;file&gt;</code></td><td>Display direct 32-bit RGBA inline image.</td></tr>
+    <tr><td><code>zephyr ask</code></td><td><code>&quot;&lt;intent&gt;&quot;</code></td><td>Translate natural language to safe shell command.</td></tr>
+    <tr><td><code>zephyr diag</code></td><td><code>&quot;&lt;error&gt;&quot;</code></td><td>Diagnose compiler / runtime errors with suggested fixes.</td></tr>
   </tbody>
 </table>
 
@@ -92,7 +92,7 @@ module.exports = function(addArt) {
   );
 
   addArt('ref-env', 'Environment Variables', 'REFERENCE', 'implemented',
-    'Environment variables used and exported by Meridian.',
+    'Environment variables used and exported by Zephyr.',
     [
       { id: 'all-env-ref', text: 'Environment Variables Reference', level: 2 }
     ],
@@ -103,32 +103,32 @@ module.exports = function(addArt) {
   <tbody>
     <tr><td><code>TERM</code></td><td><code>xterm-256color</code></td><td>Terminal emulator type.</td></tr>
     <tr><td><code>COLORTERM</code></td><td><code>truecolor</code></td><td>Indicates 24-bit TrueColor RGB support.</td></tr>
-    <tr><td><code>MERIDIAN_CONFIG_HOME</code></td><td><code>~/.config/meridian</code></td><td>Override configuration directory.</td></tr>
-    <tr><td><code>MERIDIAN_SESSION_ID</code></td><td><code>UUID</code></td><td>Unique session identifier for active window.</td></tr>
-    <tr><td><code>MERIDIAN_THEME</code></td><td><code>string</code></td><td>Active anime wallpaper identifier.</td></tr>
+    <tr><td><code>ZEPHYR_CONFIG_HOME</code></td><td><code>~/.config/zephyr</code></td><td>Override configuration directory.</td></tr>
+    <tr><td><code>ZEPHYR_SESSION_ID</code></td><td><code>UUID</code></td><td>Unique session identifier for active window.</td></tr>
+    <tr><td><code>ZEPHYR_THEME</code></td><td><code>string</code></td><td>Active anime wallpaper identifier.</td></tr>
   </tbody>
 </table>
 `
   );
 
   addArt('ref-faq', 'FAQ', 'REFERENCE', 'implemented',
-    'Frequently asked questions about Meridian Shell.',
+    'Frequently asked questions about Zephyr Shell.',
     [
       { id: 'faq-list', text: 'Frequently Asked Questions', level: 2 }
     ],
     `
 <h2 id="faq-list">Frequently Asked Questions</h2>
-<p><strong>Q: Does Meridian render real images or ASCII approximations?</strong><br/>
-A: Meridian renders genuine 32-bit RGBA hardware raster graphics on the GPU canvas with zero ASCII or half-block approximations.</p>
+<p><strong>Q: Does Zephyr render real images or ASCII approximations?</strong><br/>
+A: Zephyr renders genuine 32-bit RGBA hardware raster graphics on the GPU canvas with zero ASCII or half-block approximations.</p>
 
-<p><strong>Q: Is Meridian a fake shell or real terminal?</strong><br/>
-A: Meridian is a true terminal emulator running real Linux PTY sessions connected directly to <code>bash</code>, <code>zsh</code>, or <code>fish</code>.</p>
+<p><strong>Q: Is Zephyr a fake shell or real terminal?</strong><br/>
+A: Zephyr is a true terminal emulator running real Linux PTY sessions connected directly to <code>bash</code>, <code>zsh</code>, or <code>fish</code>.</p>
 
-<p><strong>Q: Can I use Meridian over SSH without remote installations?</strong><br/>
-A: Yes! Meridian uses standard ANSI and OSC escape sequences that work seamlessly over any remote SSH connection.</p>
+<p><strong>Q: Can I use Zephyr over SSH without remote installations?</strong><br/>
+A: Yes! Zephyr uses standard ANSI and OSC escape sequences that work seamlessly over any remote SSH connection.</p>
 
-<p><strong>Q: Does Meridian require an internet connection?</strong><br/>
-A: No. Meridian and its AI engine operate 100% offline with zero cloud dependencies.</p>
+<p><strong>Q: Does Zephyr require an internet connection?</strong><br/>
+A: No. Zephyr and its AI engine operate 100% offline with zero cloud dependencies.</p>
 `
   );
 
@@ -143,7 +143,7 @@ A: No. Meridian and its AI engine operate 100% offline with zero cloud dependenc
   <li><strong>Missing Powerline glyphs:</strong> Install a Nerd Font (e.g. <code>FantasqueSansM Nerd Font</code> or <code>JetBrainsMono Nerd Font</code>).</li>
   <li><strong>Image display issues:</strong> Verify that GPU drivers (Mesa / NVIDIA) are active and supporting OpenGL 3.3 Core.</li>
   <li><strong>PTY Permission Denied:</strong> Ensure your user account is in the <code>tty</code> group or that <code>/dev/pts</code> is mounted with standard permissions.</li>
-  <li><strong>Keybinding conflicts:</strong> Inspect <code>~/.config/meridian/keybindings.json</code> for duplicate shortcut mappings.</li>
+  <li><strong>Keybinding conflicts:</strong> Inspect <code>~/.config/zephyr/keybindings.json</code> for duplicate shortcut mappings.</li>
 </ul>
 `
   );

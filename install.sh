@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Meridian Terminal 2.5 — Universal Installer
+# Zephyr Terminal 2.6 — Universal Installer
 # Repository: https://github.com/charanbalaji2005/Meridian-Shell
 #
 # Usage (Linux / macOS / WSL):
@@ -41,7 +41,7 @@ log_die()   { log_error "$*"; exit 1; }
 echo -e "${CYAN}${BOLD}"
 cat << 'EOF'
 ╔══════════════════════════════════════════════════════════╗
-║              Meridian Terminal 2.5 Installer             ║
+║              Zephyr Terminal 2.5 Installer             ║
 ║        https://github.com/charanbalaji2005/Meridian-Shell║
 ╚══════════════════════════════════════════════════════════╝
 EOF
@@ -124,7 +124,7 @@ else
 fi
 
 # ── 3. Download Helper ────────────────────────────────────────────────────────
-WORK_DIR="$(mktemp -d /tmp/meridian-install-XXXXXX)"
+WORK_DIR="$(mktemp -d /tmp/zephyr-install-XXXXXX)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
 cd "${WORK_DIR}"
 
@@ -215,7 +215,7 @@ install_build_deps() {
 
 # ── 5. Source Build Function ──────────────────────────────────────────────────
 build_from_source() {
-    log_info "Building Meridian 2.5 from source..."
+    log_info "Building Zephyr 2.5 from source..."
 
     # Install build deps first
     install_build_deps
@@ -230,9 +230,9 @@ build_from_source() {
 
     # Download source
     log_info "Downloading source code from GitHub..."
-    dl "${SOURCE_URL}" "meridian-source.tar.gz"
-    tar -xzf "meridian-source.tar.gz"
-    SRC_DIR="$(find . -maxdepth 1 -type d -name "*Meridian-Shell*" -o -name "*meridian*" | head -n 1)"
+    dl "${SOURCE_URL}" "zephyr-source.tar.gz"
+    tar -xzf "zephyr-source.tar.gz"
+    SRC_DIR="$(find . -maxdepth 1 -type d -name "*Zephyr-Shell*" -o -name "*zephyr*" | head -n 1)"
     if [ -z "${SRC_DIR}" ]; then
         log_die "Could not find extracted source directory."
     fi
@@ -259,16 +259,16 @@ INSTALLED=false
 log_step "Checking for prebuilt release v${APP_VERSION}..."
 
 # Try the Linux tarball asset
-TARBALL="meridian-terminal-${APP_VERSION}-linux-${ARCH}.tar.gz"
+TARBALL="zephyr-terminal-${APP_VERSION}-linux-${ARCH}.tar.gz"
 if dl_try "${RELEASE_URL}/${TARBALL}" "${TARBALL}"; then
     log_step "Downloaded prebuilt binary tarball!"
     tar -xzf "${TARBALL}" 2>/dev/null || true
-    EXTRACT_DIR="$(find . -maxdepth 1 -type d -name "meridian-terminal*" | head -n 1)"
-    if [ -n "${EXTRACT_DIR}" ] && [ -f "${EXTRACT_DIR}/bin/meridian-shell" ]; then
+    EXTRACT_DIR="$(find . -maxdepth 1 -type d -name "zephyr-terminal*" | head -n 1)"
+    if [ -n "${EXTRACT_DIR}" ] && [ -f "${EXTRACT_DIR}/bin/zephyr-shell" ]; then
         mkdir -p "${PREFIX}/bin"
-        cp -f "${EXTRACT_DIR}/bin/meridian"  "${PREFIX}/bin/meridian"  2>/dev/null || true
-        cp -f "${EXTRACT_DIR}/bin/meridian-shell" "${PREFIX}/bin/meridian-shell" 2>/dev/null || true
-        chmod 755 "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell" 2>/dev/null || true
+        cp -f "${EXTRACT_DIR}/bin/zephyr"  "${PREFIX}/bin/zephyr"  2>/dev/null || true
+        cp -f "${EXTRACT_DIR}/bin/zephyr-shell" "${PREFIX}/bin/zephyr-shell" 2>/dev/null || true
+        chmod 755 "${PREFIX}/bin/zephyr" "${PREFIX}/bin/zephyr-shell" 2>/dev/null || true
         INSTALLED=true
         log_step "Prebuilt binary installed from release tarball."
     fi
@@ -276,7 +276,7 @@ fi
 
 # Try .deb (apt-based, root only)
 if [ "${INSTALLED}" = false ] && [ "${USER_MODE}" = false ] && [ "${PKG_MANAGER}" = "apt" ]; then
-    DEB_FILE="meridian-terminal_${APP_VERSION}_${DEB_ARCH}.deb"
+    DEB_FILE="zephyr-terminal_${APP_VERSION}_${DEB_ARCH}.deb"
     if dl_try "${RELEASE_URL}/${DEB_FILE}" "${DEB_FILE}"; then
         if command -v dpkg >/dev/null 2>&1; then
             log_step "Installing via dpkg..."
@@ -298,45 +298,45 @@ if [ "${INSTALLED}" = false ]; then
     fi
 
     mkdir -p "${PREFIX}/bin"
-    cp -f "${BUILD_OUT}/meridian"       "${PREFIX}/bin/meridian"       2>/dev/null || log_die "meridian binary not built."
-    cp -f "${BUILD_OUT}/meridian-shell" "${PREFIX}/bin/meridian-shell" 2>/dev/null || log_die "meridian-shell binary not built."
-    chmod 755 "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"
+    cp -f "${BUILD_OUT}/zephyr"       "${PREFIX}/bin/zephyr"       2>/dev/null || log_die "zephyr binary not built."
+    cp -f "${BUILD_OUT}/zephyr-shell" "${PREFIX}/bin/zephyr-shell" 2>/dev/null || log_die "zephyr-shell binary not built."
+    chmod 755 "${PREFIX}/bin/zephyr" "${PREFIX}/bin/zephyr-shell"
     INSTALLED=true
 fi
 
 # ── 8. Verify Installation ────────────────────────────────────────────────────
-MERIDIAN_BIN="${PREFIX}/bin/meridian-shell"
-if [ ! -f "${MERIDIAN_BIN}" ]; then
-    MERIDIAN_BIN="${HOME}/.local/bin/meridian-shell"
+ZEPHYR_BIN="${PREFIX}/bin/zephyr-shell"
+if [ ! -f "${ZEPHYR_BIN}" ]; then
+    ZEPHYR_BIN="${HOME}/.local/bin/zephyr-shell"
 fi
-if [ ! -f "${MERIDIAN_BIN}" ]; then
-    log_die "Installation failed — binary not found at ${PREFIX}/bin/meridian-shell"
+if [ ! -f "${ZEPHYR_BIN}" ]; then
+    log_die "Installation failed — binary not found at ${PREFIX}/bin/zephyr-shell"
 fi
-log_step "Binary verified: $(du -sh "${MERIDIAN_BIN}" | cut -f1) at ${MERIDIAN_BIN}"
+log_step "Binary verified: $(du -sh "${ZEPHYR_BIN}" | cut -f1) at ${ZEPHYR_BIN}"
 
 # ── 8b. Install High-Definition Artwork Gallery ───────────────────────────────
 log_step "Installing HD Anime & Theme Art Gallery..."
-GALLERY_DIR="${HOME}/.config/meridian/gallery"
+GALLERY_DIR="${HOME}/.config/zephyr/gallery"
 mkdir -p "${GALLERY_DIR}" 2>/dev/null || true
 if [ -d "resources/images/gallery" ]; then
     cp -rf resources/images/gallery/* "${GALLERY_DIR}/" 2>/dev/null || true
 fi
 if [ "${USER_MODE}" = false ]; then
-    mkdir -p /usr/local/share/meridian/images/gallery 2>/dev/null || true
-    cp -rf resources/images/gallery/* /usr/local/share/meridian/images/gallery/ 2>/dev/null || true
+    mkdir -p /usr/local/share/zephyr/images/gallery 2>/dev/null || true
+    cp -rf resources/images/gallery/* /usr/local/share/zephyr/images/gallery/ 2>/dev/null || true
 fi
 
 # ── 9. Desktop & OS-Specific App Integration ──────────────────────────────────
 if [ "${IS_MACOS}" = true ]; then
-    log_step "Installing macOS Meridian.app bundle with official icon..."
-    APP_BUNDLE="${HOME}/Applications/Meridian.app"
-    [ "${USER_MODE}" = false ] && APP_BUNDLE="/Applications/Meridian.app"
+    log_step "Installing macOS Zephyr.app bundle with official icon..."
+    APP_BUNDLE="${HOME}/Applications/Zephyr.app"
+    [ "${USER_MODE}" = false ] && APP_BUNDLE="/Applications/Zephyr.app"
 
     mkdir -p "${APP_BUNDLE}/Contents/MacOS" "${APP_BUNDLE}/Contents/Resources" || true
     
     # Copy official macOS .icns icon
-    if [ -f "resources/icons/meridian-terminal.icns" ]; then
-        cp -f "resources/icons/meridian-terminal.icns" "${APP_BUNDLE}/Contents/Resources/meridian-terminal.icns" 2>/dev/null || true
+    if [ -f "resources/icons/zephyr-terminal.icns" ]; then
+        cp -f "resources/icons/zephyr-terminal.icns" "${APP_BUNDLE}/Contents/Resources/zephyr-terminal.icns" 2>/dev/null || true
     fi
 
     cat > "${APP_BUNDLE}/Contents/Info.plist" << 'PLIST' || true
@@ -345,17 +345,17 @@ if [ "${IS_MACOS}" = true ]; then
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>meridian_launcher</string>
+    <string>zephyr_launcher</string>
     <key>CFBundleIdentifier</key>
-    <string>org.meridian-terminal.MeridianTerminal</string>
+    <string>org.zephyr-terminal.ZephyrTerminal</string>
     <key>CFBundleName</key>
-    <string>Meridian Terminal</string>
+    <string>Zephyr Terminal</string>
     <key>CFBundleDisplayName</key>
-    <string>Meridian Terminal</string>
+    <string>Zephyr Terminal</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>
-    <string>meridian-terminal.icns</string>
+    <string>zephyr-terminal.icns</string>
     <key>CFBundleShortVersionString</key>
     <string>2.5.1</string>
     <key>CFBundleVersion</key>
@@ -364,15 +364,15 @@ if [ "${IS_MACOS}" = true ]; then
 </plist>
 PLIST
 
-    cat > "${APP_BUNDLE}/Contents/MacOS/meridian_launcher" << LAUNCHER || true
+    cat > "${APP_BUNDLE}/Contents/MacOS/zephyr_launcher" << LAUNCHER || true
 #!/usr/bin/env bash
-exec /usr/bin/osascript -e 'tell application "Terminal" to do script "${PREFIX}/bin/meridian"'
+exec /usr/bin/osascript -e 'tell application "Terminal" to do script "${PREFIX}/bin/zephyr"'
 LAUNCHER
-    chmod +x "${APP_BUNDLE}/Contents/MacOS/meridian_launcher"
-    log_info "Meridian.app installed at ${APP_BUNDLE}"
+    chmod +x "${APP_BUNDLE}/Contents/MacOS/zephyr_launcher"
+    log_info "Zephyr.app installed at ${APP_BUNDLE}"
 
 elif [ "${IS_WINDOWS}" = false ]; then
-    log_step "Installing desktop entry and modern Meridian app icons..."
+    log_step "Installing desktop entry and modern Zephyr app icons..."
 
     DESKTOP_DIR="${HOME}/.local/share/applications"
     ICON_DIR="${HOME}/.local/share/icons/hicolor/scalable/apps"
@@ -383,41 +383,50 @@ elif [ "${IS_WINDOWS}" = false ]; then
     mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" || true
 
     # Install scalable SVG and multi-resolution PNG icons
-    if [ -f "resources/icons/meridian-terminal.svg" ]; then
-        cp -f "resources/icons/meridian-terminal.svg" "${ICON_DIR}/meridian-terminal.svg" 2>/dev/null || true
-        cp -f "resources/icons/meridian-terminal.svg" "${ICON_DIR}/meridian.svg" 2>/dev/null || true
+    if [ -f "resources/icons/zephyr-terminal.svg" ]; then
+        cp -f "resources/icons/zephyr-terminal.svg" "${ICON_DIR}/zephyr-terminal.svg" 2>/dev/null || true
+        cp -f "resources/icons/zephyr-terminal.svg" "${ICON_DIR}/zephyr.svg" 2>/dev/null || true
     fi
 
     for s in 16 24 32 48 64 128 256 512; do
         target_dir="${HOME}/.local/share/icons/hicolor/${s}x${s}/apps"
         [ "${USER_MODE}" = false ] && target_dir="/usr/share/icons/hicolor/${s}x${s}/apps"
         mkdir -p "${target_dir}" 2>/dev/null || true
-        if [ -f "resources/icons/meridian_${s}.png" ]; then
-            cp -f "resources/icons/meridian_${s}.png" "${target_dir}/meridian-terminal.png" 2>/dev/null || true
-            cp -f "resources/icons/meridian_${s}.png" "${target_dir}/meridian.png" 2>/dev/null || true
+        if [ -f "resources/icons/zephyr_${s}.png" ]; then
+            cp -f "resources/icons/zephyr_${s}.png" "${target_dir}/zephyr-terminal.png" 2>/dev/null || true
+            cp -f "resources/icons/zephyr_${s}.png" "${target_dir}/zephyr.png" 2>/dev/null || true
         fi
     done
 
-    # Write desktop entry inline with Terminal=true for instant graphical launching
-    cat > "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null << DESKTOP || true
+    if [ -x "${PREFIX}/bin/zephyr-terminal" ] && [ -f "packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop" ]; then
+        # The graphical terminal was installed: register it as an application.
+        sed "s|^Exec=zephyr-terminal|Exec=${PREFIX}/bin/zephyr-terminal|;s|^TryExec=zephyr-terminal|TryExec=${PREFIX}/bin/zephyr-terminal|" \
+            packaging/desktop/org.zephyr_terminal.ZephyrTerminal.desktop \
+            > "${DESKTOP_DIR}/org.zephyr_terminal.ZephyrTerminal.desktop" 2>/dev/null || true
+        chmod 644 "${DESKTOP_DIR}/org.zephyr_terminal.ZephyrTerminal.desktop" 2>/dev/null || true
+    else
+        # CLI-only install: a launcher that opens the Zephyr shell in your
+        # existing terminal emulator.
+        cat > "${DESKTOP_DIR}/zephyr.desktop" 2>/dev/null << DESKTOP || true
 [Desktop Entry]
 Version=1.5
 Type=Application
-Name=Meridian Terminal
-GenericName=Terminal Emulator & AI Dev Shell
-Comment=Modern AI developer shell with autosuggestions and live Git intelligence
-Exec=${PREFIX}/bin/meridian
-Icon=meridian-terminal
+Name=Zephyr Shell
+GenericName=Interactive Shell
+Comment=Zephyr shell with autosuggestions and Git intelligence (opens in your terminal)
+Exec=${PREFIX}/bin/zephyr
+Icon=zephyr-terminal
 Terminal=true
-Categories=System;TerminalEmulator;Development;
-Keywords=terminal;shell;console;ai;meridian;
+Categories=System;Development;
+Keywords=terminal;shell;console;zephyr;
 StartupNotify=true
 DESKTOP
-    chmod 644 "${DESKTOP_DIR}/meridian.desktop" 2>/dev/null || true
+        chmod 644 "${DESKTOP_DIR}/zephyr.desktop" 2>/dev/null || true
+    fi
 
     # Register shell paths
     if [ "${USER_MODE}" = false ] && [ -w /etc/shells ]; then
-        for bp in "${PREFIX}/bin/meridian" "${PREFIX}/bin/meridian-shell"; do
+        for bp in "${PREFIX}/bin/zephyr" "${PREFIX}/bin/zephyr-shell"; do
             grep -qxF "${bp}" /etc/shells 2>/dev/null || echo "${bp}" >> /etc/shells || true
         done
     fi
@@ -430,15 +439,15 @@ if [ "${IS_WSL}" = true ]; then
         if [ -d "${win_user}" ] && [ "$(basename "${win_user}")" != "Public" ] && [ "$(basename "${win_user}")" != "Default" ] && [ "$(basename "${win_user}")" != "Default User" ]; then
             win_bin_dir="${win_user}/.local/bin"
             mkdir -p "${win_bin_dir}" 2>/dev/null || true
-            cat > "${win_bin_dir}/meridian.cmd" 2>/dev/null << 'CMD' || true
+            cat > "${win_bin_dir}/zephyr.cmd" 2>/dev/null << 'CMD' || true
 @echo off
-wsl.exe -e meridian-shell %*
+wsl.exe -e zephyr-shell %*
 CMD
-            cat > "${win_bin_dir}/meridian.ps1" 2>/dev/null << 'PS1' || true
-wsl.exe -e meridian-shell $args
+            cat > "${win_bin_dir}/zephyr.ps1" 2>/dev/null << 'PS1' || true
+wsl.exe -e zephyr-shell $args
 PS1
-            if [ -f "resources/icons/meridian.ico" ]; then
-                cp -f "resources/icons/meridian.ico" "${win_bin_dir}/meridian.ico" 2>/dev/null || true
+            if [ -f "resources/icons/zephyr.ico" ]; then
+                cp -f "resources/icons/zephyr.ico" "${win_bin_dir}/zephyr.ico" 2>/dev/null || true
             fi
         fi
     done
@@ -454,7 +463,7 @@ if [ "${USER_MODE}" = true ] && [ "${NEEDS_PATH}" = true ]; then
     for rcfile in "${HOME}/.bashrc" "${HOME}/.zshrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
         if [ -f "${rcfile}" ] && ! grep -q '.local/bin' "${rcfile}" 2>/dev/null; then
             echo "" >> "${rcfile}"
-            echo "# Meridian Terminal" >> "${rcfile}"
+            echo "# Zephyr Terminal" >> "${rcfile}"
             echo "${EXPORT_LINE}" >> "${rcfile}"
             log_info "Added PATH to ${rcfile}"
             break
@@ -484,24 +493,24 @@ detect_and_register "Zed"                 "zed"           "zed"
 detect_and_register "Neovim"              "nvim"          "nvim"
 detect_and_register "JetBrains"           ""              "JetBrains"
 [ -d "${HOME}/.gemini/antigravity" ] && echo -e "   ${GREEN}✓${RESET} Google Antigravity"
-[ -n "${WSL_DISTRO_NAME:-}" ]        && echo -e "   ${CYAN}ℹ${RESET} Windows Terminal (WSL) — Meridian runs natively inside WSL"
+[ -n "${WSL_DISTRO_NAME:-}" ]        && echo -e "   ${CYAN}ℹ${RESET} Windows Terminal (WSL) — Zephyr runs natively inside WSL"
 
 # ── 12. Success Banner ────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}══════════════════════════════════════════════════════════${RESET}"
-echo -e " ${GREEN}${BOLD}✔  Meridian Terminal ${APP_VERSION} installed successfully!${RESET}"
+echo -e " ${GREEN}${BOLD}✔  Zephyr Terminal ${APP_VERSION} installed successfully!${RESET}"
 echo -e "${GREEN}${BOLD}══════════════════════════════════════════════════════════${RESET}"
 echo ""
 echo -e "Run these commands to get started:"
 echo ""
-echo -e "   ${CYAN}meridian-shell${RESET}         Launch Meridian Shell (interactive)"
-echo -e "   ${CYAN}meridian${RESET}               Launch full Meridian Terminal"
-echo -e "   ${CYAN}meridian update${RESET}        Check for updates"
-echo -e "   ${CYAN}meridian stats${RESET}         View session statistics"
+echo -e "   ${CYAN}zephyr-shell${RESET}         Launch Zephyr Shell (interactive)"
+echo -e "   ${CYAN}zephyr${RESET}               Launch full Zephyr Terminal"
+echo -e "   ${CYAN}zephyr update${RESET}        Check for updates"
+echo -e "   ${CYAN}zephyr stats${RESET}         View session statistics"
 echo ""
 
 if [ "${NEEDS_PATH}" = true ] && [ "${USER_MODE}" = true ]; then
-    echo -e "${YELLOW}${BOLD}⚠  Add Meridian to your PATH:${RESET}"
+    echo -e "${YELLOW}${BOLD}⚠  Add Zephyr to your PATH:${RESET}"
     echo ""
     echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
     echo ""
@@ -510,8 +519,8 @@ if [ "${NEEDS_PATH}" = true ] && [ "${USER_MODE}" = true ]; then
 fi
 
 if [ "${IS_WSL}" = true ]; then
-    echo -e "${CYAN}ℹ  WSL Note:${RESET} Run ${CYAN}meridian-shell${RESET} directly inside your WSL terminal."
+    echo -e "${CYAN}ℹ  WSL Note:${RESET} Run ${CYAN}zephyr-shell${RESET} directly inside your WSL terminal."
     echo -e "   For Windows Terminal integration, add it as a new profile:"
-    echo -e "   ${DIM}Profile → New → Command: wsl.exe -e meridian-shell${RESET}"
+    echo -e "   ${DIM}Profile → New → Command: wsl.exe -e zephyr-shell${RESET}"
     echo ""
 fi

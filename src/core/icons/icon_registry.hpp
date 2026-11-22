@@ -1,10 +1,10 @@
 #pragma once
 // src/core/icons/icon_registry.hpp
 //
-// Central Icon Registry for Meridian Terminal.
+// Central Icon Registry for Zephyr Terminal.
 // Maps files, extensions, directories, devops tools, git statuses, and commands
 // to rich Nerd Font v3 glyphs with automatic Unicode & ASCII fallback tiers.
-// Supports custom overrides via ~/.config/meridian/icons.toml.
+// Supports custom overrides via ~/.config/zephyr/icons.toml.
 
 #include "icon_detector.hpp"
 #include "nerd_font_icons.hpp"
@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::icons {
+namespace zephyr::icons {
 
 // ─── Data Structures ─────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ public:
     IconRegistry();
     ~IconRegistry() = default;
 
-    // Reload configuration and custom mappings (from ~/.config/meridian/icons.toml)
+    // Reload configuration and custom mappings (from ~/.config/zephyr/icons.toml)
     void reload_custom_mappings();
 
     // ── Primary APIs ────────────────────────────────────────────────────────
@@ -126,5 +126,5 @@ private:
     std::map<std::string, std::pair<std::string, std::string>> custom_commands_;
 };
 
-} // namespace meridian::icons
+} // namespace zephyr::icons
 

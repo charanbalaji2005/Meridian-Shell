@@ -7,7 +7,7 @@
 #include <string>
 #include <unistd.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 // ─── IconSet Implementation ───────────────────────────────────────────────────
 
@@ -436,7 +436,7 @@ const char* IconSet::git_conflict(IconTier t) {
 
 IconTier IconProvider::detect_tier() {
     // Check explicit override
-    const char* override_env = std::getenv("MERIDIAN_ICON_TIER");
+    const char* override_env = std::getenv("ZEPHYR_ICON_TIER");
     if (override_env) {
         std::string val = override_env;
         if (val == "NERD_FONT" || val == "nerd") return IconTier::NERD_FONT;
@@ -632,7 +632,7 @@ std::string IconProvider::icon_for_file(
     const std::string& filename,
     bool is_dir,
     bool is_executable,
-    char git_status
+    [[maybe_unused]] char git_status
 ) {
     IconTier t = detect_tier();
 
@@ -782,5 +782,5 @@ std::string IconProvider::colored_icon_for_file(
     return "\033[38;2;200;210;230m" + icon + "\033[0m";
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

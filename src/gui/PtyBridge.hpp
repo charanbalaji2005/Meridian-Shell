@@ -1,59 +1,80 @@
 #pragma once
 // src/gui/PtyBridge.hpp
 //
-// Bridges Meridian's C++ PTY manager, ANSI state machine, and ScreenBuffer
-// into Qt's asynchronous event loop with real Linux process execution.
+// Connects one real PTY session (core::pty::PtyManager) to its screen model
+// (vt::ScreenBuffer + vt::AnsiParser) inside Qt's event loop. Everything
+// runs on the GUI thread: a QSocketNotifier wakes us when the child writes,
+// so there is no reader thread and no locking.
 
 #include <QObject>
-#include <QThread>
 #include <QSocketNotifier>
-#include <QByteArray>
 #include <QString>
-#include <memory>
-#include <mutex>
+#include <QStringList>
 
+#include <memory>
+
+#include "../config/profiles.hpp"
 #include "../core/pty/pty_manager.hpp"
 #include "../core/vt/ansi_parser.hpp"
 #include "../core/vt/screen_buffer.hpp"
 
-namespace meridian::gui {
+namespace zephyr::gui {
+
+struct LaunchSpec {
+    QString program;            // absolute path or bare name (resolved via PATH)
+    QStringList args;
+    QString cwd;                // empty = $HOME
+    QStringList extra_env;      // "KEY=VALUE", applied on top of the inherited env
+    QString profile_name;       // for session restore / display
+    bool is_ssh = false;
+
+    static LaunchSpec fromProfile(const config::Profile& p);
+    static LaunchSpec fromSsh(const config::SshProfile& s);
+};
 
 class PtyBridge : public QObject {
     Q_OBJECT
 
 public:
-    explicit PtyBridge(int rows = 24, int cols = 80, QObject* parent = nullptr);
+    PtyBridge(int rows, int cols, std::size_t scrollback, QObject* parent = nullptr);
     ~PtyBridge() override;
 
-    bool startSession(const QString& program = "");
-    void writeInput(const QByteArray& data);
+    // Returns false and sets errorString() if the program could not start.
+    bool start(const LaunchSpec& spec);
+    void write(const QByteArray& data);
     void resize(int rows, int cols);
 
-    vt::ScreenBuffer& screenBuffer() { return screen_; }
-    const vt::ScreenBuffer& screenBuffer() const { return screen_; }
-    std::mutex& screenMutex() { return screen_mutex_; }
+    vt::ScreenBuffer& screen() { return screen_; }
+    const vt::ScreenBuffer& screen() const { return screen_; }
 
-    QString currentWorkingDir() const;
-    bool isAlive() const;
+    bool isRunning() const { return running_; }
+    // True if something other than the shell itself owns the terminal's
+    // foreground (e.g. a running build, vim, ssh): closing would kill it.
+    bool hasForegroundJob() const;
+    QString currentDirectory() const; // OSC 7 if reported, else /proc/<pid>/cwd
+    QString title() const { return title_; }
+    QString errorString() const { return error_; }
+    const LaunchSpec& spec() const { return spec_; }
 
 signals:
-    void screenUpdated();
+    void outputReceived();          // screen content changed
     void titleChanged(const QString& title);
-    void directoryChanged(const QString& cwd);
-    void sessionEnded(int exit_code);
+    void finished(int exit_code);
 
 private slots:
-    void handlePtyRead();
+    void onReadable();
 
 private:
-    pty::PtyManager pty_mgr_;
-    vt::AnsiParser parser_;
+    void handleExit();
+
     vt::ScreenBuffer screen_;
+    vt::AnsiParser parser_;
+    pty::PtyManager pty_;
     std::unique_ptr<QSocketNotifier> notifier_;
-    mutable std::mutex screen_mutex_;
-    int pty_master_fd_ = -1;
+    LaunchSpec spec_;
+    QString title_;
+    QString error_;
     bool running_ = false;
 };
 
-} // namespace meridian::gui
-
+} // namespace zephyr::gui

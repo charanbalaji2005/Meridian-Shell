@@ -4,7 +4,7 @@
 #include <cctype>
 #include <sstream>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 GraphicsProtocolParser::GraphicsProtocolParser() = default;
 
@@ -235,4 +235,4 @@ bool GraphicsProtocolParser::parse_sixel_sequence(const std::string& seq, Parsed
     return true;
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics

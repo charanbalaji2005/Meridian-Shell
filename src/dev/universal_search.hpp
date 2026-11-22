@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / universal_search.hpp
+// zephyr-terminal / dev / universal_search.hpp
 //
 // Universal multi-target search engine (Ctrl+Shift+F). Searches across
 // active screen buffers, scrollback history, command execution history, and files.
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 enum class SearchSource {
     ActiveScreen,
@@ -40,5 +40,5 @@ public:
     );
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

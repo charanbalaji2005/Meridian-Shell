@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / command_palette.hpp
+// zephyr-terminal / dev / command_palette.hpp
 //
 // Command Palette engine (Ctrl+Shift+P). Fuzzy search and quick launcher
 // for all terminal actions, multiplexer layouts, AI diagnostics, and dev tools.
@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct PaletteAction {
     std::string id;
@@ -32,5 +32,5 @@ private:
     void load_default_actions();
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

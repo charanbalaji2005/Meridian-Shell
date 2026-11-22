@@ -16,7 +16,7 @@ status: "implemented"
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00A8B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
     <span class="callout-title">Important</span>
   </div>
-  <p>Meridian Shell renders images as true raster graphics. Images are not converted into ASCII art, Unicode blocks, or other character-based representations.</p>
+  <p>Zephyr Shell renders images as true raster graphics. Images are not converted into ASCII art, Unicode blocks, or other character-based representations.</p>
 </div>
 
 <h2 id="rendering-pipeline">Rendering Pipeline</h2>
@@ -75,7 +75,7 @@ status: "implemented"
 <p>This ensures smooth rendering, proper scaling, and efficient memory usage.</p>
 
 <h2 id="image-formats">Image Formats</h2>
-<p>Meridian natively parses standard compressed raster files using <code>graphics::ImageDecoder</code>:</p>
+<p>Zephyr natively parses standard compressed raster files using <code>graphics::ImageDecoder</code>:</p>
 <table class="doc-table">
   <thead><tr><th>Format</th><th>Status</th><th>Channels</th><th>Notes</th></tr></thead>
   <tbody>
@@ -88,7 +88,7 @@ status: "implemented"
 </table>
 
 <h2 id="configuration">Configuration</h2>
-<p>Adjust max texture sizes and caching behavior in <code>~/.config/meridian/config.json</code>:</p>
+<p>Adjust max texture sizes and caching behavior in <code>~/.config/zephyr/config.json</code>:</p>
 <pre><code class="language-json">{
   "graphics": {
     "max_inline_width": 1920,
@@ -117,6 +117,6 @@ pic --clear</code></pre>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
   <li><strong>Image not found:</strong> Verify the absolute or relative file path.</li>
-  <li><strong>GPU Texture Allocation Error:</strong> Ensure OpenGL 3.3 Core or Vulkan drivers are active (<code>meridian --performance</code>).</li>
+  <li><strong>GPU Texture Allocation Error:</strong> Ensure OpenGL 3.3 Core or Vulkan drivers are active (<code>zephyr --performance</code>).</li>
   <li><strong>Unsupported File:</strong> Convert esoteric vector formats (SVG) or RAW camera files to standard PNG/JPEG.</li>
 </ul>

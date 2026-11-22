@@ -10,7 +10,7 @@
 #include <sys/statvfs.h>
 #include <unistd.h>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 namespace {
 
@@ -157,7 +157,7 @@ void SystemMonitor::sample_processes(SystemMetrics& m) {
     // Top process snapshot
     ProcessSnapshot p1;
     p1.pid = getpid();
-    p1.name = "meridian";
+    p1.name = "zephyr";
     p1.cpu_percent = m.cpu_percent;
     p1.memory_bytes = m.mem_used_bytes / 10;
     p1.state = 'S';
@@ -191,7 +191,7 @@ std::string SystemMetrics::format_status_bar() const {
 std::string SystemMetrics::format_dashboard() const {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(1);
-    ss << "┌─── Meridian System Monitor ─────────────────────────────\n";
+    ss << "┌─── Zephyr System Monitor ─────────────────────────────\n";
     ss << "│ CPU Usage:       " << cpu_percent << "%\n";
     ss << "│ Memory:          " << format_bytes(mem_used_bytes) << " / " << format_bytes(mem_total_bytes)
        << " (" << mem_percent << "%)\n";
@@ -214,4 +214,4 @@ std::string SystemMetrics::format_dashboard() const {
     return ss.str();
 }
 
-} // namespace meridian::dev
+} // namespace zephyr::dev

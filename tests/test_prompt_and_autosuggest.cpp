@@ -1,5 +1,5 @@
 // tests/test_prompt_and_autosuggest.cpp
-// Meridian Shell — Prompt, Autosuggestion Engine, and Icon Provider Tests
+// Zephyr Shell — Prompt, Autosuggestion Engine, and Icon Provider Tests
 
 #include "mini_test.hpp"
 #include "../src/shell/autosuggest_engine.hpp"
@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-using namespace meridian::shell;
-using namespace meridian::dev;
+using namespace zephyr::shell;
+using namespace zephyr::dev;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper
@@ -228,21 +228,21 @@ MTEST(icon_tier_detection_returns_valid_tier) {
 }
 
 MTEST(icon_tier_override_env_nerd_font) {
-    setenv("MERIDIAN_ICON_TIER", "NERD_FONT", 1);
+    setenv("ZEPHYR_ICON_TIER", "NERD_FONT", 1);
     ASSERT_EQ(IconProvider::detect_tier(), IconTier::NERD_FONT);
-    unsetenv("MERIDIAN_ICON_TIER");
+    unsetenv("ZEPHYR_ICON_TIER");
 }
 
 MTEST(icon_tier_override_env_ascii) {
-    setenv("MERIDIAN_ICON_TIER", "ASCII", 1);
+    setenv("ZEPHYR_ICON_TIER", "ASCII", 1);
     ASSERT_EQ(IconProvider::detect_tier(), IconTier::ASCII);
-    unsetenv("MERIDIAN_ICON_TIER");
+    unsetenv("ZEPHYR_ICON_TIER");
 }
 
 MTEST(icon_tier_override_env_unicode) {
-    setenv("MERIDIAN_ICON_TIER", "UNICODE", 1);
+    setenv("ZEPHYR_ICON_TIER", "UNICODE", 1);
     ASSERT_EQ(IconProvider::detect_tier(), IconTier::UNICODE);
-    unsetenv("MERIDIAN_ICON_TIER");
+    unsetenv("ZEPHYR_ICON_TIER");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -439,7 +439,7 @@ MTEST(icon_for_directory_by_path_downloads) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 MTEST(icon_for_executable_binary) {
-    ASSERT_FALSE(IconProvider::icon_for_file("meridian-shell", false, true).empty());
+    ASSERT_FALSE(IconProvider::icon_for_file("zephyr-shell", false, true).empty());
 }
 
 MTEST(icon_for_object_file) {

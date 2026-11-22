@@ -57,14 +57,14 @@ export const App: React.FC = () => {
 
   // Handle Theme: Default is LIGHT
   useEffect(() => {
-    const savedTheme = (localStorage.getItem('meridian_theme') as 'dark' | 'light') || 'light';
+    const savedTheme = (localStorage.getItem('zephyr_theme') as 'dark' | 'light') || 'light';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
 
   // Handle Language
   useEffect(() => {
-    const savedLang = (localStorage.getItem('meridian_lang') as SupportedLanguage) || 'en';
+    const savedLang = (localStorage.getItem('zephyr_lang') as SupportedLanguage) || 'en';
     if (TRANSLATIONS[savedLang]) {
       setLanguage(savedLang);
     }
@@ -72,14 +72,14 @@ export const App: React.FC = () => {
 
   const handleSelectLanguage = (lang: SupportedLanguage) => {
     setLanguage(lang);
-    localStorage.setItem('meridian_lang', lang);
+    localStorage.setItem('zephyr_lang', lang);
   };
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     document.documentElement.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('meridian_theme', nextTheme);
+    localStorage.setItem('zephyr_theme', nextTheme);
   };
 
   const handleSelectArticle = (id: string) => {
@@ -160,7 +160,7 @@ export const App: React.FC = () => {
                 <path d="M 28 68 L 28 34 L 50 56 L 72 34 L 72 68" fill="none" stroke="#00A8B5" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="footer-title">Meridian Shell</span>
+            <span className="footer-title">Zephyr Shell</span>
           </div>
           <div className="footer-links">
             <button onClick={() => handleSelectArticle('intro')} className="footer-link-btn">{t.docTitle}</button>

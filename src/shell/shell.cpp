@@ -22,7 +22,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 namespace {
 
@@ -104,7 +104,7 @@ void render_reference_layout_header(std::ostream& out) {
 
     // 2. Picture graphic: Dynamic Full HD TrueColor dual-pixel halfblocks (880 - 1,700+ crisp micro-pixels)
     int term_cols = 80, term_rows = 24;
-    meridian::graphics::AsciiArtEngine::get_terminal_dimensions(term_cols, term_rows);
+    zephyr::graphics::AsciiArtEngine::get_terminal_dimensions(term_cols, term_rows);
 
     int art_w = 48;
     int art_h = 14;
@@ -128,7 +128,7 @@ void render_reference_layout_header(std::ostream& out) {
         "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
         "\033[38;2;140;163;136m󰌽 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + kernel + "\033[0m",
         "\033[38;2;110;165;185m󰨇 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + wm + "\033[0m",
-        "\033[38;2;90;175;170m \033[38;2;170;180;200m→ \033[38;2;220;230;245mmeridian 2.5.1\033[0m",
+        "\033[38;2;90;175;170m \033[38;2;170;180;200m→ \033[38;2;220;230;245mzephyr 2.5.1\033[0m",
         "\033[38;2;215;185;135m󰘚 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + ram_str + "\033[0m",
         "\033[38;2;205;135;145m󱑂 \033[38;2;170;180;200m→ \033[38;2;220;230;245m" + uptime_str + "\033[0m",
         "\033[38;2;120;130;150m───────\033[38;2;200;210;230m⭘\033[38;2;120;130;150m───────\033[0m",
@@ -168,14 +168,14 @@ Shell::Shell(bool interactive) : interactive_(interactive) {}
 
 std::string Shell::prompt() const {
     char cwd[4096];
-    if (getcwd(cwd, sizeof(cwd))) return "meridian:" + std::string(cwd) + "$ ";
-    return "meridian$ ";
+    if (getcwd(cwd, sizeof(cwd))) return "zephyr:" + std::string(cwd) + "$ ";
+    return "zephyr$ ";
 }
 
 int Shell::run_command(const std::string& command, std::ostream& err) {
     std::string error;
     int status = executor_.run_line(command, &error);
-    if (!error.empty()) { err << "meridian-shell: " << error << "\n"; return 1; }
+    if (!error.empty()) { err << "zephyr-shell: " << error << "\n"; return 1; }
     return status < 0 ? 1 : status;
 }
 
@@ -238,7 +238,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
                 auto suggestion = analyzer.analyze(first_token);
                 if (suggestion.has_value()) {
                     std::string suggested_cmd = suggestion->suggested + trimmed.substr(first_token.size());
-                    out << "\n\033[38;2;0;229;255m┌── \033[1;33m💡 Meridian AI Typo Correction\033[0;38;2;0;229;255m ──────────────────────────────────────────┐\033[0m\n"
+                    out << "\n\033[38;2;0;229;255m┌── \033[1;33m💡 Zephyr AI Typo Correction\033[0;38;2;0;229;255m ──────────────────────────────────────────┐\033[0m\n"
                         << "\033[38;2;0;229;255m│\033[0m Command '\033[1;31m" << first_token << "\033[0m' not found in system PATH or builtins.\n"
                         << "\033[38;2;0;229;255m│\033[0m Did you mean: \033[1;38;2;34;197;94m" << suggested_cmd << "\033[0m ?\n"
                         << "\033[38;2;0;229;255m│\033[0m\n"
@@ -273,7 +273,7 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
 
         std::string error;
         int status = executor_.run_line(line, &error);
-        if (!error.empty()) err << "meridian-shell: " << error << "\n";
+        if (!error.empty()) err << "zephyr-shell: " << error << "\n";
         else if (status >= 0 && !trimmed.empty()) executor_.push_history(line);
 
         if (executor_.exit_requested()) return executor_.exit_code();
@@ -287,4 +287,4 @@ int Shell::run_interactive(std::istream& in, std::ostream& out, std::ostream& er
     return 0;
 }
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

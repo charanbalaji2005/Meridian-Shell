@@ -26,22 +26,22 @@ server. Only `g++ 13.3` and `make`. That shaped every decision below.
 | ANSI/VT parser | `src/core/vt/ansi_parser.{hpp,cpp}` | done, unit-tested incl. adversarial input |
 | PTY manager | `src/core/pty/pty_manager.{hpp,cpp}` | done, tested against real spawned processes |
 | Shared config store | `src/core/config.{hpp,cpp}` | done, tested (extracted from AI-only config this session) |
-| Meridian Shell: lexer/parser/AST | `src/shell/{lexer,parser,ast}.{hpp,cpp}` | done, unit-tested |
-| Meridian Shell: executor | `src/shell/executor.{hpp,cpp}` | done, integration-tested |
-| Meridian Shell: real job control | `src/shell/executor.{hpp,cpp}` | done, tested via real Ctrl+Z through a real PTY |
-| Meridian Shell: builtins | `src/shell/builtins.{hpp,cpp}` | done, tested |
-| Meridian Shell: `Shell` class (REPL extracted from main) | `src/shell/shell.{hpp,cpp}` | done, unit-tested (new this session) |
-| Meridian AI: secret redactor | `src/ai/secret_redactor.{hpp,cpp}` | done, tested |
-| Meridian AI: risk classifier | `src/ai/risk_classifier.{hpp,cpp}` | done, tested |
-| Meridian AI: local command analyzer | `src/ai/command_analyzer.{hpp,cpp}` | done, tested against real PATH |
-| Meridian AI: `CommandContext` (cwd/git/OS info) | `src/ai/command_context.{hpp,cpp}` | done, tested (new this session) |
-| Meridian AI: controller + CLI | `src/ai/ai_controller.{hpp,cpp}`, `src/app/meridian_main.cpp` | done, tested |
+| Zephyr Shell: lexer/parser/AST | `src/shell/{lexer,parser,ast}.{hpp,cpp}` | done, unit-tested |
+| Zephyr Shell: executor | `src/shell/executor.{hpp,cpp}` | done, integration-tested |
+| Zephyr Shell: real job control | `src/shell/executor.{hpp,cpp}` | done, tested via real Ctrl+Z through a real PTY |
+| Zephyr Shell: builtins | `src/shell/builtins.{hpp,cpp}` | done, tested |
+| Zephyr Shell: `Shell` class (REPL extracted from main) | `src/shell/shell.{hpp,cpp}` | done, unit-tested (new this session) |
+| Zephyr AI: secret redactor | `src/ai/secret_redactor.{hpp,cpp}` | done, tested |
+| Zephyr AI: risk classifier | `src/ai/risk_classifier.{hpp,cpp}` | done, tested |
+| Zephyr AI: local command analyzer | `src/ai/command_analyzer.{hpp,cpp}` | done, tested against real PATH |
+| Zephyr AI: `CommandContext` (cwd/git/OS info) | `src/ai/command_context.{hpp,cpp}` | done, tested (new this session) |
+| Zephyr AI: controller + CLI | `src/ai/ai_controller.{hpp,cpp}`, `src/app/zephyr_main.cpp` | done, tested |
 | Terminal config (scrollback/shell/font/theme/...) | `src/config/terminal_config.{hpp,cpp}` | done, tested (new this session) |
 | Keybindings (spec-matching defaults) | `src/config/keybindings.{hpp,cpp}` | done, tested (new this session) |
 | Credential store (file fallback, real Secret Service not available) | `src/security/credential_store.{hpp,cpp}` | done, tested incl. real on-disk permission checks (new this session) |
 | Headless PTY+ANSI integration demo | `src/app/demo_main.cpp` | done |
-| Standalone `meridian-shell` binary | `src/app/shell_main.cpp` | done |
-| `meridian` CLI (`meridian ai ...`) | `src/app/meridian_main.cpp` | done |
+| Standalone `zephyr-shell` binary | `src/app/shell_main.cpp` | done |
+| `zephyr` CLI (`zephyr ai ...`) | `src/app/zephyr_main.cpp` | done |
 | `tests/manual_core_test.sh` (spec §78's exact command list) | `tests/manual_core_test.sh` | done, 11/11 checks pass (new this session) |
 
 **109 tests, 251 assertions, all passing.** Run `make test`. Also

@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal-core / vt / types.hpp
+// zephyr-terminal-core / vt / types.hpp
 //
 // Fundamental cell and attribute types for the terminal screen model.
 // No Qt dependency — this is pure C++20 so it can be built, unit tested,
@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace meridian::vt {
+namespace zephyr::vt {
 
 // A terminal color: either "use the default", a 0-255 palette index
 // (16-color and 256-color modes both fit here), or a 24-bit RGB triple.
@@ -117,4 +117,4 @@ inline int codepoint_width(char32_t cp) {
     return 1;
 }
 
-} // namespace meridian::vt
+} // namespace zephyr::vt

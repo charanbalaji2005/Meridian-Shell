@@ -5,21 +5,21 @@ category: "GETTING STARTED"
 status: "implemented"
 ---
 
-<h2 id="launch">Launching Meridian</h2>
-<p>Launch Meridian from your application menu or terminal:</p>
+<h2 id="launch">Launching Zephyr</h2>
+<p>Launch Zephyr from your application menu or terminal:</p>
 <pre><code class="language-bash"># Launch full interactive terminal emulator
-meridian
+zephyr
 
 # Launch standalone shell engine directly
-meridian-shell</code></pre>
+zephyr-shell</code></pre>
 
 <h2 id="first-commands">First Commands</h2>
-<p>Try running these built-in developer commands inside Meridian:</p>
-<pre><code class="language-bash">meridian monitor        # Live CPU, RAM, Disk, Network, and Process metrics
-meridian git            # Visual Git branch divergence and staged/unstaged changes
-meridian files          # Interactive tree file explorer with git badges
-meridian ssh            # List and connect to SSH remote workspaces
-meridian --performance  # Live GPU framerate, PTY latency & telemetry HUD</code></pre>
+<p>Try running these built-in developer commands inside Zephyr:</p>
+<pre><code class="language-bash">zephyr monitor        # Live CPU, RAM, Disk, Network, and Process metrics
+zephyr git            # Visual Git branch divergence and staged/unstaged changes
+zephyr files          # Interactive tree file explorer with git badges
+zephyr ssh            # List and connect to SSH remote workspaces
+zephyr --performance  # Live GPU framerate, PTY latency & telemetry HUD</code></pre>
 
 <h2 id="themes">Anime Theme Selection (Ctrl+P / pic)</h2>
 <p>Press <code>Ctrl+P</code> to browse the theme gallery or configure your startup anime wallpaper via the CLI:</p>

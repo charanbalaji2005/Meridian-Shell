@@ -1,41 +1,77 @@
 #!/usr/bin/env bash
-# packaging/appimage/build_appimage.sh
-# Creates portable Meridian-Terminal-x86_64.AppImage
-set -e
+# Build a portable Zephyr-Terminal-<version>-<arch>.AppImage.
+#
+# Bundles the Qt 6 runtime (LGPL, dynamically linked) with linuxdeploy and
+# linuxdeploy-plugin-qt. Build on the OLDEST distro you want to support:
+# the AppImage runs on systems with the same or newer glibc. Needs Qt >= 6.4,
+# e.g. Ubuntu 24.04 / Debian 12:
+#   sudo apt install build-essential cmake ninja-build qt6-base-dev qt6-svg-dev \
+#                    libgl-dev qt6-wayland file wget desktop-file-utils
+#   packaging/appimage/build_appimage.sh        # -> dist/*.AppImage
+#
+# linuxdeploy only publishes rolling "continuous" builds. For reproducible
+# builds, download them once, verify, and point at your copies:
+#   LINUXDEPLOY=/path/linuxdeploy-x86_64.AppImage \
+#   LINUXDEPLOY_QT=/path/linuxdeploy-plugin-qt-x86_64.AppImage packaging/appimage/build_appimage.sh
+set -euo pipefail
 
-VERSION="2.0.0"
-APPDIR="build/AppDir"
-DIST_DIR="dist"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ARCH="${ARCH:-$(uname -m)}"
+VERSION="$(sed -n 's/^ *VERSION \([0-9.]*\)$/\1/p' "$ROOT/CMakeLists.txt" | head -n1)"
+WORK="${WORK:-$ROOT/build/appimage}"
+APPDIR="$WORK/AppDir"
+TOOLS="$WORK/tools"
+mkdir -p "$TOOLS" "$ROOT/dist"
+rm -rf "$APPDIR" "$WORK/build"
 
-echo "=============================================="
-echo "      Meridian Terminal AppImage Builder      "
-echo "=============================================="
+fetch() { # name url
+    local dest="$TOOLS/$1"
+    if [[ ! -x "$dest" ]]; then
+        echo "Downloading $1"
+        wget -q -O "$dest" "$2"
+        chmod +x "$dest"
+    fi
+    echo "$dest"
+}
+LINUXDEPLOY="${LINUXDEPLOY:-$(fetch linuxdeploy-$ARCH.AppImage \
+    https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage)}"
+LINUXDEPLOY_QT="${LINUXDEPLOY_QT:-$(fetch linuxdeploy-plugin-qt-$ARCH.AppImage \
+    https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$ARCH.AppImage)}"
+# linuxdeploy discovers plugins on PATH as linuxdeploy-plugin-<name>.
+ln -sf "$LINUXDEPLOY_QT" "$TOOLS/linuxdeploy-plugin-qt"
+export PATH="$TOOLS:$PATH"
 
-mkdir -p "${DIST_DIR}"
-rm -rf "${APPDIR}"
-mkdir -p "${APPDIR}/usr/bin"
-mkdir -p "${APPDIR}/usr/share/applications"
-mkdir -p "${APPDIR}/usr/share/icons/hicolor/scalable/apps"
+cmake -S "$ROOT" -B "$WORK/build" -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DZEPHYR_BUILD_GUI=ON \
+    -DZEPHYR_BUILD_TESTS=OFF
+cmake --build "$WORK/build"
+DESTDIR="$APPDIR" cmake --install "$WORK/build"
 
-make all -j"$(nproc 2>/dev/null || echo 2)"
+DESKTOP="$APPDIR/usr/share/applications/org.zephyr_terminal.ZephyrTerminal.desktop"
+ICON="$APPDIR/usr/share/icons/hicolor/256x256/apps/zephyr-terminal.png"
+desktop-file-validate "$DESKTOP"
 
-cp -f build/meridian-shell "${APPDIR}/usr/bin/meridian-shell"
-cp -f build/meridian "${APPDIR}/usr/bin/meridian"
-chmod +x "${APPDIR}/usr/bin/meridian-shell" "${APPDIR}/usr/bin/meridian"
+# Bundle the Wayland platform plugin too when it is installed, so the
+# AppImage runs natively on Wayland (Qt falls back to XCB otherwise).
+QT_PLUGIN_DIR="$(qtpaths6 --plugin-dir 2>/dev/null || qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || true)"
+if [[ -n "$QT_PLUGIN_DIR" && -e "$QT_PLUGIN_DIR/platforms/libqwayland-generic.so" ]]; then
+    export EXTRA_PLATFORM_PLUGINS="libqwayland-generic.so;libqwayland-egl.so"
+fi
+export QMAKE="${QMAKE:-$(command -v qmake6 || command -v qmake)}"
+export OUTPUT="Zephyr-Terminal-$VERSION-$ARCH.AppImage"
+# The tools are AppImages themselves; extract-and-run works without FUSE (CI, containers).
+export APPIMAGE_EXTRACT_AND_RUN=1
 
-cp -f packaging/appimage/AppRun "${APPDIR}/AppRun"
-chmod +x "${APPDIR}/AppRun"
+(cd "$WORK" && "$LINUXDEPLOY" --appdir "$APPDIR" \
+    --desktop-file "$DESKTOP" --icon-file "$ICON" \
+    --executable "$APPDIR/usr/bin/zephyr-terminal" \
+    --executable "$APPDIR/usr/bin/zephyr" \
+    --executable "$APPDIR/usr/bin/zephyr-shell" \
+    --plugin qt --output appimage)
 
-cp -f meridian.desktop "${APPDIR}/meridian.desktop"
-cp -f meridian.desktop "${APPDIR}/usr/share/applications/meridian.desktop"
-
-# Create standard terminal app icon
-cat << 'EOF' > "${APPDIR}/meridian.png"
-\x89PNG\r\n\x1a\n
-EOF
-
-# Package portable AppDir into self-extracting archive or bundle
-tar -czf "${DIST_DIR}/Meridian-Terminal-${VERSION}-x86_64.AppDir.tar.gz" -C build AppDir
-echo "   [✓] Generated ${DIST_DIR}/Meridian-Terminal-${VERSION}-x86_64.AppDir.tar.gz"
-echo "=============================================="
-
+mv -f "$WORK/$OUTPUT" "$ROOT/dist/"
+echo "Built dist/$OUTPUT"
+# Smoke test: the bundled binary starts and reports its version (no display needed).
+QT_QPA_PLATFORM=offscreen "$ROOT/dist/$OUTPUT" --version

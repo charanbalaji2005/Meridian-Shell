@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/gpu_texture_manager.hpp
 //
-// GPU Texture Lifecycle & Cache Manager for Meridian Terminal.
+// GPU Texture Lifecycle & Cache Manager for Zephyr Terminal.
 // Uploads, manages, and caches 32-bit RGBA8 texture buffers for native GPU rendering.
 
 #include "image_decoder.hpp"
@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 struct GpuTexture {
     uint64_t id = 0;
@@ -95,5 +95,5 @@ private:
     void evict_if_needed(size_t required_bytes);
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

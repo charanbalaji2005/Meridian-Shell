@@ -6,7 +6,7 @@ category: "Getting Started"
 
 # Configuration
 
-Spec §75/§76 describe `~/.config/meridian/{terminal.toml,keybindings.toml,ai.toml}`.
+Spec §75/§76 describe `~/.config/zephyr/{terminal.toml,keybindings.toml,ai.toml}`.
 All three exist and are real, backed by the same underlying store
 (`src/core/config.{hpp,cpp}` — extracted from what was originally
 AI-only config once it became clear terminal settings and keybindings
@@ -60,11 +60,11 @@ Covered in `docs/ai.md`: `ai.enabled`, `ai.detect`, `ai.privacy`,
 
 ## Path resolution
 
-All three default to `~/.config/meridian/<name>.toml`. Every config-
+All three default to `~/.config/zephyr/<name>.toml`. Every config-
 backed class takes its path as a constructor argument rather than
 hardcoding it, specifically so tests can point at a throwaway file
-instead of a real user's `~/.config` — `MERIDIAN_CONFIG_HOME` is the
-environment-variable override for the `meridian` CLI specifically (see
+instead of a real user's `~/.config` — `ZEPHYR_CONFIG_HOME` is the
+environment-variable override for the `zephyr` CLI specifically (see
 `docs/ai.md`); `TerminalConfig`/`Keybindings` take an explicit path with
 no CLI wiring yet, since there's no terminal-core binary that would
 consume them (that's the GUI, which doesn't exist — `docs/gui.md`).

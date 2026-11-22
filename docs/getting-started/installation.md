@@ -7,7 +7,7 @@ status: "production"
 
 # Installation & Multi-OS Setup Guide
 
-Meridian Terminal 2.5 provides native prebuilt packages across **Linux**, **macOS**, **WSL**, and **Windows**, along with a 1-line universal installer and 1-click GitHub connection.
+Zephyr Terminal 2.5 provides native prebuilt packages across **Linux**, **macOS**, **WSL**, and **Windows**, along with a 1-line universal installer and 1-click GitHub connection.
 
 ---
 
@@ -30,25 +30,25 @@ curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/mai
 ### 1. 🐧 Ubuntu / Debian / Pop!_OS / Linux Mint
 ```bash
 # Direct prebuilt DEB package
-curl -fsSLO https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal_2.5.0_amd64.deb
-sudo apt install ./meridian-terminal_2.5.0_amd64.deb
+curl -fsSLO https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/zephyr-terminal_2.5.0_amd64.deb
+sudo apt install ./zephyr-terminal_2.5.0_amd64.deb
 ```
 
 ### 2. 🎩 Fedora / RHEL / CentOS / Rocky Linux / AlmaLinux
 ```bash
 # Direct prebuilt RPM package via DNF
-sudo dnf install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal-2.5.0-1.fc44.x86_64.rpm
+sudo dnf install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/zephyr-terminal-2.5.0-1.fc44.x86_64.rpm
 ```
 
 ### 3. 🏹 Arch Linux / Manjaro
 ```bash
 # Via AUR (yay / paru)
-yay -S meridian-terminal
+yay -S zephyr-terminal
 ```
 
 ### 4. 🦎 openSUSE Tumbleweed & Leap
 ```bash
-sudo zypper install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/meridian-terminal-2.5.0-1.fc44.x86_64.rpm
+sudo zypper install https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/zephyr-terminal-2.5.0-1.fc44.x86_64.rpm
 ```
 
 ### 5. 🏔️ Alpine Linux
@@ -63,18 +63,18 @@ Inside your Ubuntu, Debian, or Fedora WSL terminal:
 curl -fsSL https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/install.sh | bash
 ```
 > **WSL Display Modes**:
-> - `meridian-shell` runs in any Windows Terminal or VS Code console.
-> - `meridian` automatically launches its hardware-accelerated GUI on Windows 11 with WSLg.
+> - `zephyr-shell` runs in any Windows Terminal or VS Code console.
+> - `zephyr` automatically launches its hardware-accelerated GUI on Windows 11 with WSLg.
 
 ### 7. 🍏 macOS (Apple Silicon M1-M5 & Intel x86_64)
 ```bash
 # Via Homebrew Cask
-brew tap charanbalaji2005/meridian https://github.com/charanbalaji2005/Meridian-Shell
-brew install --cask meridian-terminal
+brew tap charanbalaji2005/zephyr https://github.com/charanbalaji2005/Meridian-Shell
+brew install --cask zephyr-terminal
 ```
 Or download direct disk images:
-- [Apple Silicon DMG (`arm64`)](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Meridian-Terminal-2.5.0-macOS-arm64.dmg)
-- [Intel DMG (`x86_64`)](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Meridian-Terminal-2.5.0-macOS-x86_64.dmg)
+- [Apple Silicon DMG (`arm64`)](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Zephyr-Terminal-2.5.0-macOS-arm64.dmg)
+- [Intel DMG (`x86_64`)](https://github.com/charanbalaji2005/Meridian-Shell/releases/download/v2.5.0/Zephyr-Terminal-2.5.0-macOS-x86_64.dmg)
 
 ### 8. 🪟 Windows Native (PowerShell)
 ```powershell
@@ -83,9 +83,9 @@ irm https://raw.githubusercontent.com/charanbalaji2005/Meridian-Shell/main/dist/
 
 ---
 
-## 🔑 How to Connect to GitHub (`meridian gh`)
+## 🔑 How to Connect to GitHub (`zephyr gh`)
 
-Meridian includes a **1-Click GitHub Integration** designed for developer ease without exposing account passwords or overwriting existing keys:
+Zephyr includes a **1-Click GitHub Integration** designed for developer ease without exposing account passwords or overwriting existing keys:
 
 ```text
 ┌─── GitHub Integration Status ────────────────────────────────────────────────┐
@@ -99,7 +99,7 @@ Meridian includes a **1-Click GitHub Integration** designed for developer ease w
 
 ### Step 1: Connect Account & Verify SSH
 ```bash
-meridian gh connect
+zephyr gh connect
 ```
 - Generates a dedicated ED25519 key if none exists.
 - Configures `~/.ssh/config` to connect over **Port 443** (avoiding ISP/network port 22 blocks).
@@ -107,24 +107,24 @@ meridian gh connect
 
 ### Step 2: Check Connection Status
 ```bash
-meridian gh status
+zephyr gh status
 ```
 
 ### Step 3: View Public Key
 ```bash
-meridian gh key
+zephyr gh key
 ```
 
 ### Step 4: Link a New Repository
 ```bash
-meridian gh repo create my-awesome-app
+zephyr gh repo create my-awesome-app
 ```
 
 ### Step 5: Smart, Non-Blocking Git Hints
-When you run `git init` in a directory without an upstream remote, Meridian prints helpful next steps. To customize hints:
+When you run `git init` in a directory without an upstream remote, Zephyr prints helpful next steps. To customize hints:
 ```bash
-meridian gh hints on     # Turn hints on
-meridian gh hints off    # Turn hints off
+zephyr gh hints on     # Turn hints on
+zephyr gh hints off    # Turn hints off
 ```
 
 ---
@@ -132,18 +132,18 @@ meridian gh hints off    # Turn hints off
 ## 💻 VS Code Auto-Detection & Profiles
 
 ```bash
-meridian vscode status   # Check current profile configuration
-meridian vscode enable   # Set Meridian as VS Code's default terminal
-meridian vscode disable  # Reset back to standard bash/zsh
+zephyr vscode status   # Check current profile configuration
+zephyr vscode enable   # Set Zephyr as VS Code's default terminal
+zephyr vscode disable  # Reset back to standard bash/zsh
 ```
 
 ---
 
-## 🔄 Updating Meridian
+## 🔄 Updating Zephyr
 
 ```bash
-meridian update --check  # Check if a new release is available
-meridian update          # Download, verify SHA256 checksum, and apply update
+zephyr update --check  # Check if a new release is available
+zephyr update          # Download, verify SHA256 checksum, and apply update
 ```
 
 ---
@@ -151,11 +151,11 @@ meridian update          # Download, verify SHA256 checksum, and apply update
 ## 📊 Usage Statistics & Telemetry
 
 ```bash
-meridian stats               # Display global installation overview
-meridian stats --year 2026   # Display metrics for 2026
-meridian stats --growth      # Display yearly adoption growth rates
+zephyr stats               # Display global installation overview
+zephyr stats --year 2026   # Display metrics for 2026
+zephyr stats --growth      # Display yearly adoption growth rates
 
-meridian telemetry status    # View privacy policy & telemetry state
-meridian telemetry enable    # Opt-in to anonymous usage counts
-meridian telemetry disable   # Opt-out completely (Zero network metrics)
+zephyr telemetry status    # View privacy policy & telemetry state
+zephyr telemetry enable    # Opt-in to anonymous usage counts
+zephyr telemetry disable   # Opt-out completely (Zero network metrics)
 ```

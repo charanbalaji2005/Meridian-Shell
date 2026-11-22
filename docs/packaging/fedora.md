@@ -1,17 +1,20 @@
----
-layout: default
-title: "Fedora / RPM"
-category: "PACKAGING"
-status: "implemented"
----
+# Fedora / RHEL (RPM)
 
-<h2 id="fedora-rpm">Fedora / RHEL RPM Package</h2>
-<pre><code class="language-bash"># Install locally built RPM
-sudo dnf install ./dist/meridian-terminal-2.0.0-1.fc44.x86_64.rpm</code></pre>
+Recipe: `packaging/rpm/zephyr-terminal.spec` (CMake + Ninja via `%cmake`).
 
-<h2 id="spec-file">RPM Spec File & Compilation</h2>
-<p>The spec file is located in <code>packaging/rpm/meridian-terminal.spec</code>. To build locally:</p>
-<pre><code class="language-bash">rpmbuild -ba packaging/rpm/meridian-terminal.spec</code></pre>
+```bash
+sudo dnf install rpm-build rpmdevtools 'dnf-command(builddep)'
+sudo dnf builddep packaging/rpm/zephyr-terminal.spec
+bash packaging/rpm/build_rpm.sh          # -> dist/zephyr-terminal-2.6.0-1.<dist>.<arch>.rpm (+ .src.rpm)
+sudo dnf install dist/zephyr-terminal-2.6.0-1.*.$(uname -m).rpm
+```
 
-<h2 id="copr-repo">Fedora COPR Repository Publishing</h2>
-<p>Meridian packages are automatically built for Fedora 39, 40, 41, and Rawhide via automated COPR webhooks on release tags.</p>
+`%check` validates the desktop entry (`desktop-file-validate`) and AppStream
+metadata (`appstream-util validate-relax`) and runs the full test suite
+(`%ctest`). Build dependencies use `cmake(Qt6Widgets)`/`cmake(Qt6Svg)`
+virtual provides, so they resolve on Fedora and EPEL-enabled RHEL clones.
+
+To build in a clean chroot: `mock -r fedora-41-x86_64 --rebuild dist/zephyr-terminal-2.6.0-1.*.src.rpm`.
+
+Runtime: Qt libraries are picked up automatically from linked sonames;
+`qt6-qtwayland` is `Recommends:` for native Wayland windows.

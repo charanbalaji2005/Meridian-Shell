@@ -5,7 +5,7 @@ category: "TERMINAL"
 status: "implemented"
 ---
 
-<p>Meridian includes an internal standalone POSIX shell engine (<code>meridian-shell</code>) with recursive-descent parsing, AST execution, and full job control.</p>
+<p>Zephyr includes an internal standalone POSIX shell engine (<code>zephyr-shell</code>) with recursive-descent parsing, AST execution, and full job control.</p>
 
 <h2 id="ast-engine">POSIX AST Parser & Execution Engine</h2>
 <p>Input strings are tokenized by <code>shell::Lexer</code> and structured into an Abstract Syntax Tree by <code>shell::Parser</code>:</p>
@@ -23,7 +23,7 @@ AST Structure:
 cat app.log | grep -i "error" | sort | uniq -c > errors.txt 2>&1
 
 # Appending output
-echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
+echo "build completed at $(date)" >> /tmp/zephyr.log</code></pre>
 
 <h2 id="command-substitution">Command Substitution & Expansion</h2>
 <p>Supports <code>$(command)</code> substitution, environment variable expansion (<code>$VAR</code>, <code>${VAR}</code>), and exit code inspection (<code>$?</code>).</p>
@@ -41,4 +41,4 @@ echo "build completed at $(date)" >> /tmp/meridian.log</code></pre>
 </table>
 
 <h2 id="signal-forwarding">Process Group Signals & Terminal Ownership</h2>
-<p>When running commands, <code>meridian-shell</code> creates dedicated process groups (<code>setpgid()</code>) and gives controlling terminal ownership via <code>tcsetpgrp()</code> so signals like <code>SIGINT</code> (Ctrl+C) and <code>SIGQUIT</code> (Ctrl+\) cleanly terminate the foreground pipeline without killing the parent shell.</p>
+<p>When running commands, <code>zephyr-shell</code> creates dedicated process groups (<code>setpgid()</code>) and gives controlling terminal ownership via <code>tcsetpgrp()</code> so signals like <code>SIGINT</code> (Ctrl+C) and <code>SIGQUIT</code> (Ctrl+\) cleanly terminate the foreground pipeline without killing the parent shell.</p>

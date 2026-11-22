@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-using namespace meridian::dev;
+using namespace zephyr::dev;
 
 MTEST(github_integration_status_and_key) {
     std::streambuf* orig_buf = std::cout.rdbuf();
@@ -19,7 +19,7 @@ MTEST(github_integration_status_and_key) {
     capture.str("");
     int r2 = GitHubIntegration::handle_gh_command({"gh", "key"});
     ASSERT_EQ(r2, 0);
-    ASSERT_TRUE(capture.str().find("Meridian SSH Public Key") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("Zephyr SSH Public Key") != std::string::npos);
 
     std::cout.rdbuf(orig_buf);
 }
@@ -43,7 +43,7 @@ MTEST(github_integration_repo_and_hints) {
 
     capture.str("");
     GitHubIntegration::on_post_command_hint("git clone git@github.com:user/nonexistent.git", 1);
-    ASSERT_TRUE(capture.str().find("meridian gh connect") != std::string::npos);
+    ASSERT_TRUE(capture.str().find("zephyr gh connect") != std::string::npos);
 
     std::cout.rdbuf(orig_buf);
 }

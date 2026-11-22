@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / core / renderer / damage_tracker.hpp
+// zephyr-terminal / core / renderer / damage_tracker.hpp
 //
 // High-performance damage tracking for 120/144/240 Hz terminal rendering.
 // Computes minimal dirty bounding boxes and row bitmasks to avoid full-screen
@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace meridian::renderer {
+namespace zephyr::renderer {
 
 struct DamageRect {
     int x = 0;
@@ -54,5 +54,5 @@ private:
     std::vector<bool> dirty_rows_;
 };
 
-} // namespace meridian::renderer
+} // namespace zephyr::renderer
 

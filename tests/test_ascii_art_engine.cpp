@@ -9,7 +9,7 @@
 #include <sstream>
 #include <vector>
 
-using namespace meridian::graphics;
+using namespace zephyr::graphics;
 
 MTEST(ascii_art_lanczos3_resampling_dimensions_and_channels) {
     int src_w = 100, src_h = 100;
@@ -139,7 +139,7 @@ MTEST(ascii_art_render_file_gallery_images) {
 }
 
 MTEST(ascii_art_cli_pic_command_modes) {
-    meridian::shell::Shell shell(false);
+    zephyr::shell::Shell shell(false);
     std::ostringstream err;
 
     int rc1 = shell.run_command("pic eye --width 60 --mode truecolor", err);

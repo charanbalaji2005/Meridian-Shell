@@ -1,5 +1,5 @@
 #pragma once
-// meridian-ai / command_context.hpp
+// zephyr-ai / command_context.hpp
 //
 // Spec's CommandContext (§9/§66): the bundle of *local* information
 // worth having on hand before analyzing or (eventually) asking a
@@ -14,7 +14,7 @@
 #include <optional>
 #include <string>
 
-namespace meridian::ai {
+namespace zephyr::ai {
 
 struct CommandContext {
     std::string current_command;
@@ -47,4 +47,4 @@ public:
     static std::pair<bool, std::optional<std::string>> find_git_branch(const std::string& start_dir);
 };
 
-} // namespace meridian::ai
+} // namespace zephyr::ai

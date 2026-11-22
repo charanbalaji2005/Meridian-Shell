@@ -6,7 +6,7 @@ status: "implemented"
 ---
 
 <h2 id="transparency">Window Transparency & Background Blur</h2>
-<p>Configure background opacity (<code>0.0</code> to <code>1.0</code>) and enable compositor blur in <code>~/.config/meridian/config.json</code>:</p>
+<p>Configure background opacity (<code>0.0</code> to <code>1.0</code>) and enable compositor blur in <code>~/.config/zephyr/config.json</code>:</p>
 <pre><code class="language-json">{
   "opacity": 0.92,
   "blur": true

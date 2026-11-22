@@ -5,7 +5,7 @@ category: "DEVELOPMENT"
 status: "implemented"
 ---
 
-<p>This step-by-step guide provides copy-pasteable commands and verification procedures to test every core subsystem of Meridian Terminal.</p>
+<p>This step-by-step guide provides copy-pasteable commands and verification procedures to test every core subsystem of Zephyr Terminal.</p>
 
 <h2 id="automated-test-suite">1. Automated Test Suite (133 Tests)</h2>
 <p>Run the automated test runner to verify core engine correctness, PTY multiplexing, VT parsing, AST execution, and security:</p>
@@ -13,29 +13,29 @@ status: "implemented"
 make test
 
 # Or run test binary directly
-./build/meridian_tests</code></pre>
+./build/zephyr_tests</code></pre>
 
 <h2 id="interactive-terminal">2. Interactive Terminal & Shell Launch</h2>
 <p>Launch the interactive terminal session or standalone shell engine:</p>
 <pre><code class="language-bash"># Launch interactive terminal emulator
-meridian
+zephyr
 
 # Launch standalone shell engine directly
-meridian-shell</code></pre>
+zephyr-shell</code></pre>
 
 <h2 id="shell-pipelines">3. Shell Pipelines & Command Execution</h2>
 <p>Verify command pipelines, environment variable expansion, and command substitution engines:</p>
 <pre><code class="language-bash"># Test pipelines & coreutils
-ps aux | grep -i meridian | head -n 5
+ps aux | grep -i zephyr | head -n 5
 
 # Test variable export and expansion
-export PROJECT_NAME="Meridian" && echo "Running $PROJECT_NAME on $SHELL"
+export PROJECT_NAME="Zephyr" && echo "Running $PROJECT_NAME on $SHELL"
 
 # Test command substitution engine
 echo "Kernel: $(uname -r) | Current Time: $(date +%T)"</code></pre>
 
 <h2 id="signals-job-control">4. Signals & Job Control (Ctrl+C / Ctrl+Z)</h2>
-<p>Verify that POSIX signals are routed strictly to the foreground process group without killing Meridian:</p>
+<p>Verify that POSIX signals are routed strictly to the foreground process group without killing Zephyr:</p>
 <pre><code class="language-bash"># 1. Start a long running command and cancel it with Ctrl+C:
 sleep 10
 # Press: Ctrl+C  -> Cancels sleep immediately and returns to prompt
@@ -65,7 +65,7 @@ fg              # Brings suspended job back to foreground</code></pre>
 <h2 id="raster-image-testing">6. Direct Raster Image Protocol (pic)</h2>
 <p>Test inline 32-bit RGBA hardware-blitted raster images:</p>
 <pre><code class="language-bash"># Render direct inline image:
-pic ~/.config/meridian/gallery/sharingan_eye.png
+pic ~/.config/zephyr/gallery/sharingan_eye.png
 
 # Set startup anime artwork theme:
 pic set 1
@@ -74,21 +74,21 @@ pic set 1
 pic set random</code></pre>
 
 <h2 id="dev-intelligence-tools">7. Developer Intelligence Tools (monitor, git, files, ssh, perf)</h2>
-<p>Test Meridian's integrated developer productivity suite:</p>
+<p>Test Zephyr's integrated developer productivity suite:</p>
 <pre><code class="language-bash"># Real-time system monitor (CPU, RAM, Disk, Process metrics):
-meridian monitor
+zephyr monitor
 
 # Visual Git branch divergence and staged/unstaged inspector:
-meridian git
+zephyr git
 
 # Interactive tree file explorer with git badges:
-meridian files
+zephyr files
 
 # SSH connection manager (~/.ssh/config):
-meridian ssh
+zephyr ssh
 
 # Live GPU framerate & PTY latency profiler:
-meridian perf</code></pre>
+zephyr perf</code></pre>
 
 <h2 id="palette-and-search">8. Command Palette & Universal Search</h2>
 <p>Launch quick actions and search across history:</p>
@@ -101,15 +101,15 @@ search "git"
 # (Or press Ctrl+Shift+F anytime)
 
 # View rich SQLite history database with execution durations:
-meridian history</code></pre>
+zephyr history</code></pre>
 
 <h2 id="ai-engine-testing">9. Local AI Engine & Error Diagnostics</h2>
 <p>Test offline privacy-preserving developer AI:</p>
 <pre><code class="language-bash"># Natural language to safe shell command translation:
-meridian ask "find all files modified in the last 24 hours"
+zephyr ask "find all files modified in the last 24 hours"
 
 # Error diagnostics engine:
-meridian diag "Segmentation fault (core dumped)"
+zephyr diag "Segmentation fault (core dumped)"
 
 # Inspect AI privacy mode and risk classifier:
-meridian ai status</code></pre>
+zephyr ai status</code></pre>

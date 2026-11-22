@@ -1,6 +1,6 @@
-# Meridian Terminal — Makefile
+# Zephyr Terminal — Makefile
 #
-# Meridian 2.0 Unified Build System
+# Zephyr 2.0 Unified Build System
 
 CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -O2 -g
@@ -11,6 +11,7 @@ BUILD := build
 CORE_SRC := \
     src/core/vt/screen_buffer.cpp \
     src/core/vt/ansi_parser.cpp \
+    src/core/vt/input_encoder.cpp \
     src/core/vt/graphics.cpp \
     src/core/graphics/image_decoder.cpp \
     src/core/graphics/gpu_texture_manager.cpp \
@@ -72,14 +73,20 @@ DEV_SRC := \
     src/dev/platform_manager.cpp \
     src/dev/github_integration.cpp \
     src/dev/ide_detector.cpp \
-    src/dev/icon_provider.cpp
+    src/dev/icon_provider.cpp \
+    src/dev/shell_history.cpp \
+    src/dev/package_managers.cpp
 
 PLUGIN_SRC := \
     src/plugins/plugin_manager.cpp
 
 CONFIG_SRC := \
     src/config/terminal_config.cpp \
-    src/config/keybindings.cpp
+    src/config/keybindings.cpp \
+    src/config/paths.cpp \
+    src/config/theme.cpp \
+    src/config/profiles.cpp \
+    src/config/session_state.cpp
 
 SECURITY_SRC := \
     src/security/credential_store.cpp
@@ -111,7 +118,8 @@ TEST_SRC := \
     tests/test_ascii_art_engine.cpp \
     tests/test_prompt_and_autosuggest.cpp \
     tests/test_icon_registry.cpp \
-    tests/test_animation_engine.cpp
+    tests/test_animation_engine.cpp \
+    tests/test_terminal_features.cpp
 
 CORE_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CORE_SRC))
 SHELL_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SHELL_SRC))
@@ -123,7 +131,7 @@ CONFIG_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CONFIG_SRC))
 SECURITY_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(SECURITY_SRC))
 TEST_OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(TEST_SRC))
 
-VERSION ?= 2.5.0
+VERSION ?= 2.6.0
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 DATADIR ?= $(PREFIX)/share
@@ -131,75 +139,81 @@ MANDIR ?= $(DATADIR)/man
 DESKTOPDIR ?= $(DATADIR)/applications
 ICONDIR ?= $(DATADIR)/icons/hicolor/scalable/apps
 METAINFODIR ?= $(DATADIR)/metainfo
-DOCDIR ?= $(DATADIR)/doc/meridian-terminal
+DOCDIR ?= $(DATADIR)/doc/zephyr-terminal
 
-.PHONY: all test demo shell meridian manual-test clean install uninstall tarball
+.PHONY: all test demo shell zephyr manual-test clean install uninstall tarball gui
 
-all: $(BUILD)/meridian_tests $(BUILD)/meridian_demo $(BUILD)/meridian-shell $(BUILD)/meridian
+all: $(BUILD)/zephyr_tests $(BUILD)/zephyr_demo $(BUILD)/zephyr-shell $(BUILD)/zephyr
 
+# -MMD -MP: record header dependencies so editing a header rebuilds every
+# object that includes it (stale objects with old struct layouts crash).
 $(BUILD)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD)/meridian_tests: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(TEST_OBJ)
+-include $(wildcard $(BUILD)/src/*/*.d $(BUILD)/src/*/*/*.d $(BUILD)/tests/*.d)
+
+$(BUILD)/zephyr_tests: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(TEST_OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian_demo: $(CORE_OBJ) $(BUILD)/src/app/demo_main.o
+$(BUILD)/zephyr_demo: $(CORE_OBJ) $(BUILD)/src/app/demo_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian-shell: $(BUILD)/src/app/shell_main.o $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ)
+$(BUILD)/zephyr-shell: $(BUILD)/src/app/shell_main.o $(SHELL_OBJ) $(CORE_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-$(BUILD)/meridian: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(BUILD)/src/app/meridian_gui.o $(BUILD)/src/app/meridian_main.o
+$(BUILD)/zephyr: $(CORE_OBJ) $(SHELL_OBJ) $(AI_OBJ) $(WORKSPACE_OBJ) $(DEV_OBJ) $(PLUGIN_OBJ) $(CONFIG_OBJ) $(SECURITY_OBJ) $(BUILD)/src/app/zephyr_gui.o $(BUILD)/src/app/zephyr_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
 
-test: $(BUILD)/meridian_tests $(BUILD)/meridian-shell
-	$(BUILD)/meridian_tests
+test: $(BUILD)/zephyr_tests $(BUILD)/zephyr-shell
+	ZEPHYR_SHELL_BIN=$(BUILD)/zephyr-shell $(BUILD)/zephyr_tests
 
-manual-test: $(BUILD)/meridian-shell
-	./tests/manual_core_test.sh
+manual-test: $(BUILD)/zephyr-shell
+	ZEPHYR_SHELL_BIN=$(BUILD)/zephyr-shell ./tests/manual_core_test.sh
 
-demo: $(BUILD)/meridian_demo
-	$(BUILD)/meridian_demo
+# The Qt GUI needs moc/rcc, so it is built through CMake (requires Qt 6.4+).
+gui:
+	cmake -S . -B $(BUILD)/cmake -G Ninja -DZEPHYR_BUILD_GUI=ON -DZEPHYR_BUILD_TESTS=OFF
+	cmake --build $(BUILD)/cmake --target zephyr-terminal
+	@echo "Built $(BUILD)/cmake/zephyr-terminal"
 
-shell: $(BUILD)/meridian-shell
-	$(BUILD)/meridian-shell
+demo: $(BUILD)/zephyr_demo
+	$(BUILD)/zephyr_demo
 
-meridian: $(BUILD)/meridian
-	$(BUILD)/meridian $(ARGS)
+shell: $(BUILD)/zephyr-shell
+	$(BUILD)/zephyr-shell
+
+zephyr: $(BUILD)/zephyr
+	$(BUILD)/zephyr $(ARGS)
 
 install: all
 	install -d $(DESTDIR)$(BINDIR)
-	install -m 755 $(BUILD)/meridian $(DESTDIR)$(BINDIR)/meridian
-	install -m 755 $(BUILD)/meridian-shell $(DESTDIR)$(BINDIR)/meridian-shell
-	install -m 755 $(BUILD)/meridian_demo $(DESTDIR)$(BINDIR)/meridian_demo
-	install -d $(DESTDIR)$(DESKTOPDIR)
-	install -m 644 packaging/desktop/org.meridian_terminal.MeridianTerminal.desktop $(DESTDIR)$(DESKTOPDIR)/org.meridian_terminal.MeridianTerminal.desktop
-	install -d $(DESTDIR)$(ICONDIR)
-	install -m 644 resources/icons/meridian-terminal.svg $(DESTDIR)$(ICONDIR)/meridian-terminal.svg
-	install -d $(DESTDIR)$(METAINFODIR)
-	install -m 644 packaging/desktop/org.meridian_terminal.MeridianTerminal.metainfo.xml $(DESTDIR)$(METAINFODIR)/org.meridian_terminal.MeridianTerminal.metainfo.xml
+	install -m 755 $(BUILD)/zephyr $(DESTDIR)$(BINDIR)/zephyr
+	install -m 755 $(BUILD)/zephyr-shell $(DESTDIR)$(BINDIR)/zephyr-shell
+	install -m 755 $(BUILD)/zephyr_demo $(DESTDIR)$(BINDIR)/zephyr_demo
+	@# The desktop entry launches the GUI, which this Makefile does not build:
+	@# use `cmake --install` (see docs/build.md) for a full install.
 	install -d $(DESTDIR)$(DOCDIR)
 	install -m 644 README.md LICENSE $(DESTDIR)$(DOCDIR)/
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/meridian
-	rm -f $(DESTDIR)$(BINDIR)/meridian-shell
-	rm -f $(DESTDIR)$(BINDIR)/meridian_demo
-	rm -f $(DESTDIR)$(DESKTOPDIR)/org.meridian_terminal.MeridianTerminal.desktop
-	rm -f $(DESTDIR)$(ICONDIR)/meridian-terminal.svg
-	rm -f $(DESTDIR)$(METAINFODIR)/org.meridian_terminal.MeridianTerminal.metainfo.xml
+	rm -f $(DESTDIR)$(BINDIR)/zephyr
+	rm -f $(DESTDIR)$(BINDIR)/zephyr-shell
+	rm -f $(DESTDIR)$(BINDIR)/zephyr_demo
+	rm -f $(DESTDIR)$(DESKTOPDIR)/org.zephyr_terminal.ZephyrTerminal.desktop
+	rm -f $(DESTDIR)$(ICONDIR)/zephyr-terminal.svg
+	rm -f $(DESTDIR)$(METAINFODIR)/org.zephyr_terminal.ZephyrTerminal.metainfo.xml
 	rm -rf $(DESTDIR)$(DOCDIR)
 
 tarball: clean
-	mkdir -p $(BUILD)/dist/meridian-terminal-$(VERSION)
-	cp -r CMakeLists.txt Makefile README.md LICENSE CHANGELOG.md CONTRIBUTING.md src tests packaging resources docs cmake $(BUILD)/dist/meridian-terminal-$(VERSION)/
-	tar -czf $(BUILD)/meridian-terminal-$(VERSION).tar.gz -C $(BUILD)/dist meridian-terminal-$(VERSION)
-	@echo "Source tarball created at $(BUILD)/meridian-terminal-$(VERSION).tar.gz"
+	mkdir -p $(BUILD)/dist/zephyr-terminal-$(VERSION)
+	cp -r CMakeLists.txt Makefile README.md LICENSE CHANGELOG.md CONTRIBUTING.md src tests packaging resources docs cmake $(BUILD)/dist/zephyr-terminal-$(VERSION)/
+	tar -czf $(BUILD)/zephyr-terminal-$(VERSION).tar.gz -C $(BUILD)/dist zephyr-terminal-$(VERSION)
+	@echo "Source tarball created at $(BUILD)/zephyr-terminal-$(VERSION).tar.gz"
 
 clean:
 	rm -rf $(BUILD)

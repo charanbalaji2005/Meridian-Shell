@@ -1,5 +1,5 @@
 #pragma once
-// meridian-shell / builtins.hpp
+// zephyr-shell / builtins.hpp
 //
 // Builtins that must affect the shell's own process state (cd, export,
 // exit, ...) and therefore cannot be implemented as external programs.
@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::shell {
+namespace zephyr::shell {
 
 class Executor; // forward decl to avoid a header cycle
 
@@ -20,4 +20,4 @@ std::vector<std::string> get_builtin_names();
 // redirection) — callers decide which via Executor.
 int run_builtin(const std::string& name, const std::vector<std::string>& argv, Executor& ctx);
 
-} // namespace meridian::shell
+} // namespace zephyr::shell

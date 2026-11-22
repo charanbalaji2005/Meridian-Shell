@@ -1,7 +1,7 @@
 #pragma once
 // src/dev/platform_manager.hpp
 //
-// Meridian 2.5 Platform Integration & Lifecycle Subsystems:
+// Zephyr 2.5 Platform Integration & Lifecycle Subsystems:
 //  - VS Code Terminal Auto-Detection & Profile Management
 //  - Prebuilt Release Update Engine (GitHub Releases & SemVer)
 //  - Anonymous Usage Statistics & Yearly Growth Analytics
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 class PlatformManager {
 public:
@@ -20,5 +20,5 @@ public:
     static int handle_telemetry(const std::vector<std::string>& argv);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

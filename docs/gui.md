@@ -19,13 +19,13 @@ let alone run against a real display.
 
 - **Window Manager -> Tab Manager -> Pane Manager -> Terminal Session
   Manager**, each session owning one `PtyManager` + `ScreenBuffer` +
-  `AnsiParser` from `meridian-core` (see `docs/architecture.md`). The
+  `AnsiParser` from `zephyr-core` (see `docs/architecture.md`). The
   GUI layer's job is to read the PTY master fd on Qt's event loop, feed
   bytes to the parser, and paint from the `ScreenBuffer`'s cells — none
   of the actual terminal logic belongs in this layer.
 - **GPU-accelerated rendering** with a glyph cache and dirty-cell
   tracking, so heavy output (`yes`, `seq 1000000`) doesn't redraw the
-  entire grid every frame. `meridian-core`'s throughput has already
+  entire grid every frame. `zephyr-core`'s throughput has already
   been stress-tested independent of any renderer (see `docs/status.md`)
   — the renderer's job is to keep up with it, not to also prove the
   parser is fast.
@@ -42,7 +42,7 @@ let alone run against a real display.
   application mouse reporting (needed by `vim`/`tmux`), **clipboard**
   (copy/paste/primary selection), **scrollback search**
   (Ctrl+Shift+F).
-- **Configuration** under `~/.config/meridian/` (`terminal.toml`,
+- **Configuration** under `~/.config/zephyr/` (`terminal.toml`,
   `keybindings.toml`, `ai.toml`, `themes/`).
 
 ## Concrete next step

@@ -1,92 +1,164 @@
 #pragma once
 // src/gui/TerminalView.hpp
 //
-// High-performance custom Terminal rendering widget backed by Meridian's
-// ScreenBuffer, ANSI state machine, and PTY manager.
+// The terminal grid widget. Owns one PtyBridge (one shell) and renders its
+// ScreenBuffer with QPainter. Rendering is driven purely by output: PTY
+// data schedules one coalesced repaint (capped at settings().max_fps), and
+// the only idle timer is the optional cursor blink.
 
-#include <QWidget>
+#include <QElapsedTimer>
 #include <QFont>
-#include <QFontMetricsF>
+#include <QPixmap>
 #include <QTimer>
-#include <QPoint>
-#include <QMenu>
-#include <memory>
+#include <QVector>
+#include <QWidget>
+
+#include <array>
 
 #include "PtyBridge.hpp"
-#include "../core/renderer/render_pipeline.hpp"
 
-#include "../core/graphics/terminal_graphic.hpp"
-
-namespace meridian::gui {
-
-struct GridSelection {
-    bool active = false;
-    int start_row = 0;
-    int start_col = 0;
-    int end_row = 0;
-    int end_col = 0;
-
-    bool contains(int row, int col) const {
-        if (!active) return false;
-        int r0 = std::min(start_row, end_row);
-        int r1 = std::max(start_row, end_row);
-        if (row < r0 || row > r1) return false;
-        if (r0 == r1) {
-            int c0 = std::min(start_col, end_col);
-            int c1 = std::max(start_col, end_col);
-            return col >= c0 && col <= c1;
-        }
-        if (row == r0) return col >= (start_row < end_row ? start_col : end_col);
-        if (row == r1) return col <= (start_row < end_row ? end_col : start_col);
-        return true;
-    }
-};
+namespace zephyr::gui {
 
 class TerminalView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit TerminalView(std::shared_ptr<PtyBridge> bridge, QWidget* parent = nullptr);
-    ~TerminalView() override = default;
+    explicit TerminalView(const LaunchSpec& spec, QWidget* parent = nullptr);
+    ~TerminalView() override;
 
-    void setFontSize(qreal pt_size);
+    PtyBridge* bridge() const { return bridge_; }
+    bool startFailed() const { return start_failed_; }
+
+    // Re-reads fonts, colors, cursor, padding, scrollback… from AppContext.
+    void applySettings();
+
+    // Clipboard & editing
+    bool hasSelection() const { return sel_.active; }
+    QString selectedText() const;
     void copySelection();
-    void pasteClipboard();
+    void paste();
+    void pasteText(const QString& text);
+    // Types `text` at the prompt without executing it (newlines become
+    // spaces). Used by history/package/assistant panels.
+    void insertText(const QString& text);
     void selectAll();
     void clearScrollback();
-    graphics::GraphicManager& graphicManager() { return graphic_mgr_; }
+
+    // Font zoom (per view, relative to the configured size)
+    void zoomIn();
+    void zoomOut();
+    void zoomReset();
+
+    // Search within output (scrollback + screen)
+    int setSearch(const QString& query, bool case_sensitive); // returns match count
+    void findNext();
+    void findPrevious();
+    void clearSearch();
+
+    // Scrollback viewport, for the pane's scrollbar
+    int historySize() const;
+    int viewOffset() const;
+    void setViewOffset(int offset);
+
+    QSize cellSize() const { return {qRound(cell_w_), qRound(cell_h_)}; }
+    QSize sizeHint() const override { return {800, 500}; }
+
+signals:
+    void titleChanged(const QString& title);
+    void finished(int exit_code);
+    void focused();
+    void viewChanged();                                  // scrollbar should resync
+    void searchResultsChanged(int current, int total);   // current is 0-based, -1 if none
+    void contextMenuRequested(const QPoint& global_pos);
 
 protected:
-    void paintEvent(QPaintEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
-    void wheelEvent(QWheelEvent* event) override;
-    void contextMenuEvent(QContextMenuEvent* event) override;
-    void focusInEvent(QFocusEvent* event) override;
-    void focusOutEvent(QFocusEvent* event) override;
+    bool event(QEvent* e) override;
+    void paintEvent(QPaintEvent* e) override;
+    void resizeEvent(QResizeEvent* e) override;
+    void keyPressEvent(QKeyEvent* e) override;
+    void inputMethodEvent(QInputMethodEvent* e) override;
+    QVariant inputMethodQuery(Qt::InputMethodQuery q) const override;
+    void mousePressEvent(QMouseEvent* e) override;
+    void mouseMoveEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
+    void mouseDoubleClickEvent(QMouseEvent* e) override;
+    void wheelEvent(QWheelEvent* e) override;
+    void contextMenuEvent(QContextMenuEvent* e) override;
+    void focusInEvent(QFocusEvent* e) override;
+    void focusOutEvent(QFocusEvent* e) override;
+    bool focusNextPrevChild(bool) override { return false; } // Tab belongs to the shell
 
 private:
-    std::shared_ptr<PtyBridge> bridge_;
-    QFont font_;
-    qreal char_width_ = 8.0;
-    qreal char_height_ = 16.0;
-    qreal char_ascent_ = 12.0;
+    struct Selection {
+        bool active = false;
+        int a_line = 0, a_col = 0; // anchor
+        int b_line = 0, b_col = 0; // moving end
+        bool contains(int line, int col) const;
+    };
+    struct CellPos { int line; int col; };
 
-    QTimer cursor_timer_;
-    QTimer anim_timer_;
-    bool cursor_visible_ = true;
-    GridSelection selection_;
+    void scheduleRepaint();
+    void updateFontMetrics();
+    void updateGridSize();
+    void resetCursorBlink();
+    void snapToBottom();
+    void writeInput(const QByteArray& bytes);
+    void finishSelection();
+    void selectWordAt(const CellPos& p);
+    void selectLineAt(int line);
+    void scrollToMatch(int index);
+    void recomputeSearch();
+    QColor resolve(const vt::Color& c, bool is_fg, bool bold) const;
+    const QFont& styledFont(bool bold, bool italic, bool underline, bool strike);
+    CellPos cellAt(const QPoint& pos, bool clamp = true) const;
+    QRectF cursorRect() const;
+
+    PtyBridge* bridge_ = nullptr;
+    bool start_failed_ = false;
+
+    // Font & metrics
+    QFont base_font_;
+    std::array<QFont, 16> style_fonts_;
+    std::array<bool, 16> style_ready_{};
+    qreal cell_w_ = 8, cell_h_ = 16, baseline_ = 12;
+    int zoom_delta_ = 0;
+    int padding_ = 6;
+
+    // Colors
+    std::array<QColor, 256> palette_;
+    QColor bg_, fg_, cursor_color_, selection_color_, match_color_, current_match_color_;
+    int window_alpha_ = 255;
+    bool paint_background_ = true; // false when the glow WindowFrame paints the body
+    QPixmap bg_image_;
+    QPixmap bg_scaled_;
+    qreal bg_image_opacity_ = 0.15;
+
+    // Cursor
+    QTimer blink_timer_;
+    bool blink_on_ = true;
+    QString cursor_style_ = QStringLiteral("block");
+    bool cursor_blink_setting_ = true;
+
+    // Repaint coalescing
+    QTimer repaint_timer_;
+
+    // Selection
+    Selection sel_;
     bool selecting_ = false;
+    QElapsedTimer last_double_click_;
+    bool copy_on_select_ = false;
 
-    graphics::GraphicManager graphic_mgr_;
+    // Search
+    QString query_;
+    bool query_case_ = false;
+    QVector<vt::SearchMatch> matches_;
+    int current_match_ = -1;
+    QTimer search_timer_;
 
-    QColor resolveColor(const vt::Color& color, bool is_fg);
-    QPoint pixelToCell(const QPoint& pt) const;
-    QString selectedText() const;
+    int wheel_accum_ = 0;
+    int scroll_multiplier_ = 3;
+    bool warn_multiline_paste_ = true;
+    bool ligatures_ = true;
 };
 
-} // namespace meridian::gui
-
+} // namespace zephyr::gui

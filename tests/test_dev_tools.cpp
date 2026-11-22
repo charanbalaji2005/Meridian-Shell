@@ -10,8 +10,8 @@
 #include <fstream>
 #include <unistd.h>
 
-using namespace meridian::dev;
-using namespace meridian::vt;
+using namespace zephyr::dev;
+using namespace zephyr::vt;
 
 MTEST(system_monitor_metrics) {
     SystemMonitor monitor;
@@ -27,11 +27,11 @@ MTEST(system_monitor_metrics) {
     ASSERT_TRUE(bar.find("RAM") != std::string::npos);
 
     std::string dash = metrics.format_dashboard();
-    ASSERT_TRUE(dash.find("Meridian System Monitor") != std::string::npos);
+    ASSERT_TRUE(dash.find("Zephyr System Monitor") != std::string::npos);
 }
 
 MTEST(git_intel_inspection) {
-    std::string test_dir = "/tmp/meridian_test_gitintel_" + std::to_string(getpid());
+    std::string test_dir = "/tmp/zephyr_test_gitintel_" + std::to_string(getpid());
     std::string git_dir = test_dir + "/.git";
     system(("mkdir -p " + git_dir).c_str());
 
@@ -46,7 +46,7 @@ MTEST(git_intel_inspection) {
     ASSERT_EQ(status.branch_name, "main");
 
     std::string panel = status.format_panel();
-    ASSERT_TRUE(panel.find("Meridian Git") != std::string::npos);
+    ASSERT_TRUE(panel.find("Zephyr Git") != std::string::npos);
 
     // Non-git directory
     auto non_git = GitIntel::inspect_directory("/tmp");
@@ -84,7 +84,7 @@ MTEST(command_palette_fuzzy_search) {
 }
 
 MTEST(rich_history_and_universal_search) {
-    std::string test_db = "/tmp/test_meridian_history.db";
+    std::string test_db = "/tmp/test_zephyr_history.db";
     unlink(test_db.c_str());
 
     RichHistory history(test_db);

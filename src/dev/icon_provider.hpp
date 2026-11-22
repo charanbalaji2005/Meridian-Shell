@@ -1,7 +1,7 @@
 // src/dev/icon_provider.hpp
 #pragma once
 //
-// Meridian Icon Provider — Nerd Font / Unicode / ASCII tiered icon engine.
+// Zephyr Icon Provider — Nerd Font / Unicode / ASCII tiered icon engine.
 // Resolves per-file, per-language, per-directory, and per-git-status icons.
 // Three tiers:
 //   NERD_FONT: Full Nerd Font / Powerline icon codepoints
@@ -12,7 +12,7 @@
 
 #include <string>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 enum class IconTier { NERD_FONT, UNICODE, ASCII };
 
@@ -118,5 +118,5 @@ private:
     static std::string icon_for_known_filename(const std::string& name, IconTier t);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

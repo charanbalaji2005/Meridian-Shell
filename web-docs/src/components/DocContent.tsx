@@ -36,13 +36,13 @@ export const DocContent: React.FC<DocContentProps> = ({
 
   // Check saved feedback for this page
   useEffect(() => {
-    const saved = localStorage.getItem(`meridian_feedback_${article.id}`);
+    const saved = localStorage.getItem(`zephyr_feedback_${article.id}`);
     setMobileFeedbackGiven(!!saved);
   }, [article.id]);
 
   const handleMobileVote = (choice: 'up' | 'down') => {
     setMobileFeedbackGiven(true);
-    localStorage.setItem(`meridian_feedback_${article.id}`, choice);
+    localStorage.setItem(`zephyr_feedback_${article.id}`, choice);
   };
 
   // Flatten navigation items to calculate previous & next article

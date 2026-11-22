@@ -1,15 +1,24 @@
-# Meridian Terminal Packaging
+# Packaging
 
-This directory contains the packaging specifications, manifests, desktop entry files, and installer scripts for distributing Meridian Terminal across all major Linux operating systems and package formats.
+Every Linux package is built from the same CMake install rules
+(`cmake --install`), so binaries, the desktop entry, AppStream metadata and
+icons land in the same places everywhere.
 
-## Contents
+| Directory / file | Format | Build command (from the repo root) |
+|---|---|---|
+| `rpm/zephyr-terminal.spec` | Fedora / RHEL RPM | `packaging/rpm/build_rpm.sh` |
+| `deb/debian/` | Debian 12+ / Ubuntu 24.04+ `.deb` | `packaging/deb/build_deb.sh` |
+| `arch/PKGBUILD` | Arch Linux (and AUR) | `packaging/arch/build_pkg.sh` |
+| `appimage/build_appimage.sh` | Portable AppImage | `packaging/appimage/build_appimage.sh` |
+| `../flake.nix`, `../nix/` | Nix flake, NixOS module | `nix build` |
+| `desktop/` | `.desktop` entry + AppStream metainfo | installed by CMake |
+| `install.sh` | Source installer (CLI + shell) | see `docs/getting-started/installation.md` |
 
-- **`desktop/`**: Freedesktop XDG `.desktop` file and AppStream `metainfo.xml`
-- **`rpm/`**: RPM spec file (`meridian-terminal.spec`) for Fedora, RHEL, openSUSE, and AetherOS
-- **`deb/`**: Debian packaging directory (`debian/control`, `debian/rules`, `debian/changelog`, `debian/copyright`, `debian/meridian-terminal.install`) for Ubuntu, Debian, Linux Mint, and Pop!_OS
-- **`aur/`**: Arch Linux package recipe (`PKGBUILD`, `.SRCINFO`) for the Arch User Repository (AUR)
-- **`flatpak/`**: Flatpak application manifest (`org.meridian_terminal.MeridianTerminal.yaml`) for Flathub
-- **`snap/`**: Snapcraft manifest (`snapcraft.yaml`) for the Canonical Snap Store
-- **`install.sh`**: Universal auto-detecting one-line Linux installer script
+`scripts/build_all_releases.sh` runs whichever of these the current host
+supports and writes results to `dist/`. CI builds all of them in matching
+distro containers (`.github/workflows/packages.yml`).
 
-See [`docs/packaging.md`](../docs/packaging.md) for detailed build and release instructions.
+Not maintained as part of this release (left as they were, unverified):
+`flatpak/`, `snap/`, `macos/`, `windows/`.
+
+Full instructions: [`docs/packaging.md`](../docs/packaging.md).

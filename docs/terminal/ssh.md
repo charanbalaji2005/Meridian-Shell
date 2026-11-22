@@ -5,23 +5,23 @@ category: "TERMINAL"
 status: "implemented"
 ---
 
-<p>Meridian includes a built-in SSH workspace and connection manager in <code>src/dev/ssh_manager.cpp</code>.</p>
+<p>Zephyr includes a built-in SSH workspace and connection manager in <code>src/dev/ssh_manager.cpp</code>.</p>
 
 <h2 id="ssh-mgr">Native SSH Workspace Manager</h2>
 <pre><code class="language-bash"># List all available SSH hosts from ~/.ssh/config
-meridian ssh
+zephyr ssh
 
 # Connect directly to a configured host alias
-meridian ssh production
+zephyr ssh production
 
 # Custom port or identity file connection
-meridian ssh staging -p 2222</code></pre>
+zephyr ssh staging -p 2222</code></pre>
 
 <h2 id="ssh-config-parser">~/.ssh/config Automatic Parsing</h2>
-<p>Meridian automatically parses <code>Host</code>, <code>HostName</code>, <code>User</code>, <code>Port</code>, and <code>IdentityFile</code> directives from <code>~/.ssh/config</code> and presents them in the Command Palette (<code>Ctrl+Shift+P</code>).</p>
+<p>Zephyr automatically parses <code>Host</code>, <code>HostName</code>, <code>User</code>, <code>Port</code>, and <code>IdentityFile</code> directives from <code>~/.ssh/config</code> and presents them in the Command Palette (<code>Ctrl+Shift+P</code>).</p>
 
 <h2 id="remote-compat">Remote Terminal Compatibility & Protocols</h2>
-<p>Over remote SSH sessions, Meridian fully supports:</p>
+<p>Over remote SSH sessions, Zephyr fully supports:</p>
 <ul>
   <li><strong>OSC 52:</strong> Seamless remote clipboard synchronization back to your local clipboard.</li>
   <li><strong>OSC 7:</strong> Remote current working directory reporting for tab titles.</li>
@@ -30,4 +30,4 @@ meridian ssh staging -p 2222</code></pre>
 </ul>
 
 <h2 id="ssh-security">Key Management & Security</h2>
-<p>Meridian integrates with <code>ssh-agent</code> and respects encrypted private keys, passing terminal passphrase prompts seamlessly through the PTY layer without leaking credentials into logs.</p>
+<p>Zephyr integrates with <code>ssh-agent</code> and respects encrypted private keys, passing terminal passphrase prompts seamlessly through the PTY layer without leaking credentials into logs.</p>

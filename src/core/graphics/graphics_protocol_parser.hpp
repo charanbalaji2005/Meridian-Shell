@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/graphics_protocol_parser.hpp
 //
-// Protocol-independent graphics stream parser for Meridian Terminal.
+// Protocol-independent graphics stream parser for Zephyr Terminal.
 // Supports Kitty Graphics Protocol (including animation frames & playback control),
 // iTerm2 OSC 1337, and Sixel formats.
 
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class GraphicsProtocolType {
     None,
@@ -67,4 +67,4 @@ public:
     static std::string encode_base64(const uint8_t* data, size_t length);
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics

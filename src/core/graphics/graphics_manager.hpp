@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/graphics_manager.hpp
 //
-// Central Native GPU Graphics Subsystem for Meridian Terminal.
+// Central Native GPU Graphics Subsystem for Zephyr Terminal.
 // Unifies ImageDecoder, GpuTextureManager, TerminalImageCompositor,
 // GraphicsProtocolParser, and AnimationEngine.
 
@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 struct ImageDebugReport {
     std::string format;
@@ -96,4 +96,4 @@ private:
     std::vector<ImageObject> images_;
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics

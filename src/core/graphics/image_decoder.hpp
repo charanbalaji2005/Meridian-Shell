@@ -1,7 +1,7 @@
 #pragma once
 // src/core/graphics/image_decoder.hpp
 //
-// Native image decoder subsystem for Meridian Terminal.
+// Native image decoder subsystem for Zephyr Terminal.
 // Decodes PNG, JPEG, WebP, BMP, GIF, and PPM formats directly into
 // 32-bit RGBA8888 pixel buffers with support for multi-frame animations.
 
@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class ImageFitMode {
     Contain, // Preserve aspect ratio, fit entirely within target box
@@ -85,5 +85,5 @@ public:
     );
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

@@ -7,8 +7,8 @@
 #include "../src/core/graphics/image_decoder.hpp"
 #include "../src/core/graphics/terminal_graphic.hpp"
 
-using namespace meridian::renderer;
-using namespace meridian::vt;
+using namespace zephyr::renderer;
+using namespace zephyr::vt;
 
 MTEST(damage_tracker_basic) {
     DamageTracker tracker(24, 80);
@@ -133,7 +133,7 @@ MTEST(graphics_sixel_and_kitty) {
 }
 
 MTEST(image_decoder_and_aspect_fit) {
-    using namespace meridian::graphics;
+    using namespace zephyr::graphics;
 
     // Aspect ratio contain calculation
     auto fit1 = ImageDecoder::calculate_fit(1920, 1080, 200.0f, 200.0f, ImageFitMode::Contain);
@@ -165,7 +165,7 @@ MTEST(image_decoder_and_aspect_fit) {
 }
 
 MTEST(graphic_manager_and_animations) {
-    using namespace meridian::graphics;
+    using namespace zephyr::graphics;
 
     GraphicManager mgr;
     auto startup_g = GraphicManager::create_startup_artwork_graphic(30.0f, 35.0f, 200.0f, 180.0f);

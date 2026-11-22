@@ -1,5 +1,5 @@
 #pragma once
-// meridian-terminal / dev / system_monitor.hpp
+// zephyr-terminal / dev / system_monitor.hpp
 //
 // Lightweight native Linux system & network monitor. Inspects /proc
 // to provide real-time CPU usage, RAM utilization, network throughput,
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct ProcessSnapshot {
     int pid = 0;
@@ -57,5 +57,5 @@ private:
     static uint64_t current_time_ms();
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev
 

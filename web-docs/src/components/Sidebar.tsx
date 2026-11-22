@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   language,
 }) => {
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
-    'MERIDIAN SHELL': true,
+    'ZEPHYR SHELL': true,
     'TERMINAL': true,
     'GRAPHICS': true,
     'INTERFACE': true,
@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className={`meridian-sidebar ${isOpen ? 'open' : ''}`}>
+    <aside className={`zephyr-sidebar ${isOpen ? 'open' : ''}`}>
       {onClose && (
         <div className="sidebar-mobile-header">
           <span className="sidebar-mobile-title">Documentation</span>

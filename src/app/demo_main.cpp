@@ -13,10 +13,10 @@
 #include <iostream>
 #include <string>
 
-using namespace meridian;
+using namespace zephyr;
 
 int main() {
-    std::cout << "=== Meridian Terminal Core -- headless PTY + ANSI demo ===\n\n";
+    std::cout << "=== Zephyr Terminal Core -- headless PTY + ANSI demo ===\n\n";
 
     pty::PtyManager pty;
     pty::SpawnOptions opts;

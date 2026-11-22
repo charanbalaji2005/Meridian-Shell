@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 enum class FrameDisposalMode {
     Unspecified,         // No disposal specified (overlay onto existing canvas)
@@ -78,5 +78,5 @@ private:
     std::vector<uint8_t> rgba_; // 32-bit RGBA (width * height * 4)
 };
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

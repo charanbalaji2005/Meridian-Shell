@@ -3,10 +3,10 @@
 #include <iostream>
 #include <algorithm>
 
-namespace meridian::plugins {
+namespace zephyr::plugins {
 
 // Built-in Git watcher plugin
-class GitWatcherPlugin : public MeridianPlugin {
+class GitWatcherPlugin : public ZephyrPlugin {
 public:
     std::string name() const override { return "git-intel"; }
     std::string version() const override { return "1.0.0"; }
@@ -23,7 +23,7 @@ public:
 };
 
 // Built-in Docker watcher plugin
-class DockerWatcherPlugin : public MeridianPlugin {
+class DockerWatcherPlugin : public ZephyrPlugin {
 public:
     std::string name() const override { return "docker-tracker"; }
     std::string version() const override { return "1.0.0"; }
@@ -34,7 +34,7 @@ public:
 };
 
 // Built-in Telemetry metrics plugin
-class TelemetryOverlayPlugin : public MeridianPlugin {
+class TelemetryOverlayPlugin : public ZephyrPlugin {
 public:
     std::string name() const override { return "telemetry-profiler"; }
     std::string version() const override { return "1.2.0"; }
@@ -59,7 +59,7 @@ void PluginManager::load_builtin_plugins() {
     register_plugin(std::make_shared<TelemetryOverlayPlugin>());
 }
 
-void PluginManager::register_plugin(std::shared_ptr<MeridianPlugin> plugin) {
+void PluginManager::register_plugin(std::shared_ptr<ZephyrPlugin> plugin) {
     if (!plugin) return;
     auto existing = find_plugin(plugin->name());
     if (existing) {
@@ -81,7 +81,7 @@ bool PluginManager::unregister_plugin(const std::string& name) {
     return false;
 }
 
-std::shared_ptr<MeridianPlugin> PluginManager::find_plugin(const std::string& name) const {
+std::shared_ptr<ZephyrPlugin> PluginManager::find_plugin(const std::string& name) const {
     for (const auto& p : plugins_) {
         if (p->name() == name) return p;
     }
@@ -109,7 +109,7 @@ void PluginManager::notify_directory_changed(const std::string& new_dir) {
 std::string PluginManager::format_plugin_list() const {
     std::ostringstream out;
     out << "\033[1;38;2;0;229;255m╔════════════════════════════════════════════════════════════════╗\033[0m\n";
-    out << "\033[1;38;2;0;229;255m║         MERIDIAN SHELL — EXTENSIBLE PLUGIN REGISTRY            ║\033[0m\n";
+    out << "\033[1;38;2;0;229;255m║         ZEPHYR SHELL — EXTENSIBLE PLUGIN REGISTRY            ║\033[0m\n";
     out << "\033[1;38;2;0;229;255m╚════════════════════════════════════════════════════════════════╝\033[0m\n\n";
 
     out << "\033[1;38;2;231;237;245m   PLUGIN NAME          VERSION   STATUS    DESCRIPTION\033[0m\n";
@@ -126,8 +126,8 @@ std::string PluginManager::format_plugin_list() const {
         out << "\033[38;2;143;160;181m" << p->description() << "\033[0m\n";
     }
 
-    out << "\n\033[38;2;143;160;181mPlugin Directory: \033[38;2;0;229;255m~/.config/meridian/plugins/\033[0m\n";
+    out << "\n\033[38;2;143;160;181mPlugin Directory: \033[38;2;0;229;255m~/.config/zephyr/plugins/\033[0m\n";
     return out.str();
 }
 
-} // namespace meridian::plugins
+} // namespace zephyr::plugins

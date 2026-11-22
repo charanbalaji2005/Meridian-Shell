@@ -13,7 +13,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-namespace meridian::graphics {
+namespace zephyr::graphics {
 
 namespace {
 
@@ -469,10 +469,10 @@ std::string AsciiArtEngine::render_file(
 ) {
     auto decoded = ImageDecoder::decode_file(filepath);
     if (!decoded.is_valid()) {
-        return "meridian: failed to decode image '" + filepath + "'\n";
+        return "zephyr: failed to decode image '" + filepath + "'\n";
     }
     return render_image(decoded, options);
 }
 
-} // namespace meridian::graphics
+} // namespace zephyr::graphics
 

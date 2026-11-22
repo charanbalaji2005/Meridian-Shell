@@ -1,27 +1,39 @@
-// meridian-config / keybindings.cpp
+// zephyr-config / keybindings.cpp
 #include "keybindings.hpp"
 
-namespace meridian::config {
+namespace zephyr::config {
 
 Keybindings::Keybindings(std::string path) : config_(std::move(path)) {
-    // Defaults straight from the spec's own examples: §42 (Ctrl+Space
-    // for the AI popup), §23 (Ctrl+Shift+F search), §18/§19 (tabs/panes).
+    // Combo strings use Qt's QKeySequence portable text format so the GUI
+    // can parse them directly. Every default that a shell or TUI app uses
+    // itself (Ctrl+W delete-word, Ctrl+T transpose, Ctrl+Space set-mark…)
+    // is deliberately avoided: terminal-level actions live on Ctrl+Shift.
     defaults_ = {
-        {"ai_popup", "Ctrl+Space"},
+        {"ai_popup", "Ctrl+Shift+Space"},
         {"search", "Ctrl+Shift+F"},
-        {"new_tab", "Ctrl+T"},
-        {"close_tab", "Ctrl+W"},
-        {"next_tab", "Ctrl+Tab"},
-        {"prev_tab", "Ctrl+Shift+Tab"},
-        {"split_horizontal", "Ctrl+Shift+H"},
-        {"split_vertical", "Ctrl+Shift+V"},
+        {"find_next", "Ctrl+Shift+G"},       // not F3: htop/mc use it
+        {"find_prev", "Ctrl+Alt+Shift+G"},
+        {"command_palette", "Ctrl+Shift+P"},
+        {"settings", "Ctrl+,"},
+        {"new_tab", "Ctrl+Shift+T"},
+        {"new_window", "Ctrl+Shift+N"},
+        {"close_tab", "Ctrl+Shift+W"},
+        {"next_tab", "Ctrl+PgDown"},
+        {"prev_tab", "Ctrl+PgUp"},
+        {"split_horizontal", "Ctrl+Shift+O"},  // stacked: new pane below
+        {"split_vertical", "Ctrl+Shift+E"},    // side by side: new pane to the right
         {"focus_next_pane", "Ctrl+Alt+Right"},
         {"focus_prev_pane", "Ctrl+Alt+Left"},
-        {"close_pane", "Ctrl+Shift+W"},
+        {"close_pane", "Ctrl+Shift+X"},
         {"copy", "Ctrl+Shift+C"},
         {"paste", "Ctrl+Shift+V"},
-        {"increase_font_size", "Ctrl+Plus"},
-        {"decrease_font_size", "Ctrl+Minus"},
+        {"select_all", "Ctrl+Shift+A"},
+        {"clear_scrollback", "Ctrl+Shift+K"},
+        {"toggle_sidebar", "Ctrl+Shift+B"},
+        {"toggle_fullscreen", "F11"},
+        {"increase_font_size", "Ctrl+="},
+        {"decrease_font_size", "Ctrl+-"},
+        {"reset_font_size", "Ctrl+0"},
     };
 }
 
@@ -39,6 +51,15 @@ void Keybindings::set(const std::string& action, const std::string& combo) {
     config_.set("keybind." + action, combo);
 }
 
+void Keybindings::reset(const std::string& action) {
+    config_.remove("keybind." + action);
+}
+
+std::string Keybindings::default_combo(const std::string& action) const {
+    auto it = defaults_.find(action);
+    return it != defaults_.end() ? it->second : std::string();
+}
+
 std::map<std::string, std::string> Keybindings::all() const {
     std::map<std::string, std::string> result;
     for (const auto& [action, default_combo] : defaults_) {
@@ -47,4 +68,4 @@ std::map<std::string, std::string> Keybindings::all() const {
     return result;
 }
 
-} // namespace meridian::config
+} // namespace zephyr::config

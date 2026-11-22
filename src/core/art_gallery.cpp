@@ -13,7 +13,7 @@
 #include <sstream>
 #include <unistd.h>
 
-namespace meridian::core {
+namespace zephyr::core {
 
 namespace {
 
@@ -396,7 +396,7 @@ TerminalImage make_chainsaw_man_art(int w, int h) {
 // -----------------------------------------------------------------------------
 // 8. CYBERPUNK EDGERUNNERS: LUCY & NIGHT CITY
 // -----------------------------------------------------------------------------
-TerminalImage make_cyberpunk_art(int w, int h) {
+[[maybe_unused]] TerminalImage make_cyberpunk_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
         float ny = static_cast<float>(y) / (h - 1);
@@ -434,7 +434,7 @@ TerminalImage make_cyberpunk_art(int w, int h) {
 // -----------------------------------------------------------------------------
 // 9. SYNTHWAVE SUNSET & HORIZON
 // -----------------------------------------------------------------------------
-TerminalImage make_synthwave_art(int w, int h) {
+[[maybe_unused]] TerminalImage make_synthwave_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
         float ny = static_cast<float>(y) / (h - 1);
@@ -478,7 +478,7 @@ TerminalImage make_synthwave_art(int w, int h) {
 // -----------------------------------------------------------------------------
 // 10. STUDIO GHIBLI: ANIME MEADOW & AZURE SKY
 // -----------------------------------------------------------------------------
-TerminalImage make_ghibli_art(int w, int h) {
+[[maybe_unused]] TerminalImage make_ghibli_art(int w, int h) {
     TerminalImage img(w, h);
     for (int y = 0; y < h; ++y) {
         float ny = static_cast<float>(y) / (h - 1);
@@ -516,9 +516,9 @@ TerminalImage load_gallery_file(const std::string& filename, int w, int h) {
     std::vector<std::string> search_paths = {
         "resources/images/gallery/" + filename,
         "../resources/images/gallery/" + filename,
-        std::string(home ? home : "") + "/.config/meridian/gallery/" + filename,
-        "/usr/local/share/meridian/images/gallery/" + filename,
-        "/usr/share/meridian/images/gallery/" + filename,
+        std::string(home ? home : "") + "/.config/zephyr/gallery/" + filename,
+        "/usr/local/share/zephyr/images/gallery/" + filename,
+        "/usr/share/zephyr/images/gallery/" + filename,
         "/home/charanbalaji/.gemini/antigravity/brain/782459be-1b65-48a0-8575-26e8a2d72710/.user_uploaded/" + filename
     };
 
@@ -562,7 +562,7 @@ std::vector<std::pair<std::string, std::string>> ArtGallery::list_themes() {
 std::string ArtGallery::get_configured_choice() {
     const char* home = std::getenv("HOME");
     if (!home) return "random";
-    std::string config_file = std::string(home) + "/.config/meridian/artwork_choice";
+    std::string config_file = std::string(home) + "/.config/zephyr/artwork_choice";
     std::ifstream in(config_file);
     if (!in.is_open()) return "random";
     std::string choice;
@@ -577,7 +577,7 @@ std::string ArtGallery::get_configured_choice() {
 bool ArtGallery::set_permanent_choice(const std::string& choice) {
     const char* home = std::getenv("HOME");
     if (!home) return false;
-    std::string config_dir = std::string(home) + "/.config/meridian";
+    std::string config_dir = std::string(home) + "/.config/zephyr";
     system(("mkdir -p " + config_dir).c_str());
     std::string config_file = config_dir + "/artwork_choice";
     std::ofstream out(config_file);
@@ -630,7 +630,7 @@ ArtworkTheme ArtGallery::get_artwork_by_id_or_file(const std::string& id_or_file
 }
 
 ArtworkTheme ArtGallery::get_active_artwork(int width, int height) {
-    const char* env_art = std::getenv("MERIDIAN_ARTWORK");
+    const char* env_art = std::getenv("ZEPHYR_ARTWORK");
     if (env_art && std::string(env_art).length() > 0) {
         return get_artwork_by_id_or_file(env_art, width, height);
     }
@@ -708,4 +708,4 @@ std::vector<std::string> ArtGallery::render_artwork_lines(const TerminalImage& i
     return lines;
 }
 
-} // namespace meridian::core
+} // namespace zephyr::core

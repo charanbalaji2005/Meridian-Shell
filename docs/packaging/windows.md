@@ -9,4 +9,4 @@ status: "development"
 <p>Windows Console PTY (ConPTY) adapter and MSI / winget installer are in development.</p>
 
 <h2 id="winget-install">Windows Package Manager (winget)</h2>
-<pre><code class="language-powershell">winget install Meridian.Terminal</code></pre>
+<pre><code class="language-powershell">winget install Zephyr.Terminal</code></pre>

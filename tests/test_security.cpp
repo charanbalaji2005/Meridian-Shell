@@ -5,11 +5,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-using namespace meridian::security;
+using namespace zephyr::security;
 
 namespace {
 std::string test_dir() {
-    return "/tmp/meridian_test_credentials_" + std::to_string(getpid());
+    return "/tmp/zephyr_test_credentials_" + std::to_string(getpid());
 }
 } // namespace
 

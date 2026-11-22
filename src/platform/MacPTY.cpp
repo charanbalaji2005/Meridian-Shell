@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <util.h>
 
-namespace meridian::platform {
+namespace zephyr::platform {
 
 class MacPTY : public PlatformPTY {
 public:
@@ -50,7 +50,7 @@ public:
 
             setenv("TERM", "xterm-256color", 1);
             setenv("COLORTERM", "truecolor", 1);
-            setenv("MERIDIAN_VERSION", "2.0.0", 1);
+            setenv("ZEPHYR_VERSION", "2.0.0", 1);
 
             std::vector<char*> argv;
             argv.push_back(const_cast<char*>(target_shell.c_str()));
@@ -156,7 +156,7 @@ std::string PlatformPTY::platform_name() {
     return "macOS";
 }
 
-} // namespace meridian::platform
+} // namespace zephyr::platform
 
 #endif
 

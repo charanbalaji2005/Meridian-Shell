@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.zephyr_terminal.ZephyrTerminal</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Zephyr Terminal</name>
+  <summary>Fast, modern terminal emulator with tabs, splits and profiles</summary>
+  <developer id="io.github.charanbalaji2005">
+    <name>Charan Balaji</name>
+  </developer>
+
+  <description>
+    <p>
+      Zephyr Terminal is a native Linux terminal emulator written in C++20 and Qt 6. It runs your
+      shell on a real pseudo-terminal, renders 24-bit color and Unicode, and keeps the interface
+      out of the way.
+    </p>
+    <ul>
+      <li>Tabs and freely nested horizontal and vertical split panes</li>
+      <li>Search through scrollback, configurable history size and cursor styles</li>
+      <li>Shell profiles with arguments, working directory and environment variables</li>
+      <li>Saved SSH connections, importable from ~/.ssh/config</li>
+      <li>Dark, light and system themes with a custom accent color and transparency</li>
+      <li>Command palette, editable keybindings and session restore</li>
+      <li>Safe paste: control characters are stripped and multi-line pastes can be confirmed</li>
+      <li>Also includes the zephyr command-line toolkit and the zephyr-shell interactive shell</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">org.zephyr_terminal.ZephyrTerminal.desktop</launchable>
+  <categories>
+    <category>System</category>
+    <category>TerminalEmulator</category>
+  </categories>
+
+  <url type="homepage">https://github.com/charanbalaji2005/Meridian-Shell</url>
+  <url type="bugtracker">https://github.com/charanbalaji2005/Meridian-Shell/issues</url>
+  <url type="vcs-browser">https://github.com/charanbalaji2005/Meridian-Shell</url>
+
+  <provides>
+    <binary>zephyr-terminal</binary>
+    <binary>zephyr</binary>
+    <binary>zephyr-shell</binary>
+  </provides>
+
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+
+  <releases>
+    <release version="2.6.0" date="2026-11-16">
+      <description>
+        <p>
+          New Qt 6 graphical terminal (zephyr-terminal) with tabs, split panes, search, profiles,
+          SSH connections, a command palette, a settings window and session restore. Adds Nix flake,
+          Fedora, Debian/Ubuntu, Arch Linux and AppImage packaging.
+        </p>
+      </description>
+    </release>
+    <release version="2.5.0" date="2026-08-29"/>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+</component>

@@ -4,7 +4,7 @@ title: "AI Architecture"
 category: "Developer"
 ---
 
-# Meridian AI
+# Zephyr AI
 
 **Two different statuses in this one system — read carefully, because
 the split matters:**
@@ -14,10 +14,10 @@ the split matters:**
 | Local command analyzer (typo detection) | **Real, implemented, tested** |
 | Risk classifier (LOW/MEDIUM/HIGH/CRITICAL) | **Real, implemented, tested** |
 | Secret redactor | **Real, implemented, tested** |
-| `meridian ai on/off/status/detect/privacy/analyze/redact/test` CLI | **Real, implemented, tested** |
-| Config persistence (`~/.config/meridian/ai.toml`) | **Real, implemented, tested** |
+| `zephyr ai on/off/status/detect/privacy/analyze/redact/test` CLI | **Real, implemented, tested** |
+| Config persistence (`~/.config/zephyr/ai.toml`) | **Real, implemented, tested** |
 | Groq / Gemini / Ollama Cloud providers | **Not implemented — see below** |
-| `meridian ai explain` (real natural-language explanation) | **Not implemented — reports so honestly** |
+| `zephyr ai explain` (real natural-language explanation) | **Not implemented — reports so honestly** |
 | Qt6 AI popup (Ctrl+Space) | **Not implemented — needs Qt6** |
 
 ## What's real (`src/ai/`)
@@ -58,7 +58,7 @@ the split matters:**
   "instal" isn't a valid npm subcommand needs either an actual LLM or a
   hand-built dictionary of every program's subcommands, neither of
   which a generic PATH scanner can do. Verified directly: `npm` really
-  is on this machine's PATH, so `meridian ai analyze "npm instal
+  is on this machine's PATH, so `zephyr ai analyze "npm instal
   express"` correctly reports "no issues detected" rather than silently
   failing to work — that's the documented scope boundary, not a bug.
 
@@ -77,18 +77,18 @@ the split matters:**
   looking canned explanation — faking that would be strictly worse than
   saying nothing, since a wrong "explanation" is actively misleading.
 
-- **`src/app/meridian_main.cpp`** — the `meridian ai ...` CLI. Try it:
+- **`src/app/zephyr_main.cpp`** — the `zephyr ai ...` CLI. Try it:
 
   ```bash
-  ./build/meridian ai on
-  ./build/meridian ai analyze "gerp foo"        # -> possible correction: grep foo
-  ./build/meridian ai analyze "sudo rm -rf /"   # -> risk: CRITICAL - ...
-  ./build/meridian ai redact 'API_KEY=sk-abc123 Authorization: Bearer xyz'
-  ./build/meridian ai test                      # -> honest "NOT IMPLEMENTED" per provider
-  ./build/meridian ai status
+  ./build/zephyr ai on
+  ./build/zephyr ai analyze "gerp foo"        # -> possible correction: grep foo
+  ./build/zephyr ai analyze "sudo rm -rf /"   # -> risk: CRITICAL - ...
+  ./build/zephyr ai redact 'API_KEY=sk-abc123 Authorization: Bearer xyz'
+  ./build/zephyr ai test                      # -> honest "NOT IMPLEMENTED" per provider
+  ./build/zephyr ai status
   ```
 
-  `MERIDIAN_CONFIG_HOME` overrides the config directory (tests use
+  `ZEPHYR_CONFIG_HOME` overrides the config directory (tests use
   this to avoid touching a real `~/.config`).
 
 ## What's still not implemented, and why
@@ -101,7 +101,7 @@ full reasoning; the short version is the same one that's applied
 everywhere else in this project: don't ship networking code that's
 never actually talked to a server.
 
-**`meridian ai explain`.** Needs real language generation to produce a
+**`zephyr ai explain`.** Needs real language generation to produce a
 correct explanation of an arbitrary command's purpose/flags/risks —
 that's what a provider is for. Without one, it says so.
 

@@ -1,7 +1,7 @@
 #pragma once
-// meridian-terminal / dev / ssh_manager.hpp
+// zephyr-terminal / dev / ssh_manager.hpp
 //
-// Native SSH Workspace and Connection Manager for Meridian Terminal.
+// Native SSH Workspace and Connection Manager for Zephyr Terminal.
 // Parses ~/.ssh/config, manages saved host profiles, handles connection
 // strings, and integrates into the Command Palette and interactive CLI.
 
@@ -9,7 +9,7 @@
 #include <vector>
 #include <optional>
 
-namespace meridian::dev {
+namespace zephyr::dev {
 
 struct SSHHost {
     std::string alias;
@@ -33,7 +33,7 @@ class SSHManager {
 public:
     explicit SSHManager(std::string config_path = "");
 
-    // Reload hosts from ~/.ssh/config and Meridian SSH database
+    // Reload hosts from ~/.ssh/config and Zephyr SSH database
     bool load();
 
     // Query available hosts
@@ -54,4 +54,4 @@ private:
     void parse_ssh_config(const std::string& content);
 };
 
-} // namespace meridian::dev
+} // namespace zephyr::dev

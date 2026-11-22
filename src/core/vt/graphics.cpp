@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace meridian::vt {
+namespace zephyr::vt {
 
 namespace {
 
@@ -485,4 +485,4 @@ bool GraphicsEngine::handle_sixel(std::string_view sixel_stream, int cursor_row,
     return true;
 }
 
-} // namespace meridian::vt
+} // namespace zephyr::vt
